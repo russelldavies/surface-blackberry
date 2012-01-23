@@ -285,14 +285,17 @@ public class Server extends Thread implements MMServer, SurfaceResource {
 
 	private String encodeQueryString(String queryString) {
 		// Encrypt and convert to hex
-		return tools.topAndTail(
-				tools.stringToHex(encrypt(tools.safeRangeTextUTF(queryString
-						.trim())))).toUpperCase();
+		//return tools.topAndTail( tools.stringToHex(encrypt(tools.safeRangeTextUTF(queryString .trim())))).toUpperCase();
+		
+		// Encryption is disabled for now
+		return tools.stringToHex((queryString.trim()));
 	}
 
 	private String processReply(String reply) {
 		if (reply != null && tools.isHex(reply)) {
-			return decrypt(reply);
+			// Encryption is disabled for now
+			//return decrypt(reply);
+			return reply;
 		} else {
 			return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
 		}
