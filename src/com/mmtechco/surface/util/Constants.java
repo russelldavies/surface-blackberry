@@ -7,7 +7,7 @@ public class Constants {
 	public static final long GUID = 0xd13f8c795c3f15c0L;
 	
 	// Global flag to turn on debugging features
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	
 	// converted string "com.mmtechco.mobileminder.registration" to long
 	public static final long regData = 0x60f1438f1a5bc0abL;
