@@ -93,7 +93,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(
 						new RegPopupScreen());
-				PersistentStore.destroyPersistentObject(Constants.regData);
+				PersistentStore.destroyPersistentObject(Registration.ID);
 			}
 		};
 
@@ -126,7 +126,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			add(new SeparatorField());
 
 			PersistentObject regData = PersistentStore
-					.getPersistentObject(Constants.regData);
+					.getPersistentObject(Registration.ID);
 			synchronized (regData) {
 				Hashtable regTable = (Hashtable) regData.getContents();
 				if (regTable == null) {

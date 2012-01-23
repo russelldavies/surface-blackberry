@@ -11,6 +11,7 @@ import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.util.StringUtilities;
 
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.net.Reply;
@@ -23,7 +24,6 @@ import com.mmtechco.surface.prototypes.enums.COMMAND_TARGETS;
 import com.mmtechco.surface.util.Constants;
 import com.mmtechco.surface.util.ErrorMessage;
 import com.mmtechco.surface.util.Logger;
-import com.mmtechco.surface.util.StorageException;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
@@ -36,6 +36,8 @@ public class Registration extends Thread implements Controllable,
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(Registration.class);
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
+	public static final long ID = StringUtilities
+			.stringHashToLong(Registration.class.getName());
 
 	public static String KEY_STAGE = "registration_stage";
 	public static String KEY_ID = "registration_id";
@@ -65,7 +67,7 @@ public class Registration extends Thread implements Controllable,
 
 		// Read registration data or set to default values
 		PersistentObject regData = PersistentStore
-				.getPersistentObject(Constants.regData);
+				.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
 			if (regTable == null) {
@@ -177,7 +179,7 @@ public class Registration extends Thread implements Controllable,
 	 */
 	private boolean setRegData(String key, String value) {
 		PersistentObject regData = PersistentStore
-				.getPersistentObject(Constants.regData);
+				.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
 			Object oldValue = regTable.put(key, value);
@@ -313,7 +315,7 @@ public class Registration extends Thread implements Controllable,
 
 class RegistrationMessage implements Message {
 	private final static int type = 9;
-	private final int mmVERSION = Constants.APP_VERSION;
+	private final int appVersion = Constants.APP_VERSION;
 	private String deviceTime;
 	private int stage;
 	private String phoneNum;
@@ -341,7 +343,7 @@ class RegistrationMessage implements Message {
 				+ Tools.ServerQueryStringSeparator + DeviceInfo.getDeviceName()
 				+ Tools.ServerQueryStringSeparator
 				+ DeviceInfo.getSoftwareVersion()
-				+ Tools.ServerQueryStringSeparator + mmVERSION
+				+ Tools.ServerQueryStringSeparator + appVersion
 				+ Tools.ServerQueryStringSeparator + info;
 	}
 
