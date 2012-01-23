@@ -1,0 +1,9 @@
+i18n_AppName#0="Surface";
+i18n_ErrorCorruptedMsg#0="Corrupted Message";
+i18n_ErrorNoSim#0="No SIM card present";
+i18n_ErrorServer#0="Server Unreachable";
+i18n_Reg#0="Registered";
+i18n_RegActive#0="Fully Active";
+i18n_RegNotActivated#0="Not activated";
+i18n_RegRequesting#0="Requesting Serial Number";
+i18n_RegTrial#0="Trial Account";

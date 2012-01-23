@@ -1,32 +1,160 @@
 package com.mmtechco.surface;
 
+import com.mmtechco.surface.monitor.LocationMonitor;
+import com.mmtechco.surface.net.Server;
+import com.mmtechco.surface.prototypes.Controllable;
+import com.mmtechco.surface.prototypes.enums.FILESYSTEM;
+import com.mmtechco.surface.util.Constants;
+import com.mmtechco.surface.util.Logger;
+import com.mmtechco.surface.util.SurfaceResource;
+import com.mmtechco.surface.util.ToolsBB;
+
+import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.ui.UiApplication;
 
 /**
- * This class extends the UiApplication class, providing a
- * graphical user interface.
+ * Main entry point of the application.
  */
-public class Surface extends UiApplication
-{
-    /**
-     * Entry point for application
-     * @param args Command line arguments (not used)
-     */ 
-    public static void main(String[] args)
-    {
-        // Create a new instance of the application and make the currently
-        // running thread the application's event dispatch thread.
-        Surface theApp = new Surface();       
-        theApp.enterEventDispatcher();
-    }
-    
+public class Surface extends UiApplication implements SystemListener2 {
+	private static final String TAG = "App";
+	public static ResourceBundle r = ResourceBundle.getBundle(
+			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
+	
+	private Logger logger = Logger.getInstance();
 
-    /**
-     * Creates a new Surface object
-     */
-    public Surface()
-    {        
-        // Push a screen onto the UI stack for rendering.
-        pushScreen(new AlertScreen());
-    }    
+	private AlertScreen alertscreen;
+	private Registration reg;
+	
+	/**
+	 * Entry point for application
+	 * 
+	 * @param args
+	 *            Alternate entry point arguments.
+	 */
+	public static void main(String[] args) {
+		// Start logging
+		// TODO: implement
+		// Logger.startEventLogger();
+
+		Surface app = new Surface();
+
+		// If system startup is still in progress when this
+		// application is run.
+		if (ApplicationManager.getApplicationManager().inStartup()) {
+			// Add a system listener to detect when system is ready and
+			// available.
+			app.addSystemListener(app);
+		} else {
+			// System is already ready and available so perform start up
+			// work now. Note that this work must be completed using
+			// invokeLater because the application has not yet entered the
+			// event dispatcher.
+			app.initializeLater();
+		}
+
+		// Setup listener for removal of app. This needs to be set here before
+		// the app enters the event dispatcher.
+		//CodeModuleManager.addListener(app, new UninstallMonitor());
+
+		// Start event thread
+		app.enterEventDispatcher();
+	}
+
+	private void initialize() {
+		if (Constants.DEBUG) {
+			pushScreen(new DebugScreen());
+		} else {
+			alertscreen = new AlertScreen();
+			pushScreen(alertscreen);
+		}
+
+		logger.log(TAG, "Starting registration");
+		reg = new Registration();
+		reg.start();
+	}
+
+	/**
+	 * Start components
+	 */
+	public void startComponents() {
+		if (!Constants.DEBUG) {
+			// Register application indicator
+			//alertscreen.registerIndicator();
+		}
+
+		// Start monitors
+		logger.log(TAG, "Starting monitors...");
+		new LocationMonitor();
+
+		Controllable[] components = new Controllable[1];
+		components[0] = reg;
+		new Commander(components).start();
+
+		// Monitor activity log
+		new Server().start();
+	}
+
+	/**
+	 * Perform the start up work on a new Runnable using the invokeLater
+	 * construct to ensure that it is executed after the event thread has been
+	 * created.
+	 */
+	private void initializeLater() {
+		invokeLater(new Runnable() {
+			public void run() {
+				initialize();
+			}
+		});
+	}
+
+	public void powerUp() {
+		Logger.getInstance().log(TAG, "Started from powerup");
+
+		removeSystemListener(this);
+		// Wait up to 30 seconds for sdcard to mount
+		for (int i = 0; i < 30; i++) {
+			if (ToolsBB.fsMounted(FILESYSTEM.SDCARD)) {
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		initialize();
+	}
+
+	public void powerOff() {
+	}
+
+	public void rootChanged(int state, String rootName) {
+	}
+
+	public void backlightStateChange(boolean on) {
+		// TODO: lock screen stuff here
+	}
+
+	public void batteryLow() {
+	}
+
+	public void batteryStatusChange(int status) {
+	}
+
+	public void cradleMismatch(boolean mismatch) {
+	}
+
+	public void fastReset() {
+	}
+
+	public void powerOffRequested(int reason) {
+	}
+
+	public void usbConnectionStateChange(int state) {
+	}
+
+	public void batteryGood() {
+	}
 }
