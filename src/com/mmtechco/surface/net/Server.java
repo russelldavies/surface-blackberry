@@ -35,7 +35,7 @@ public class Server extends Thread implements MMServer, SurfaceResource {
 
 	private Logger logger = Logger.getInstance();
 	private MMTools tools = ToolsBB.getInstance();
-	private final String URL = "http://www.mobileminder.net/WebService.php?";
+	private final String URL = "http://dash.surfacemobile.com/WebService.php?";
 	private int freq = 1000 * 30; // 30 seconds
 	private String serverErrorReply = Tools.ServerQueryStringSeparator
 			+ Tools.ServerQueryStringSeparator + 1
