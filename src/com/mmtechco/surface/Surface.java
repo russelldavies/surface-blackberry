@@ -63,12 +63,12 @@ public class Surface extends UiApplication implements SystemListener2 {
 	}
 
 	private void initialize() {
-		if (Constants.DEBUG) {
-			pushScreen(new DebugScreen());
-		} else {
+		//if (Constants.DEBUG) {
+		//	pushScreen(new DebugScreen());
+		//} else {
 			alertscreen = new AlertScreen();
 			pushScreen(alertscreen);
-		}
+		//}
 
 		logger.log(TAG, "Starting registration");
 		reg = new Registration();
