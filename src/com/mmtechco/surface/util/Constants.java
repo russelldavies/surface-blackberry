@@ -13,4 +13,6 @@ public class Constants {
 	
 	// Types
 	public static final String type_surface = "10";
+	public static final String type_alert = "13";
+	public static final String type_mandown = "15";
 }
