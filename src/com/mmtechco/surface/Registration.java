@@ -298,11 +298,11 @@ public class Registration extends Thread implements Controllable,
 		}
 	}
 
-	public static void addObserver(Screen screen) {
+	public static void addObserver(ObserverScreen screen) {
 		observers.addElement(screen);
 	}
 
-	public static void removeObserver(Screen screen) {
+	public static void removeObserver(ObserverScreen screen) {
 		observers.removeElement(screen);
 	}
 
