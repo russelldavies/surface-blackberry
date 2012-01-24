@@ -1,5 +1,9 @@
 package com.mmtechco.surface.monitor;
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Vector;
+
 import javax.microedition.location.Criteria;
 import javax.microedition.location.Location;
 import javax.microedition.location.LocationException;
@@ -13,7 +17,11 @@ import net.rim.device.api.gps.LocationInfo;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.data.ActivityLog;
+import com.mmtechco.surface.net.Reply;
+import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;
+import com.mmtechco.surface.prototypes.ObserverScreen;
+import com.mmtechco.surface.util.Constants;
 import com.mmtechco.surface.util.ErrorMessage;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.Tools;
@@ -29,11 +37,19 @@ public class LocationMonitor implements LocationListener {
 	private Logger logger = Logger.getInstance();
 
 	// Represents the period of the position query, in seconds
-	private static int interval = 120;
+	private static int interval = 300;
+	// Upload interval (in milliseconds)
+	private static int uploadInterval = 30 * 1000;
 
 	private BlackBerryLocationProvider locationProvider;
+
 	private double latitude;
 	private double longitude;
+	private Message locMsg;
+	
+	private Server server;
+	
+	private static Vector observers = new Vector();
 
 	public LocationMonitor() {
 		// Enable location services
@@ -49,9 +65,14 @@ public class LocationMonitor implements LocationListener {
 			return;
 		}
 
+		server = new Server();
+
 		// Initialize lat/long
 		latitude = 0;
 		longitude = 0;
+
+		// Upload location periodically
+		new Timer().scheduleAtFixedRate(new UploadTask(), 0, uploadInterval);
 	}
 
 	public boolean startLocationUpdate() {
@@ -63,10 +84,10 @@ public class LocationMonitor implements LocationListener {
 				BlackBerryCriteria criteria = new BlackBerryCriteria();
 				// retrieve geolocation fix if GPS fix unavailable
 				criteria.enableGeolocationWithGPS();
-				//criteria.setMode(GPSInfo.GPS_MODE_AUTONOMOUS);
+				// criteria.setMode(GPSInfo.GPS_MODE_AUTONOMOUS);
 				// criteria.setCostAllowed(true);
-				criteria.setHorizontalAccuracy(5);
-				criteria.setVerticalAccuracy(5);
+				criteria.setHorizontalAccuracy(100);
+				criteria.setVerticalAccuracy(100);
 				criteria.setPreferredPowerConsumption(Criteria.POWER_USAGE_MEDIUM);
 				criteria.setPreferredResponseTime(10000);
 
@@ -100,21 +121,13 @@ public class LocationMonitor implements LocationListener {
 	}
 
 	public void locationUpdated(LocationProvider provider, Location location) {
-		// Polls GPS service based on interval specified in constructor. When
-		// location changes record in activity log.
+		// Polls GPS service based on interval specified in constructor and
+		// upload to the server.
 		if (location.isValid()) {
-			float speed;
-			// Check if coordinates have changed
-			if (longitude != location.getQualifiedCoordinates().getLongitude()
-					|| latitude != location.getQualifiedCoordinates()
-							.getLatitude()) {
-				speed = location.getSpeed();
-				longitude = location.getQualifiedCoordinates().getLongitude();
-				latitude = location.getQualifiedCoordinates().getLatitude();
-
-				Message locMsg = new LocationMessage(longitude, latitude, speed);
-				ActivityLog.addMessage(locMsg);
-			}
+			float speed = location.getSpeed();
+			longitude = location.getQualifiedCoordinates().getLongitude();
+			latitude = location.getQualifiedCoordinates().getLatitude();
+			locMsg = new LocationMessage(longitude, latitude, speed);
 		}
 	}
 
@@ -122,6 +135,33 @@ public class LocationMonitor implements LocationListener {
 		logger.log(TAG, "GPS Provider changed");
 		if (newState == LocationProvider.TEMPORARILY_UNAVAILABLE) {
 			provider.reset();
+		}
+	}
+	
+	public static void addObserver(ObserverScreen screen) {
+		observers.addElement(screen);
+	}
+
+	public static void removeObserver(ObserverScreen screen) {
+		observers.removeElement(screen);
+	}
+
+	private void notifyObservers() {
+		for (int i = 0; i < observers.size(); i++) {
+			((ObserverScreen) observers.elementAt(i)).alert(longitude, latitude);
+		}
+	}
+
+	private class UploadTask extends TimerTask {
+		public void run() {
+			// Check there are valid values
+			if (longitude != 0 && latitude != 0) {
+				logger.log(TAG, "Sending location to server");
+				Reply reply = server.contactServer(locMsg.getREST());
+				if (reply.getCallingCode().equals(Constants.type_surface)) {
+					notifyObservers();
+				}
+			}
 		}
 	}
 }
@@ -160,8 +200,8 @@ class LocationMessage implements Message {
 		return Registration.getRegID() + Tools.ServerQueryStringSeparator + '0'
 				+ type + Tools.ServerQueryStringSeparator + deviceTime
 				+ Tools.ServerQueryStringSeparator + latitude
-				+ Tools.ServerQueryStringSeparator + longitude
-				+ Tools.ServerQueryStringSeparator + speed;
+				+ Tools.ServerQueryStringSeparator + longitude;
+		// + Tools.ServerQueryStringSeparator + speed;
 	}
 
 	public String getTime() {

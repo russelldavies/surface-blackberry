@@ -118,6 +118,11 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		});
 	}
 
+	public void alert(double longitude, double latitude) {
+		// TODO Push surface alert screen
+		
+	}
+
 	public void close() {
 		// App is pushed to background rather than terminated when screen is
 		// closed.
@@ -224,4 +229,5 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			}
 		}
 	}
+
 }

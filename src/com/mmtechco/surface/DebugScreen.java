@@ -169,4 +169,8 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			return super.keyChar(c, status, time);
 		}
 	}
+
+	public void alert(double longitude, double latitude) {
+		add(new LabelField("Received Surface message from server. Longitude: " + longitude + ", lat: " + latitude));
+	}
 }

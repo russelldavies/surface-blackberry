@@ -10,4 +10,7 @@ public class Constants {
 	
 	// Global flag to turn on debugging features
 	public static final boolean DEBUG = true;
+	
+	// Types
+	public static final String type_surface = "10";
 }
