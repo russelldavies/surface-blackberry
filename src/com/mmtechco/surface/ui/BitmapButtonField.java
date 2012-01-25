@@ -20,7 +20,7 @@ import net.rim.device.api.system.*;
 import net.rim.device.api.ui.*;
 
 public class BitmapButtonField extends BaseButtonField {
-	private Bitmap[] _bitmaps;
+	private Bitmap[] bitmaps;
 	private static final int NORMAL = 0;
 	private static final int FOCUS = 1;
 
@@ -37,40 +37,38 @@ public class BitmapButtonField extends BaseButtonField {
 
 		if ((normalState.getWidth() != focusState.getWidth())
 				|| (normalState.getHeight() != focusState.getHeight())) {
-
 			throw new IllegalArgumentException("Image sizes don't match");
 		}
-
-		_bitmaps = new Bitmap[] { normalState, focusState };
+		bitmaps = new Bitmap[] { normalState, focusState };
 	}
 
 	public void setImage(Bitmap normalState) {
-		_bitmaps[NORMAL] = normalState;
+		bitmaps[NORMAL] = normalState;
 		invalidate();
 	}
 
 	public void setFocusImage(Bitmap focusState) {
-		_bitmaps[FOCUS] = focusState;
+		bitmaps[FOCUS] = focusState;
 		invalidate();
 	}
 
 	public int getPreferredWidth() {
-		return _bitmaps[NORMAL].getWidth();
+		return bitmaps[NORMAL].getWidth();
 	}
 
 	public int getPreferredHeight() {
-		return _bitmaps[NORMAL].getHeight();
+		return bitmaps[NORMAL].getHeight();
 	}
 
 	protected void layout(int width, int height) {
-		setExtent(_bitmaps[NORMAL].getWidth(), _bitmaps[NORMAL].getHeight());
+		setExtent(bitmaps[NORMAL].getWidth(), bitmaps[NORMAL].getHeight());
 	}
 
 	protected void paint(Graphics g) {
 		int index = g.isDrawingStyleSet(Graphics.DRAWSTYLE_FOCUS) ? FOCUS
 				: NORMAL;
-		g.drawBitmap(0, 0, _bitmaps[index].getWidth(),
-				_bitmaps[index].getHeight(), _bitmaps[index], 0, 0);
+		g.drawBitmap(0, 0, bitmaps[index].getWidth(),
+				bitmaps[index].getHeight(), bitmaps[index], 0, 0);
 	}
 
 	/**
