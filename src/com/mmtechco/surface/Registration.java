@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentObject;
@@ -315,7 +316,7 @@ public class Registration extends Thread implements Controllable,
 
 class RegistrationMessage implements Message {
 	private final static int type = 9;
-	private final int appVersion = Constants.APP_VERSION;
+	private final String appVersion = ApplicationDescriptor.currentApplicationDescriptor().getVersion();
 	private String deviceTime;
 	private int stage;
 	private String phoneNum;

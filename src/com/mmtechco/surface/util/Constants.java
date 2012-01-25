@@ -5,7 +5,6 @@ import net.rim.device.api.util.StringUtilities;
 
 public class Constants {
 	public static final String APP_NAME = "Surface";
-	public static final int APP_VERSION = 1;
 	public static final long GUID = StringUtilities.stringHashToLong(Application.getApplication().getClass().getName());
 	
 	// Global flag to turn on debugging features
