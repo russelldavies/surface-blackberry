@@ -37,14 +37,14 @@ public class LocationMonitor implements LocationListener {
 	private Logger logger = Logger.getInstance();
 
 	// Represents the period of the position query, in seconds
-	private static int interval = 300;
+	private static int interval = 5;
 	// Upload interval (in milliseconds)
 	private static int uploadInterval = 30 * 1000;
 
 	private BlackBerryLocationProvider locationProvider;
 
-	private double latitude;
-	private double longitude;
+	public static double latitude;
+	public static double longitude;
 	private Message locMsg;
 	
 	private Server server;
