@@ -19,13 +19,13 @@ import com.mmtechco.surface.util.ToolsBB;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Color;
+import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.Dialog;
-import net.rim.device.api.ui.component.TextField;
+import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -40,27 +40,24 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	private static MMTools tools = ToolsBB.getInstance();
 
 	// GUI widgets
-	private TextField statusTextField = new TextField(Field.NON_FOCUSABLE) {
-		protected void paint(Graphics graphics) {
-			graphics.setColor(Color.WHITE);
-			super.paint(graphics);
-		}
-	};
-	private TextField idTextField = new TextField(Field.NON_FOCUSABLE) {
+	private LabelField statusLabelField = new LabelField("",
+			Field.NON_FOCUSABLE | DrawStyle.HCENTER) {
 		protected void paint(Graphics graphics) {
 			graphics.setColor(Color.WHITE);
 			super.paint(graphics);
 		}
 	};
 
-	final BitmapTextButtonField actionButton;
+	BitmapTextButtonField actionButton;
 	PillButtonSet pills;
 	PillButtonField pillOne;
 	PillButtonField pillTwo;
 	PillButtonField pillThree;
-	
-	// In milliseconds
-	public final int cooldownInterval = 30 * 1000;
+
+	// In seconds
+	public final int cooldownPeriod = 5;
+
+	String prevStatus = "";
 
 	public AlertScreen() {
 		super(NO_VERTICAL_SCROLL | USE_ALL_HEIGHT | USE_ALL_WIDTH);
@@ -69,10 +66,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		Registration.addObserver(this);
 
 		// Set initial text for registration info fields
-		statusTextField.setLabel("Status: ");
-		statusTextField.setText(r.getString(i18n_RegRequesting));
-		idTextField.setLabel("ID: ");
-		idTextField.setText("[none]");
+		statusLabelField.setText("SN: [none] | Status: "
+				+ r.getString(i18n_RegRequesting));
 
 		// Define layout manager
 		VerticalFieldManager vfm = new VerticalFieldManager(USE_ALL_HEIGHT
@@ -134,10 +129,14 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			public void run() {
 				// Only set text if reg id has been received
 				String regId = Registration.getRegID();
+				String regStatus = Registration.getStatus();
 				if (!regId.equals("0")) {
-					idTextField.setText(regId);
+					statusLabelField.setText("SN: " + regId + " | Status: "
+							+ regStatus);
+				} else {
+					statusLabelField.setText("SN: [none] | Status: "
+							+ regStatus);
 				}
-				statusTextField.setText(Registration.getStatus());
 			}
 		});
 	}
@@ -145,14 +144,18 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	/**
 	 * Show screen and request user to surface
 	 */
-	public void alert(final double longitude, final double latitude) {
+	public void surface() {
 		// Bring screen to front
 		UiApplication.getUiApplication().requestForeground();
-		// Select Surface pill
-		pills.setSelectedField(pillOne);
-		// TODO: Makes sound and vibrates
-		// TODO: countdown timer of 3 minutes, show progress bar
-		// text goes to sending, and then sent
+		UiApplication.getUiApplication().invokeLater(new Runnable() {
+			public void run() {
+				// Select Surface pill
+				pills.setSelectedField(pillOne);
+				// TODO: Makes sound and vibrates
+				// TODO: countdown timer of 3 minutes, show progress bar
+				// text goes to sending, and then sent
+			}
+		});
 
 	}
 
@@ -160,7 +163,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		super.close();
 		// App is pushed to background rather than terminated when screen is
 		// closed.
-		// TODO: enable this
+		// TODO: enable this debugging is complete
 		// UiApplication.getUiApplication().requestBackground();
 	}
 
@@ -175,12 +178,9 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	private class RegInfoStyleField extends VerticalFieldManager {
 		RegInfoStyleField() {
 			super(Manager.FIELD_HCENTER);
-			// Registration fields
-			add(statusTextField);
-			add(idTextField);
-
-			// setPadding(5, 5, 5, 5);
-			// setMargin(10, 10, 10, 10);
+			add(statusLabelField);
+			setPadding(5, 5, 5, 5);
+			setMargin(10, 10, 10, 10);
 		}
 
 		protected void paintBackground(Graphics g) {
@@ -195,100 +195,157 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			}
 		}
 	}
-}
 
-class BitmapTextButtonField extends BitmapButtonField {
-	private String text;
+	class BitmapTextButtonField extends BitmapButtonField {
+		private String text;
 
-	public BitmapTextButtonField(Bitmap normalState, Bitmap focusState,
-			String text, long style) {
-		super(normalState, focusState, style);
-		this.text = text;
-	}
-
-	protected void paint(Graphics g) {
-		super.paint(g);
-		g.setColor(Color.WHITE);
-		g.drawText(text, getWidth() / 2, getHeight() / 2);
-	}
-
-	public void setText(String text) {
-		this.text = text;
-		invalidate();
-	}
-
-	public void sendSurface() {
-	}
-
-	public void sendAlert() {
-	}
-
-	public void sendManDown() {
-	}
-
-	public void sendMessage(final String type) {
-		// Threaded so non-blocking
-		new Thread() {
-			public void run() {
-				String queryString = Registration.getRegID()
-						+ Tools.ServerQueryStringSeparator + type
-						+ Tools.ServerQueryStringSeparator
-						+ ToolsBB.getInstance().getDate()
-						+ Tools.ServerQueryStringSeparator
-						+ LocationMonitor.latitude
-						+ Tools.ServerQueryStringSeparator
-						+ LocationMonitor.longitude;
-				System.out.println(queryString);
-				new Server().contactServer(queryString);
-			}
-		}.start();
-	}
-
-	public void setSurface() {
-		setText("Surface");
-
-		setChangeListener(null);
-		setChangeListener(new FieldChangeListener() {
-			public void fieldChanged(Field field, int context) {
-				sendMessage(Constants.type_surface);
-				Dialog.alert("surface message sent");
-			}
-		});
-	}
-
-	public void setAlert() {
-		setText("Alert");
-
-		setChangeListener(null);
-		setChangeListener(new FieldChangeListener() {
-			public void fieldChanged(Field field, int context) {
-
-				sendMessage(Constants.type_alert);
-				Dialog.alert("surface message sent");
-			}
-		});
-
-		new Timer().scheduleAtFixedRate(new CountdownTask(30), 0, 1000);
-
-	}
-
-	public void setManDown() {
-		setText("Man Down");
-	}
-}
-
-class CountdownTask extends TimerTask {
-	int counter = 0;
-	int duration;
-	
-	public CountdownTask(int duration) {
-		this.duration = duration;
-	}
-	public void run() {
-		if (counter == duration) {
-			// TODO: send message
+		public BitmapTextButtonField(Bitmap normalState, Bitmap focusState,
+				String text, long style) {
+			super(normalState, focusState, style);
+			this.text = text;
 		}
-		counter++;
+
+		protected void paint(Graphics g) {
+			super.paint(g);
+			g.setColor(Color.WHITE);
+			g.drawText(text, getWidth() / 2 - 20, getHeight() / 2);
+		}
+
+		protected void setButtonText(String text) {
+			this.text = text;
+			invalidate();
+		}
+
+		public void setSurface() {
+			setButtonText("Surface");
+			setChangeListener(null);
+			setChangeListener(new FieldChangeListener() {
+				public void fieldChanged(Field field, int context) {
+					sendSurface();
+				}
+			});
+		}
+
+		public void setAlert() {
+			setButtonText("Alert");
+			setChangeListener(null);
+			setChangeListener(new FieldChangeListener() {
+				public void fieldChanged(Field field, int context) {
+					sendAlert();
+				}
+			});
+		}
+
+		public void setManDown() {
+			setButtonText("Man Down");
+			setChangeListener(null);
+			setChangeListener(new FieldChangeListener() {
+				public void fieldChanged(Field field, int context) {
+					sendManDown();
+				}
+			});
+		}
+
+		private void sendSurface() {
+			sendMessage(Constants.type_surface);
+		}
+
+		private void sendAlert() {
+			startCountdown(Constants.type_alert);
+		}
+
+		private void sendManDown() {
+			startCountdown(Constants.type_mandown);
+		}
+
+		private void startCountdown(final String type) {
+			setButtonText("Cancel");
+			prevStatus = statusLabelField.getText();
+			// Start countdown
+			final Timer countdown = new Timer();
+			countdown.scheduleAtFixedRate(new CountdownTask(cooldownPeriod,
+					type), 0, 1000);
+			// Set Action button to a cancel button
+			setChangeListener(null);
+			setChangeListener(new FieldChangeListener() {
+				public void fieldChanged(Field field, int context) {
+					// Cancel countdown, restore button to original state,
+					// and restore status text
+					countdown.cancel();
+					if (type.equals(Constants.type_alert)) {
+						setAlert();
+					} else if (type.equals(Constants.type_mandown)) {
+						setManDown();
+					}
+					statusLabelField.setText(prevStatus);
+				}
+			});
+		}
+
+		private void sendMessage(final String type) {
+			String statusMsg = "Sending ";
+			if (type.equals(Constants.type_surface)) {
+				statusMsg = statusMsg + "Surface";
+				actionButton.setSurface();
+			} else if (type.equals(Constants.type_alert)) {
+				statusMsg = statusMsg + "Alert";
+				actionButton.setAlert();
+			} else if (type.equals(Constants.type_mandown)) {
+				statusMsg = statusMsg + "Man Down";
+				actionButton.setManDown();
+			}
+			statusMsg = statusMsg + "...";
+			// Save existing status before changing
+			prevStatus = statusLabelField.getText();
+			statusLabelField.setText(statusMsg);
+
+			// Spawn new thread so the event lock is not blocked
+			(new Thread() {
+				public void run() {
+					String queryString = Registration.getRegID()
+							+ Tools.ServerQueryStringSeparator + type
+							+ Tools.ServerQueryStringSeparator
+							+ tools.getDate()
+							+ Tools.ServerQueryStringSeparator
+							+ LocationMonitor.longitude
+							+ Tools.ServerQueryStringSeparator
+							+ LocationMonitor.latitude;
+					logger.log(TAG, queryString);
+					new Server().contactServer(queryString);
+				}
+			}).start();
+			statusLabelField.setText("Message Sent...");
+			statusLabelField.setText(prevStatus);
+		}
 	}
 
+	/**
+	 * Pass in a number and it counts down to zero updating the status text
+	 */
+	private class CountdownTask extends TimerTask {
+		int count;
+		String type;
+
+		public CountdownTask(int period, final String type) {
+			count = period;
+			this.type = type;
+		}
+
+		public void run() {
+			if (count == 0) {
+				this.cancel();
+				return;
+			}
+			UiApplication.getUiApplication().invokeLater(new Runnable() {
+				public void run() {
+					statusLabelField.setText("Time remaining to cancel: "
+							+ String.valueOf(--count));
+					if (count == 0) {
+						statusLabelField.setText(prevStatus);
+						actionButton.sendMessage(type);
+					}
+				}
+			});
+		}
+	}
 }
