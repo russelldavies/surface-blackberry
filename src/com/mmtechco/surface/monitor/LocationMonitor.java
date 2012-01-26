@@ -127,7 +127,7 @@ public class LocationMonitor implements LocationListener {
 			float speed = location.getSpeed();
 			longitude = location.getQualifiedCoordinates().getLongitude();
 			latitude = location.getQualifiedCoordinates().getLatitude();
-			locMsg = new LocationMessage(longitude, latitude, speed);
+			locMsg = new LocationMessage(latitude, longitude, speed);
 		}
 	}
 
@@ -148,7 +148,7 @@ public class LocationMonitor implements LocationListener {
 
 	private void notifyObservers() {
 		for (int i = 0; i < observers.size(); i++) {
-			((ObserverScreen) observers.elementAt(i)).alert(longitude, latitude);
+			((ObserverScreen) observers.elementAt(i)).surface();
 		}
 	}
 
@@ -199,9 +199,10 @@ class LocationMessage implements Message {
 	public String getREST() {
 		return Registration.getRegID() + Tools.ServerQueryStringSeparator + '0'
 				+ type + Tools.ServerQueryStringSeparator + deviceTime
+				+ Tools.ServerQueryStringSeparator + longitude
 				+ Tools.ServerQueryStringSeparator + latitude
-				+ Tools.ServerQueryStringSeparator + longitude;
 		// + Tools.ServerQueryStringSeparator + speed;
+				;
 	}
 
 	public String getTime() {

@@ -68,6 +68,10 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			}
 		});
 	}
+	
+	public void surface() {
+		add(new LabelField("Received Surface message from server"));
+	}
 
 	/*
 	 * Add a new log event to the screen
@@ -168,9 +172,5 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 
 			return super.keyChar(c, status, time);
 		}
-	}
-
-	public void alert(double longitude, double latitude) {
-		add(new LabelField("Received Surface message from server. Longitude: " + longitude + ", lat: " + latitude));
 	}
 }
