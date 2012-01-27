@@ -3,10 +3,14 @@ package com.mmtechco.surface;
 import java.util.Hashtable;
 
 import com.mmtechco.surface.data.ActivityLog;
+import com.mmtechco.surface.monitor.LocationMonitor;
+import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.Constants;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
+import com.mmtechco.surface.util.Tools;
+import com.mmtechco.surface.util.ToolsBB;
 
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Characters;
@@ -68,9 +72,9 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			}
 		});
 	}
-	
+
 	public void surface() {
-		add(new LabelField("Received Surface message from server"));
+		addNewLog("Received Surface message from server");
 	}
 
 	/*
@@ -101,19 +105,59 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			}
 		};
 
-		MenuItem delStoreMenu = new MenuItem(
-				new StringProvider("Delete Store"), 0x100040, 3) {
+		MenuItem delStoreMenu = new MenuItem(new StringProvider(
+				"Delete Activity Log store"), 0x100040, 3) {
 			public void run() {
 				PersistentStore.destroyPersistentObject(ActivityLog.ID);
 				System.exit(0);
 			}
-
 		};
+
+		MenuItem surfaceMenu = new MenuItem(new StringProvider("Surface"),
+				0x100040, 3) {
+			public void run() {
+				sendMessage(Constants.type_surface);
+			}
+		};
+
+		MenuItem alertMenu = new MenuItem(new StringProvider("Alert"), 0x100040, 3) {
+			public void run() {
+				sendMessage(Constants.type_alert);
+			}
+		};
+		
+		MenuItem mandownMenu = new MenuItem(new StringProvider("Man Down"), 0x100040, 3) {
+			public void run() {
+				sendMessage(Constants.type_mandown);
+			}
+		};
+
 		menu.add(clearMenu);
 		menu.add(delRegMenu);
 		menu.add(delStoreMenu);
+		menu.add(surfaceMenu);
+		menu.add(alertMenu);
+		menu.add(mandownMenu);
 
 		super.makeMenu(menu, instance);
+	}
+
+	private void sendMessage(final String type) {
+		// Spawn new thread so the event lock is not blocked
+		(new Thread() {
+			public void run() {
+				String queryString = Registration.getRegID()
+						+ Tools.ServerQueryStringSeparator + type
+						+ Tools.ServerQueryStringSeparator
+						+ ToolsBB.getInstance().getDate()
+						+ Tools.ServerQueryStringSeparator
+						+ LocationMonitor.latitude
+						+ Tools.ServerQueryStringSeparator
+						+ LocationMonitor.longitude;
+				addNewLog(queryString);
+				new Server().contactServer(queryString);
+			}
+		}).start();
 	}
 
 	public void close() {
