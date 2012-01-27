@@ -56,6 +56,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 	// In seconds
 	public final int cooldownPeriod = 5;
+	public final int surfaceInterval = 3 * 60;
 
 	String prevStatus = "";
 
@@ -152,8 +153,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 				// Select Surface pill
 				pills.setSelectedField(pillOne);
 				// TODO: Makes sound and vibrates
-				// TODO: countdown timer of 3 minutes, show progress bar
-				// text goes to sending, and then sent
+				// TODO: countdown timer of 3 minutes
+				// TODO: text goes to sending, and then sent
 			}
 		});
 
@@ -221,7 +222,17 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
-					sendSurface();
+					sendMessage(Constants.type_surface);
+				}
+			});
+		}
+		
+		public void setSurfaceCountdown() {
+			setButtonText("Surface");
+			setChangeListener(null);
+			setChangeListener(new FieldChangeListener() {
+				public void fieldChanged(Field field, int context) {
+					startCountdown(Constants.type_surface, surfaceInterval);
 				}
 			});
 		}
@@ -231,7 +242,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
-					sendAlert();
+					startCountdown(Constants.type_alert, cooldownPeriod);
 				}
 			});
 		}
@@ -241,24 +252,12 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
-					sendManDown();
+					startCountdown(Constants.type_mandown, cooldownPeriod);
 				}
 			});
 		}
 
-		private void sendSurface() {
-			sendMessage(Constants.type_surface);
-		}
-
-		private void sendAlert() {
-			startCountdown(Constants.type_alert);
-		}
-
-		private void sendManDown() {
-			startCountdown(Constants.type_mandown);
-		}
-
-		private void startCountdown(final String type) {
+		private void startCountdown(final String type, int cooldownPeriod) {
 			setButtonText("Cancel");
 			prevStatus = statusLabelField.getText();
 			// Start countdown
