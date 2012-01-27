@@ -199,8 +199,8 @@ class LocationMessage implements Message {
 	public String getREST() {
 		return Registration.getRegID() + Tools.ServerQueryStringSeparator + '0'
 				+ type + Tools.ServerQueryStringSeparator + deviceTime
-				+ Tools.ServerQueryStringSeparator + longitude
 				+ Tools.ServerQueryStringSeparator + latitude
+				+ Tools.ServerQueryStringSeparator + longitude
 		// + Tools.ServerQueryStringSeparator + speed;
 				;
 	}

@@ -307,9 +307,9 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 							+ Tools.ServerQueryStringSeparator
 							+ tools.getDate()
 							+ Tools.ServerQueryStringSeparator
-							+ LocationMonitor.longitude
+							+ LocationMonitor.latitude
 							+ Tools.ServerQueryStringSeparator
-							+ LocationMonitor.latitude;
+							+ LocationMonitor.longitude;
 					logger.log(TAG, queryString);
 					new Server().contactServer(queryString);
 				}
