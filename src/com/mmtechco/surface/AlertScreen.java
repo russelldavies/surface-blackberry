@@ -3,6 +3,10 @@ package com.mmtechco.surface;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.microedition.media.MediaException;
+import javax.microedition.media.Player;
+import javax.microedition.media.control.VolumeControl;
+
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.MMTools;
@@ -17,6 +21,8 @@ import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
 
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.media.control.AudioPathControl;
+import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
@@ -59,6 +65,9 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	public final int surfaceInterval = 3 * 60;
 
 	String prevStatus = "";
+
+	Player player;
+	VibrateThread viber;
 
 	public AlertScreen() {
 		super(NO_VERTICAL_SCROLL | USE_ALL_HEIGHT | USE_ALL_WIDTH);
@@ -148,16 +157,42 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	public void surface() {
 		// Bring screen to front
 		UiApplication.getUiApplication().requestForeground();
+
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
 				// Select Surface pill
 				pills.setSelectedField(pillOne);
-				// TODO: Makes sound and vibrates
-				// TODO: countdown timer of 3 minutes
-				// TODO: text goes to sending, and then sent
+				// Start countdown
+				actionButton.startCountdown(Constants.type_surface,
+						surfaceInterval);
 			}
 		});
 
+		// Play sound
+		play();
+		viber = new VibrateThread();
+		viber.start();
+	}
+
+	public void play() {
+		try {
+			VolumeControl volume = (VolumeControl) player
+					.getControl("VolumeControl");
+			volume.setLevel(100);
+			// Direct audio to speaker even if headset or headphones are plugged
+			// in
+			AudioPathControl apc = (AudioPathControl) player
+					.getControl("net.rim.device.api.media.control.AudioPathControl");
+			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
+			player = javax.microedition.media.Manager.createPlayer(
+					AlertScreen.class.getResourceAsStream("/sounds/beep.mp3"),
+					"audio/mpeg");
+			player.realize();
+			player.prefetch();
+			player.start();
+		} catch (Exception e) {
+			logger.log(TAG, e.getMessage());
+		}
 	}
 
 	public void close() {
@@ -225,16 +260,19 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 					sendMessage(Constants.type_surface);
 				}
 			});
-		}
-		
-		public void setSurfaceCountdown() {
-			setButtonText("Surface");
-			setChangeListener(null);
-			setChangeListener(new FieldChangeListener() {
-				public void fieldChanged(Field field, int context) {
-					startCountdown(Constants.type_surface, surfaceInterval);
+			// Stop playing audio
+			if (player != null && player.getState() == Player.STARTED) {
+				try {
+					player.stop();
+					player.close();
+				} catch (MediaException e) {
+					logger.log(TAG, e.getMessage());
 				}
-			});
+			}
+			// Stop vibrating
+			if (viber != null) {
+				viber.stop();
+			}
 		}
 
 		public void setAlert() {
@@ -271,7 +309,9 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 					// Cancel countdown, restore button to original state,
 					// and restore status text
 					countdown.cancel();
-					if (type.equals(Constants.type_alert)) {
+					if (type.equals(Constants.type_surface)) {
+						setSurface();
+					} else if (type.equals(Constants.type_alert)) {
 						setAlert();
 					} else if (type.equals(Constants.type_mandown)) {
 						setManDown();
@@ -347,4 +387,40 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			});
 		}
 	}
+
+	class VibrateThread extends Thread {
+		private final int[] vibePattern = { 650, 208, 992, 225, 983, 200, 1000,
+				200, 1009, 191, 1009, 208, 983, 217, 1042, 216, 1100, 200,
+				1159, 200, 1208, 208, 1259, 200, 1308, 208, 1367, 208, 1409,
+				208, 1258, 117, 83, 117, 92, 116, 1659, 108, 83, 117, 92, 108,
+				1667, 108, 92, 116, 75, 117, 1675, 100, 92, 108, 100, 100,
+				1667, 116, 84, 108, 100, 108, 1667, 108, 84, 116, 92, 108,
+				1667, 108, 92, 108, 100, 92, 1667, 108, 100, 109, 75, 116,
+				1675, 100, 92, 117, 91, 109, 1658, 117, 83, 117, 83, 117, 66,
+				62225, 13217, 0 };
+		private boolean stop;
+
+		public void run() {
+			int duration = 0;
+			int sleep = 0;
+			for (int i = 0; i < vibePattern.length - 1; i++) {
+				if (stop) {
+					break;
+				}
+				if (i % 2 == 0) {
+					duration = vibePattern[i];
+					sleep = vibePattern[i + 1];
+					Alert.startVibrate(duration);
+					try {
+						Thread.sleep(duration + sleep);
+					} catch (InterruptedException e) {
+					}
+				}
+			}
+		}
+
+		public void stop() {
+			stop = true;
+		}
+	};
 }
