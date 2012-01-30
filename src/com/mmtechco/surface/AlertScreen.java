@@ -1,5 +1,6 @@
 package com.mmtechco.surface;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +21,7 @@ import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
 
+import net.rim.device.api.i18n.MissingResourceException;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
@@ -208,6 +210,25 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		return true;
 	}
 
+	private void sendAlertSMS() {
+		new Thread() {
+			public void run() {
+				String[] emergNums = Registration.getEmergNums();
+				if (emergNums[0] != "" && emergNums.length > 0) {
+					for (int i = 0; i < emergNums.length; i++) {
+						try {
+							((ToolsBB) ToolsBB.getInstance()).sendSMS(
+									emergNums[i], r.getString(i18n_AlertMsg));
+						} catch (Exception e) {
+							logger.log(TAG, e.getMessage());
+						}
+					}
+				}
+
+			}
+		}.start();
+	}
+
 	/**
 	 * Creates a rounded rectangle to hold registration info fields
 	 */
@@ -329,6 +350,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			} else if (type.equals(Constants.type_alert)) {
 				statusMsg = statusMsg + "Alert";
 				actionButton.setAlert();
+				// Send an SMS to emergency numbers
+				sendAlertSMS();
 			} else if (type.equals(Constants.type_mandown)) {
 				statusMsg = statusMsg + "Man Down";
 				actionButton.setManDown();
@@ -339,7 +362,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			statusLabelField.setText(statusMsg);
 
 			// Spawn new thread so the event lock is not blocked
-			(new Thread() {
+			new Thread() {
 				public void run() {
 					String queryString = Registration.getRegID()
 							+ Tools.ServerQueryStringSeparator + type
@@ -352,7 +375,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 					logger.log(TAG, queryString);
 					new Server().contactServer(queryString);
 				}
-			}).start();
+			}.start();
 			statusLabelField.setText("Message Sent...");
 			statusLabelField.setText(prevStatus);
 		}
