@@ -193,8 +193,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			AudioPathControl apc = (AudioPathControl) player
 					.getControl("net.rim.device.api.media.control.AudioPathControl");
 			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
-			player = javax.microedition.media.Manager.createPlayer(
-					AlertScreen.class.getResourceAsStream("/sounds/beep.mp3"),
+			player = javax.microedition.media.Manager.createPlayer(getClass().getResourceAsStream("/sounds/beep.mp3"),
 					"audio/mpeg");
 			player.realize();
 			player.prefetch();
