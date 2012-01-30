@@ -1,6 +1,7 @@
+//#preprocess
+
 package com.mmtechco.surface;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,11 +22,17 @@ import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
 
-import net.rim.device.api.i18n.MissingResourceException;
+//#ifdef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0
+import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.blackberry.api.invoke.PhoneArguments;
+//#else
+import net.rim.blackberry.api.phone.Phone;
+//#endif
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.RadioException;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
@@ -229,6 +236,23 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		}.start();
 	}
 
+	private void makeCall() {
+		String[] emergNums = Registration.getEmergNums();
+		if (emergNums[0] != "" && emergNums.length > 0) {
+			//#ifdef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0
+			PhoneArguments phoneArgs = new PhoneArguments(
+					PhoneArguments.ARG_CALL, emergNums[0]);
+			Invoke.invokeApplication(Invoke.APP_TYPE_PHONE, phoneArgs);
+			//#else
+			try {
+				Phone.initiateCall(Phone.getLineIds()[0], emergNums[0]);
+			} catch (RadioException e) {
+				logger.log(TAG, e.getMessage());
+			}
+			//#endif
+		}
+	}
+
 	/**
 	 * Creates a rounded rectangle to hold registration info fields
 	 */
@@ -355,6 +379,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			} else if (type.equals(Constants.type_mandown)) {
 				statusMsg = statusMsg + "Man Down";
 				actionButton.setManDown();
+				// Make call to emergency number
+				makeCall();
 			}
 			statusMsg = statusMsg + "...";
 			// Save existing status before changing
