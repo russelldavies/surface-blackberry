@@ -2,7 +2,7 @@ package com.mmtechco.surface.util;
 
 import java.util.Date;
 
-import com.mmtechco.surface.DebugScreen;
+import com.mmtechco.surface.ui.DebugScreen;
 
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.system.EventLogger;

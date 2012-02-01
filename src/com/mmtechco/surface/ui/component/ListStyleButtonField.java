@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.mmtechco.surface.ui;
+package com.mmtechco.surface.ui.component;
 
 import net.rim.device.api.system.*;
 import net.rim.device.api.ui.*;
@@ -89,11 +89,11 @@ public class ListStyleButtonField extends Field {
 	public void layout(int width, int height) {
 
 		_targetHeight = getFont().getHeight() / 2 * 3 + 2 * VPADDING;
-		// #ifndef VER_4.6.1 | VER_4.6.0 | VER_4.5.0 | VER_4.2.1 | VER_4.2.0
+		//#ifndef VER_4.6.1 | VER_4.6.0 | VER_4.5.0 | VER_4.2.1 | VER_4.2.0
 		if (Touchscreen.isSupported()) {
 			_targetHeight = getFont().getHeight() * 2 + 2 * VPADDING;
 		}
-		// #endif
+		//#endif
 
 		_leftOffset = HPADDING;
 		if (_leftIcon != null) {
@@ -242,7 +242,7 @@ public class ListStyleButtonField extends Field {
 		return true;
 	}
 
-	// #ifndef VER_4.1.0 | 4.0.0
+	//#ifndef VER_4.1.0 | 4.0.0
 	protected boolean invokeAction(int action) {
 		switch (action) {
 		case ACTION_INVOKE: {
@@ -253,7 +253,7 @@ public class ListStyleButtonField extends Field {
 		return super.invokeAction(action);
 	}
 
-	// #endif
+	//#endif
 
 	/**
 	 * A public way to click this button
@@ -262,7 +262,7 @@ public class ListStyleButtonField extends Field {
 		fieldChangeNotify(0);
 	}
 
-	// #ifndef VER_4.6.1 | VER_4.6.0 | VER_4.5.0 | VER_4.2.1 | VER_4.2.0
+	//#ifndef VER_4.6.1 | VER_4.6.0 | VER_4.5.0 | VER_4.2.1 | VER_4.2.0
 	protected boolean touchEvent(TouchEvent message) {
 		int x = message.getX(1);
 		int y = message.getY(1);
@@ -279,7 +279,7 @@ public class ListStyleButtonField extends Field {
 		return super.touchEvent(message);
 	}
 
-	// #endif
+	//#endif
 
 	public void setDirty(boolean dirty) {
 	}

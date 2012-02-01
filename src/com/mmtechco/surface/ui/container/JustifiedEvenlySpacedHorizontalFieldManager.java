@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mmtechco.surface.ui;
+package com.mmtechco.surface.ui.container;
 
 import net.rim.device.api.ui.*;
 

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.mmtechco.surface.ui;
+package com.mmtechco.surface.ui.container;
+
+import com.mmtechco.surface.ui.component.ListStyleButtonField;
 
 import net.rim.device.api.ui.*;
 import net.rim.device.api.ui.container.*;

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.mmtechco.surface.ui;
+package com.mmtechco.surface.ui.component;
+
+import com.mmtechco.surface.ui.container.PillButtonSet;
 
 import net.rim.device.api.system.*;
 import net.rim.device.api.ui.*;

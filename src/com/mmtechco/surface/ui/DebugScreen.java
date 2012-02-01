@@ -1,7 +1,8 @@
-package com.mmtechco.surface;
+package com.mmtechco.surface.ui;
 
 import java.util.Hashtable;
 
+import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
