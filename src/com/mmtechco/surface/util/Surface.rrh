@@ -9,3 +9,4 @@ i18n_RegActive#0=5;
 i18n_RegNotActivated#0=6;
 i18n_RegRequesting#0=7;
 i18n_RegTrial#0=8;
+i18n_AlertMsg#0=9;

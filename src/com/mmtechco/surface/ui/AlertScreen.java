@@ -1,3 +1,4 @@
+//#preprocess
 package com.mmtechco.surface.ui;
 
 import java.util.Timer;
@@ -21,10 +22,17 @@ import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
 
+//#ifdef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0
+import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.blackberry.api.invoke.PhoneArguments;
+//#else
+import net.rim.blackberry.api.phone.Phone;
+//#endif
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.RadioException;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
@@ -185,8 +193,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			AudioPathControl apc = (AudioPathControl) player
 					.getControl("net.rim.device.api.media.control.AudioPathControl");
 			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
-			player = javax.microedition.media.Manager.createPlayer(
-					AlertScreen.class.getResourceAsStream("/sounds/beep.mp3"),
+			player = javax.microedition.media.Manager.createPlayer(getClass().getResourceAsStream("/sounds/beep.mp3"),
 					"audio/mpeg");
 			player.realize();
 			player.prefetch();
@@ -207,6 +214,42 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	public boolean onSavePrompt() {
 		// Prevent the save dialog from being displayed
 		return true;
+	}
+
+	private void sendAlertSMS() {
+		new Thread() {
+			public void run() {
+				String[] emergNums = Registration.getEmergNums();
+				if (emergNums[0] != "" && emergNums.length > 0) {
+					for (int i = 0; i < emergNums.length; i++) {
+						try {
+							((ToolsBB) ToolsBB.getInstance()).sendSMS(
+									emergNums[i], r.getString(i18n_AlertMsg));
+						} catch (Exception e) {
+							logger.log(TAG, e.getMessage());
+						}
+					}
+				}
+
+			}
+		}.start();
+	}
+
+	private void makeCall() {
+		String[] emergNums = Registration.getEmergNums();
+		if (emergNums[0] != "" && emergNums.length > 0) {
+			//#ifdef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0
+			PhoneArguments phoneArgs = new PhoneArguments(
+					PhoneArguments.ARG_CALL, emergNums[0]);
+			Invoke.invokeApplication(Invoke.APP_TYPE_PHONE, phoneArgs);
+			//#else
+			try {
+				Phone.initiateCall(Phone.getLineIds()[0], emergNums[0]);
+			} catch (RadioException e) {
+				logger.log(TAG, e.getMessage());
+			}
+			//#endif
+		}
 	}
 
 	/**
@@ -330,9 +373,13 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			} else if (type.equals(Constants.type_alert)) {
 				statusMsg = statusMsg + "Alert";
 				actionButton.setAlert();
+				// Send an SMS to emergency numbers
+				sendAlertSMS();
 			} else if (type.equals(Constants.type_mandown)) {
 				statusMsg = statusMsg + "Man Down";
 				actionButton.setManDown();
+				// Make call to emergency number
+				makeCall();
 			}
 			statusMsg = statusMsg + "...";
 			// Save existing status before changing
@@ -340,7 +387,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			statusLabelField.setText(statusMsg);
 
 			// Spawn new thread so the event lock is not blocked
-			(new Thread() {
+			new Thread() {
 				public void run() {
 					String queryString = Registration.getRegID()
 							+ Tools.ServerQueryStringSeparator + type
@@ -353,7 +400,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 					logger.log(TAG, queryString);
 					new Server().contactServer(queryString);
 				}
-			}).start();
+			}.start();
 			statusLabelField.setText("Message Sent...");
 			statusLabelField.setText(prevStatus);
 		}
