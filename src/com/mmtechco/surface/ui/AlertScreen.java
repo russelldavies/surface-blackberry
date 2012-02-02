@@ -185,17 +185,17 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 	public void play() {
 		try {
+			Player player = javax.microedition.media.Manager.createPlayer(
+					getClass().getResourceAsStream("/sounds/beep.mp3"),
+					"audio/mpeg");
+			player.realize();
 			VolumeControl volume = (VolumeControl) player
 					.getControl("VolumeControl");
 			volume.setLevel(100);
-			// Direct audio to speaker even if headset or headphones are plugged
-			// in
+			// Direct audio to speaker even if headset/headphones are plugged in
 			AudioPathControl apc = (AudioPathControl) player
 					.getControl("net.rim.device.api.media.control.AudioPathControl");
 			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
-			player = javax.microedition.media.Manager.createPlayer(getClass().getResourceAsStream("/sounds/beep.mp3"),
-					"audio/mpeg");
-			player.realize();
 			player.prefetch();
 			player.start();
 		} catch (Exception e) {
