@@ -32,6 +32,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.LED;
 import net.rim.device.api.system.RadioException;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
@@ -179,8 +180,12 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		// Play sound
 		play();
+		// Vibrate phone to sound
 		viber = new VibrateThread();
 		viber.start();
+		// Blink LED
+		LED.setConfiguration(500, 250, LED.BRIGHTNESS_100);
+		LED.setState(LED.STATE_BLINKING);
 	}
 
 	public void play() {
@@ -317,6 +322,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			if (viber != null) {
 				viber.stop();
 			}
+			// Stop LED
+			LED.setState(LED.STATE_OFF);
 		}
 
 		public void setAlert() {
