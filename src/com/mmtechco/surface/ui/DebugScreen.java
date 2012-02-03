@@ -19,6 +19,7 @@ import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.LabelField;
@@ -131,6 +132,14 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				sendMessage(AlertScreen.type_mandown);
 			}
 		};
+		
+		MenuItem alertscreenMenu = new MenuItem(new StringProvider("Launch AlertScreen"), 0x100040, 3) {
+			public void run() {
+				ObserverScreen alertScreen = new AlertScreen();
+				UiApplication.getUiApplication().pushScreen((Screen) alertScreen);
+				alertScreen.update();
+			}
+		};
 
 		menu.add(clearMenu);
 		menu.add(delRegMenu);
@@ -138,6 +147,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		menu.add(surfaceMenu);
 		menu.add(alertMenu);
 		menu.add(mandownMenu);
+		menu.add(alertscreenMenu);
 
 		super.makeMenu(menu, instance);
 	}
