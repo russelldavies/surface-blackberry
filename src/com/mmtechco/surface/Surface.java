@@ -1,3 +1,4 @@
+//#preprocess
 package com.mmtechco.surface;
 
 import com.mmtechco.surface.monitor.LocationMonitor;
@@ -5,7 +6,7 @@ import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
 import com.mmtechco.surface.prototypes.enums.FILESYSTEM;
 import com.mmtechco.surface.ui.AlertScreen;
-import com.mmtechco.surface.util.Constants;
+import com.mmtechco.surface.ui.DebugScreen;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.ToolsBB;
@@ -64,12 +65,12 @@ public class Surface extends UiApplication implements SystemListener2 {
 	}
 
 	private void initialize() {
-		//if (Constants.DEBUG) {
-		//	pushScreen(new DebugScreen());
-		//} else {
-			alertscreen = new AlertScreen();
-			pushScreen(alertscreen);
-		//}
+		//#ifdef DEBUG
+		pushScreen(new DebugScreen());
+		//#else
+		alertscreen = new AlertScreen();
+		pushScreen(alertscreen);
+		//#endif
 
 		logger.log(TAG, "Starting registration");
 		reg = new Registration();
@@ -80,10 +81,10 @@ public class Surface extends UiApplication implements SystemListener2 {
 	 * Start components
 	 */
 	public void startComponents() {
-		if (!Constants.DEBUG) {
-			// Register application indicator
-			//alertscreen.registerIndicator();
-		}
+		//#ifndef VER_4.5.0
+		// Register application indicator
+		//alertscreen.registerIndicator();
+		//#endif
 
 		// Start monitors
 		logger.log(TAG, "Starting monitors...");

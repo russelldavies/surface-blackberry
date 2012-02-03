@@ -16,7 +16,6 @@ import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.component.BitmapButtonField;
 import com.mmtechco.surface.ui.component.PillButtonField;
 import com.mmtechco.surface.ui.container.PillButtonSet;
-import com.mmtechco.surface.util.Constants;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
@@ -52,6 +51,10 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			.getSimpleClassName(AlertScreen.class);
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
 
+	public static final String type_surface = "10";
+	public static final String type_alert = "13";
+	public static final String type_mandown = "15";
+	
 	private static Logger logger = Logger.getInstance();
 	private static MMTools tools = ToolsBB.getInstance();
 
@@ -173,7 +176,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 				// Select Surface pill
 				pills.setSelectedField(pillOne);
 				// Start countdown
-				actionButton.startCountdown(Constants.type_surface,
+				actionButton.startCountdown(type_surface,
 						surfaceInterval);
 			}
 		});
@@ -306,7 +309,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
-					sendMessage(Constants.type_surface);
+					sendMessage(type_surface);
 				}
 			});
 			// Stop playing audio
@@ -331,7 +334,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
-					startCountdown(Constants.type_alert, cooldownPeriod);
+					startCountdown(type_alert, cooldownPeriod);
 				}
 			});
 		}
@@ -341,7 +344,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
-					startCountdown(Constants.type_mandown, cooldownPeriod);
+					startCountdown(type_mandown, cooldownPeriod);
 				}
 			});
 		}
@@ -360,11 +363,11 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 					// Cancel countdown, restore button to original state,
 					// and restore status text
 					countdown.cancel();
-					if (type.equals(Constants.type_surface)) {
+					if (type.equals(type_surface)) {
 						setSurface();
-					} else if (type.equals(Constants.type_alert)) {
+					} else if (type.equals(type_alert)) {
 						setAlert();
-					} else if (type.equals(Constants.type_mandown)) {
+					} else if (type.equals(type_mandown)) {
 						setManDown();
 					}
 					statusLabelField.setText(prevStatus);
@@ -374,15 +377,15 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		private void sendMessage(final String type) {
 			String statusMsg = "Sending ";
-			if (type.equals(Constants.type_surface)) {
+			if (type.equals(type_surface)) {
 				statusMsg = statusMsg + "Surface";
 				actionButton.setSurface();
-			} else if (type.equals(Constants.type_alert)) {
+			} else if (type.equals(type_alert)) {
 				statusMsg = statusMsg + "Alert";
 				actionButton.setAlert();
 				// Send an SMS to emergency numbers
 				sendAlertSMS();
-			} else if (type.equals(Constants.type_mandown)) {
+			} else if (type.equals(type_mandown)) {
 				statusMsg = statusMsg + "Man Down";
 				actionButton.setManDown();
 				// Make call to emergency number

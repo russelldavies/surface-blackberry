@@ -7,7 +7,6 @@ import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.ObserverScreen;
-import com.mmtechco.surface.util.Constants;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
@@ -33,7 +32,7 @@ import net.rim.device.api.util.StringProvider;
 
 /**
  * Screen that displays all the logging info. Useful for debugging. Enable by
- * setting the global debug flag in {@link Constants#DEBUG}
+ * enabling the DEBUG preprocessor directive.
  */
 public class DebugScreen extends MainScreen implements ObserverScreen,
 		SurfaceResource {
@@ -117,19 +116,19 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		MenuItem surfaceMenu = new MenuItem(new StringProvider("Surface"),
 				0x100040, 3) {
 			public void run() {
-				sendMessage(Constants.type_surface);
+				sendMessage(AlertScreen.type_surface);
 			}
 		};
 
 		MenuItem alertMenu = new MenuItem(new StringProvider("Alert"), 0x100040, 3) {
 			public void run() {
-				sendMessage(Constants.type_alert);
+				sendMessage(AlertScreen.type_alert);
 			}
 		};
 		
 		MenuItem mandownMenu = new MenuItem(new StringProvider("Man Down"), 0x100040, 3) {
 			public void run() {
-				sendMessage(Constants.type_mandown);
+				sendMessage(AlertScreen.type_mandown);
 			}
 		};
 

@@ -10,7 +10,6 @@ import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
-import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.StringUtilities;
 
@@ -22,7 +21,6 @@ import com.mmtechco.surface.prototypes.MMServer;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.prototypes.enums.COMMAND_TARGETS;
-import com.mmtechco.surface.util.Constants;
 import com.mmtechco.surface.util.ErrorMessage;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;

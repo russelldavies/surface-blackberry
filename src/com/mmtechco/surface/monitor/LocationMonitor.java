@@ -21,7 +21,7 @@ import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.prototypes.ObserverScreen;
-import com.mmtechco.surface.util.Constants;
+import com.mmtechco.surface.ui.AlertScreen;
 import com.mmtechco.surface.util.ErrorMessage;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.Tools;
@@ -158,7 +158,7 @@ public class LocationMonitor implements LocationListener {
 			if (longitude != 0 && latitude != 0) {
 				logger.log(TAG, "Sending location to server");
 				Reply reply = server.contactServer(locMsg.getREST());
-				if (reply.getCallingCode().equals(Constants.type_surface)) {
+				if (reply.getCallingCode().equals(AlertScreen.type_surface)) {
 					notifyObservers();
 				}
 			}
