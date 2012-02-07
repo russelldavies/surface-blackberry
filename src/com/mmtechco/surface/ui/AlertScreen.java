@@ -12,6 +12,7 @@ import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.prototypes.ObserverScreen;
+import com.mmtechco.surface.ui.component.BaseButtonField;
 import com.mmtechco.surface.ui.component.BitmapButtonField;
 import com.mmtechco.surface.ui.component.PillButtonField;
 import com.mmtechco.surface.ui.container.PillButtonSet;
@@ -24,6 +25,7 @@ import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.LED;
 import net.rim.device.api.system.RadioException;
@@ -48,7 +50,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	public static final String type_surface = "10";
 	public static final String type_alert = "13";
 	public static final String type_mandown = "15";
-	
+
 	private static Logger logger = Logger.getInstance();
 	private static MMTools tools = ToolsBB.getInstance();
 
@@ -61,7 +63,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		}
 	};
 
-	BitmapTextButtonField actionButton;
+	ActionButtonField actionButton;
 	PillButtonSet pills;
 	PillButtonField pillOne;
 	PillButtonField pillTwo;
@@ -95,10 +97,9 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		// Field.FIELD_HCENTER));
 
 		// Action button
-		actionButton = new BitmapTextButtonField(
+		actionButton = new ActionButtonField(
 				Bitmap.getBitmapResource("alertbutton_normal.png"),
-				Bitmap.getBitmapResource("alertbutton_focus.png"), "Surface",
-				FIELD_HCENTER);
+				Bitmap.getBitmapResource("wait.png"), 19, cooldownPeriod * 1000, FIELD_HCENTER);
 		actionButton.setSurface();
 		vfm.add(actionButton);
 
@@ -170,8 +171,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 				// Select Surface pill
 				pills.setSelectedField(pillOne);
 				// Start countdown
-				actionButton.startCountdown(type_surface,
-						surfaceInterval);
+				actionButton.startCountdown(type_surface, surfaceInterval);
 			}
 		});
 
@@ -272,24 +272,85 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		}
 	}
 
-	class BitmapTextButtonField extends BitmapButtonField {
+	class ActionButtonField extends BaseButtonField implements Runnable {
+		private Bitmap wheel;
+		private Bitmap button;
+		private int numFrames;
+		private int frameWidth;
+		private int frameHeight;
+		private int interval;
+
 		private String text;
 
-		public BitmapTextButtonField(Bitmap normalState, Bitmap focusState,
-				String text, long style) {
-			super(normalState, focusState, style);
-			this.text = text;
+		private int currentFrame;
+		private int timerID = -1;
+
+		private Application app;
+		private boolean spinning;
+
+		public ActionButtonField(Bitmap button, Bitmap wheel, int numFrames,
+				int interval, long style) {
+			super(style);
+			this.button = button;
+			this.wheel = wheel;
+			this.numFrames = numFrames;
+			this.frameWidth = wheel.getWidth() / numFrames;
+			this.frameHeight = wheel.getHeight();
+			this.interval = interval;
+
+			text = "Surface";
+
+			app = Application.getApplication();
+		}
+
+		public void run() {
+			if (spinning) {
+				invalidate();
+			}
+		}
+
+		protected void layout(int width, int height) {
+			setExtent(frameWidth, frameHeight);
 		}
 
 		protected void paint(Graphics g) {
-			super.paint(g);
+			// Wheel
+			g.drawBitmap(0, 0, frameWidth, frameHeight, wheel, frameWidth
+					* currentFrame, 0);
+			if (spinning) {
+				currentFrame++;
+				if (currentFrame >= numFrames) {
+					currentFrame = 0;
+				}
+			}
+
+			// Action button
+			g.drawBitmap(0, 0, getWidth(), getHeight(), button, 0, 0);
+
+			// Draw text
 			g.setColor(Color.WHITE);
-			g.drawText(text, getWidth() / 2 - 20, getHeight() / 2);
+			g.drawText(text, getWidth() / 2, getHeight() / 2);
 		}
 
 		protected void setButtonText(String text) {
 			this.text = text;
 			invalidate();
+		}
+
+		protected void startSpin() {
+			spinning = true;
+			if (timerID == -1) {
+				timerID = app.invokeLater(this, (interval / numFrames), true);
+			}
+		}
+
+		protected void stopSpin() {
+			spinning = false;
+			if (timerID != -1) {
+				app.cancelInvokeLater(timerID);
+				timerID = -1;
+				currentFrame = 0;
+			}
 		}
 
 		public void setSurface() {
@@ -338,6 +399,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		}
 
 		private void startCountdown(final String type, int cooldownPeriod) {
+			startSpin();
+			
 			setButtonText("Cancel");
 			prevStatus = statusLabelField.getText();
 			// Start countdown
@@ -348,6 +411,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(null);
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
+					stopSpin();
+					
 					// Cancel countdown, restore button to original state,
 					// and restore status text
 					countdown.cancel();
@@ -367,18 +432,21 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			String statusMsg = "Sending ";
 			if (type.equals(type_surface)) {
 				statusMsg = statusMsg + "Surface";
-				actionButton.setSurface();
+				setSurface();
 			} else if (type.equals(type_alert)) {
 				statusMsg = statusMsg + "Alert";
-				actionButton.setAlert();
+				setAlert();
 				// Send an SMS to emergency numbers
 				sendAlertSMS();
 			} else if (type.equals(type_mandown)) {
 				statusMsg = statusMsg + "Man Down";
-				actionButton.setManDown();
+				setManDown();
 				// Make call to emergency number
 				makeCall();
 			}
+			
+			stopSpin();
+			
 			statusMsg = statusMsg + "...";
 			// Save existing status before changing
 			prevStatus = statusLabelField.getText();
