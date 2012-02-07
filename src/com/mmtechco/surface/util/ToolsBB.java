@@ -25,10 +25,12 @@ import net.rim.device.api.io.http.HttpDateParser;
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
 import net.rim.device.api.io.transport.TransportInfo;
+import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.EventInjector;
+import net.rim.device.api.system.PNGEncodedImage;
 import net.rim.device.api.system.RadioInfo;
 
 import com.mmtechco.surface.prototypes.MMTools;
@@ -314,5 +316,11 @@ public class ToolsBB extends Tools {
 			return classname.substring(index + 1, classname.length());
 		}
 		return classname;
+	}
+	
+	public PNGEncodedImage resizeImage(PNGEncodedImage image, int newWidth, int newHeight) {
+		int xscale = Fixed32.div(Fixed32.toFP(image.getWidth()), Fixed32.toFP(newWidth));
+		int yscale = Fixed32.div(Fixed32.toFP(image.getHeight()), Fixed32.toFP(newHeight));
+		return (PNGEncodedImage) image.scaleImage32(xscale, yscale);
 	}
 }
