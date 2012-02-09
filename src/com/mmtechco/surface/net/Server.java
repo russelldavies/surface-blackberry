@@ -18,11 +18,11 @@ import net.rim.device.api.io.transport.TransportInfo;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.prototypes.Message;
-import com.mmtechco.surface.util.CRC32;
-import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
-import com.mmtechco.surface.util.Tools;
-import com.mmtechco.surface.util.ToolsBB;
+import com.mmtechco.util.CRC32;
+import com.mmtechco.util.Logger;
+import com.mmtechco.util.Tools;
+import com.mmtechco.util.ToolsBB;
 
 /**
  * Monitors for new actions stored in the local storage for recording actions

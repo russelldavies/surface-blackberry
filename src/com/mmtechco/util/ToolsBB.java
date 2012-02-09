@@ -1,4 +1,4 @@
-package com.mmtechco.surface.util;
+package com.mmtechco.util;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -7,9 +7,9 @@ import com.mmtechco.surface.prototypes.Controllable;
 import com.mmtechco.surface.prototypes.FILESYSTEM;
 import com.mmtechco.surface.ui.AlertScreen;
 import com.mmtechco.surface.ui.DebugScreen;
-import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
-import com.mmtechco.surface.util.ToolsBB;
+import com.mmtechco.util.Logger;
+import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationManager;

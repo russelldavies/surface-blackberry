@@ -1,6 +1,6 @@
 package com.mmtechco.surface.net;
 
-import com.mmtechco.surface.util.ToolsBB;
+import com.mmtechco.util.ToolsBB;
 
 /**
  * The encryption logic and can be called by other classes when encryption or

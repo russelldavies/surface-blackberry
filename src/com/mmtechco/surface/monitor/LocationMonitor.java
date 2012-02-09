@@ -22,10 +22,10 @@ import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.AlertScreen;
-import com.mmtechco.surface.util.ErrorMessage;
-import com.mmtechco.surface.util.Logger;
-import com.mmtechco.surface.util.Tools;
-import com.mmtechco.surface.util.ToolsBB;
+import com.mmtechco.util.ErrorMessage;
+import com.mmtechco.util.Logger;
+import com.mmtechco.util.Tools;
+import com.mmtechco.util.ToolsBB;
 
 /**
  * Monitors and registers location based events.

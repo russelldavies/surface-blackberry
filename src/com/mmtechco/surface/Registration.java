@@ -20,11 +20,11 @@ import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
 import com.mmtechco.surface.prototypes.Controllable;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.prototypes.ObserverScreen;
-import com.mmtechco.surface.util.ErrorMessage;
-import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
-import com.mmtechco.surface.util.Tools;
-import com.mmtechco.surface.util.ToolsBB;
+import com.mmtechco.util.ErrorMessage;
+import com.mmtechco.util.Logger;
+import com.mmtechco.util.Tools;
+import com.mmtechco.util.ToolsBB;
 
 /**
  * Checks the registration stage that currently the device is in.

@@ -1,5 +1,5 @@
 //#preprocess
-package com.mmtechco.surface.util;
+package com.mmtechco.util;
 
 import java.util.Date;
 

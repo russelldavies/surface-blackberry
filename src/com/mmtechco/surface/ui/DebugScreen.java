@@ -7,10 +7,10 @@ import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.ObserverScreen;
-import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
-import com.mmtechco.surface.util.Tools;
-import com.mmtechco.surface.util.ToolsBB;
+import com.mmtechco.util.Logger;
+import com.mmtechco.util.Tools;
+import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Characters;

@@ -1,4 +1,4 @@
-package com.mmtechco.surface.util;
+package com.mmtechco.util;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.prototypes.MMTools;
