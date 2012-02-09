@@ -1,4 +1,3 @@
-//#preprocess
 package com.mmtechco.surface.ui;
 
 import java.util.Timer;
@@ -21,12 +20,7 @@ import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
 
-//#ifdef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0
-import net.rim.blackberry.api.invoke.Invoke;
-import net.rim.blackberry.api.invoke.PhoneArguments;
-//#else
 import net.rim.blackberry.api.phone.Phone;
-//#endif
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
@@ -246,17 +240,11 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	private void makeCall() {
 		String[] emergNums = Registration.getEmergNums();
 		if (emergNums[0] != "" && emergNums.length > 0) {
-			//#ifdef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0
-			PhoneArguments phoneArgs = new PhoneArguments(
-					PhoneArguments.ARG_CALL, emergNums[0]);
-			Invoke.invokeApplication(Invoke.APP_TYPE_PHONE, phoneArgs);
-			//#else
 			try {
 				Phone.initiateCall(Phone.getLineIds()[0], emergNums[0]);
 			} catch (RadioException e) {
 				logger.log(TAG, e.getMessage());
 			}
-			//#endif
 		}
 	}
 
