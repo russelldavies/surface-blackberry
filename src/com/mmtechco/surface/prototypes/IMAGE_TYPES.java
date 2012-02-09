@@ -1,4 +1,4 @@
-package com.mmtechco.surface.prototypes.enums;
+package com.mmtechco.surface.prototypes;
 
 /**
  * Used to reference valid image types.

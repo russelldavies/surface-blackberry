@@ -1,4 +1,4 @@
-package com.mmtechco.surface.prototypes.enums;
+package com.mmtechco.surface.prototypes;
 
 public class FILESYSTEM {
 	private String name;

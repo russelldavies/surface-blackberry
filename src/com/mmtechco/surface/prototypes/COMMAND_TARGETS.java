@@ -1,4 +1,4 @@
-package com.mmtechco.surface.prototypes.enums;
+package com.mmtechco.surface.prototypes;
 
 public class COMMAND_TARGETS {
 	public static final COMMAND_TARGETS SHOW = new COMMAND_TARGETS("Show");

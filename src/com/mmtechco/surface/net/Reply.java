@@ -1,7 +1,7 @@
 package com.mmtechco.surface.net;
 
+import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
 import com.mmtechco.surface.prototypes.MMTools;
-import com.mmtechco.surface.prototypes.enums.COMMAND_TARGETS;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;

@@ -16,7 +16,6 @@ import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.io.http.HttpProtocolConstants;
 import net.rim.device.api.io.transport.TransportInfo;
 import com.mmtechco.surface.data.ActivityLog;
-import com.mmtechco.surface.prototypes.MMServer;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.util.CRC32;
@@ -29,7 +28,7 @@ import com.mmtechco.surface.util.ToolsBB;
  * Monitors for new actions stored in the local storage for recording actions
  * and sends them to the web server at specific intervals.
  */
-public class Server extends Thread implements MMServer, SurfaceResource {
+public class Server extends Thread implements SurfaceResource {
 	private static final String TAG = ToolsBB.getSimpleClassName(Server.class);
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
 

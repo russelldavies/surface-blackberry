@@ -4,7 +4,7 @@ package com.mmtechco.surface;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
-import com.mmtechco.surface.prototypes.enums.FILESYSTEM;
+import com.mmtechco.surface.prototypes.FILESYSTEM;
 import com.mmtechco.surface.ui.AlertScreen;
 import com.mmtechco.surface.ui.DebugScreen;
 import com.mmtechco.surface.util.Logger;

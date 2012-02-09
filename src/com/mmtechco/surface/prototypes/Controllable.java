@@ -1,6 +1,5 @@
 package com.mmtechco.surface.prototypes;
 
-import com.mmtechco.surface.prototypes.enums.COMMAND_TARGETS;
 
 /**
  * An interface which defines the structure for processing commands and checking targets.

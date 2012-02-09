@@ -16,11 +16,10 @@ import net.rim.device.api.util.StringUtilities;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
+import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
 import com.mmtechco.surface.prototypes.Controllable;
-import com.mmtechco.surface.prototypes.MMServer;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.prototypes.ObserverScreen;
-import com.mmtechco.surface.prototypes.enums.COMMAND_TARGETS;
 import com.mmtechco.surface.util.ErrorMessage;
 import com.mmtechco.surface.util.Logger;
 import com.mmtechco.surface.util.SurfaceResource;
@@ -49,7 +48,7 @@ public class Registration extends Thread implements Controllable,
 	private final int sleepTimeLong = 1000 * 60 * 60 * 24; // 24h
 	private final int sleepTimeShort = 1000 * 60 * 2; // 2 min
 
-	private MMServer server;
+	private Server server;
 	private Logger logger = Logger.getInstance();
 	private ToolsBB tools = (ToolsBB) ToolsBB.getInstance();
 

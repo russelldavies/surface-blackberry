@@ -33,8 +33,8 @@ import net.rim.device.api.system.EventInjector;
 import net.rim.device.api.system.PNGEncodedImage;
 import net.rim.device.api.system.RadioInfo;
 
+import com.mmtechco.surface.prototypes.FILESYSTEM;
 import com.mmtechco.surface.prototypes.MMTools;
-import com.mmtechco.surface.prototypes.enums.FILESYSTEM;
 
 /**
  * Tools which are BlackBerry specific.
