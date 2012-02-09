@@ -32,6 +32,9 @@ import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.FontFamily;
+import net.rim.device.api.ui.FontManager;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
@@ -98,7 +101,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		// Action button
 		actionButton = new ActionButtonField(
 				Bitmap.getBitmapResource("alertbutton_normal.png"),
-				Bitmap.getBitmapResource("wait.png"), 19, cooldownPeriod * 1000, FIELD_HCENTER);
+				Bitmap.getBitmapResource("wait.png"), 19,
+				cooldownPeriod * 1000, FIELD_HCENTER);
 		actionButton.setSurface();
 		vfm.add(actionButton);
 
@@ -286,7 +290,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		private Application app;
 		private boolean spinning;
-
+		
 		public ActionButtonField(Bitmap button, Bitmap spinner, int numFrames,
 				int interval, long style) {
 			super(style);
@@ -300,6 +304,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			text = "Surface";
 
 			app = Application.getApplication();
+			
 		}
 
 		public void run() {
@@ -328,7 +333,17 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 			// Draw text
 			g.setColor(Color.WHITE);
-			g.drawText(text, getWidth() / 2, getHeight() / 2);
+			if (FontManager.getInstance().load("kabel.ttf", "Kabel",
+					FontManager.APPLICATION_FONT) == FontManager.SUCCESS) {
+				try {
+					FontFamily typeface = FontFamily.forName("Kabel");
+					Font kabelFont = typeface.getFont(Font.PLAIN, button.getWidth() / 3);
+					g.setFont(kabelFont);
+				} catch (ClassNotFoundException e) {
+					logger.log(TAG, e.getMessage());
+				}
+			}
+			g.drawText(text, getWidth() / 3, getHeight() / 3);
 		}
 
 		protected void setButtonText(String text) {
@@ -399,7 +414,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		private void startCountdown(final String type, int cooldownPeriod) {
 			startSpin();
-			
+
 			setButtonText("Cancel");
 			prevStatus = statusLabelField.getText();
 			// Start countdown
@@ -411,7 +426,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
 					stopSpin();
-					
+
 					// Cancel countdown, restore button to original state,
 					// and restore status text
 					countdown.cancel();
@@ -443,9 +458,9 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 				// Make call to emergency number
 				makeCall();
 			}
-			
+
 			stopSpin();
-			
+
 			statusMsg = statusMsg + "...";
 			// Save existing status before changing
 			prevStatus = statusLabelField.getText();
