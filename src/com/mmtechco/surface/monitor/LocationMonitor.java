@@ -78,44 +78,36 @@ public class LocationMonitor implements LocationListener {
 	public boolean startLocationUpdate() {
 		boolean started = false;
 
-		if (GPSInfo.getDefaultGPSMode() != GPSInfo.GPS_MODE_NONE) {
-			try {
-				// Use default mode on the device
-				BlackBerryCriteria criteria = new BlackBerryCriteria();
-				// retrieve geolocation fix if GPS fix unavailable
-				criteria.enableGeolocationWithGPS();
-				// criteria.setMode(GPSInfo.GPS_MODE_AUTONOMOUS);
-				// criteria.setCostAllowed(true);
-				criteria.setHorizontalAccuracy(100);
-				criteria.setVerticalAccuracy(100);
-				criteria.setPreferredPowerConsumption(Criteria.POWER_USAGE_MEDIUM);
-				criteria.setPreferredResponseTime(10000);
+		try {
+			BlackBerryCriteria criteria = new BlackBerryCriteria(
+					GPSInfo.GPS_MODE_ASSIST);
+			criteria.enableGeolocationWithGPS();
+			criteria.setFailoverMode(GPSInfo.GPS_MODE_AUTONOMOUS, 3, 100);
+			// criteria.setSubsequentMode(GPSInfo.GPS_MODE_CELLSITE);
 
-				locationProvider = (BlackBerryLocationProvider) LocationProvider
-						.getInstance(criteria);
+			criteria.setHorizontalAccuracy(5);
+			criteria.setVerticalAccuracy(5);
+			criteria.setPreferredPowerConsumption(Criteria.POWER_USAGE_MEDIUM);
+			criteria.setPreferredResponseTime(uploadInterval - 1000);
 
-				if (locationProvider != null) {
-					/*
-					 * Only a single listener can be associated with a provider,
-					 * and unsetting it involves the same call but with null.
-					 * Therefore, there is no need to cache the listener
-					 * instance request an update every second.
-					 */
-					locationProvider
-							.setLocationListener(this, interval, -1, -1);
-					started = true;
-				} else {
-					logger.log(TAG, "Failed to obtain a location provider.");
-				}
-			} catch (final LocationException le) {
-				logger.log(
-						TAG,
-						"Failed to instantiate LocationProvider object:"
-								+ le.toString());
-				ActivityLog.addMessage(new ErrorMessage(le));
+			locationProvider = (BlackBerryLocationProvider) LocationProvider
+					.getInstance(criteria);
+
+			if (locationProvider != null) {
+				/*
+				 * Only a single listener can be associated with a provider, and
+				 * unsetting it involves the same call but with null. Therefore,
+				 * there is no need to cache the listener instance request an
+				 * update every second.
+				 */
+				locationProvider.setLocationListener(this, interval, -1, -1);
+				started = true;
+			} else {
+				logger.log(TAG, "Failed to obtain a location provider.");
 			}
-		} else {
-			logger.log(TAG, "GPS is not supported on this device.");
+		} catch (final LocationException le) {
+			logger.log(TAG, "Failed to instantiate LocationProvider object:"
+					+ le.toString());
 		}
 		return started;
 	}
@@ -159,6 +151,7 @@ public class LocationMonitor implements LocationListener {
 				logger.log(TAG, "Sending location to server");
 				Reply reply = server.contactServer(locMsg.getREST());
 				if (reply.getCallingCode().equals(AlertScreen.type_surface)) {
+					logger.log(TAG, "Server has requested surface");
 					notifyObservers();
 				}
 			}
