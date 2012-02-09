@@ -3,7 +3,6 @@ package com.mmtechco.surface.net;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.prototypes.enums.COMMAND_TARGETS;
 import com.mmtechco.surface.util.Logger;
-import com.mmtechco.surface.util.MMLinkedList;
 import com.mmtechco.surface.util.Tools;
 import com.mmtechco.surface.util.ToolsBB;
 
@@ -39,7 +38,7 @@ public class Reply {
 			restString = restMessage;
 			String[] replyArray;
 			replyArray = tools.split(restString, Tools.ServerQueryStringSeparator);
-			logger.log(TAG, "rest message: " + restMessage);
+			//logger.log(TAG, "rest message: " + restMessage);
 
 			try {
 				if (0 < replyArray[1].length() // check if string is blank
@@ -58,12 +57,12 @@ public class Reply {
 				} else { // all others
 					// id,calling code,error,info
 					if (replyArray.length == 3) {
-						logger.log(TAG, "ReplyArray length=3");
+						//logger.log(TAG, "ReplyArray length=3");
 						initialize(replyArray[0], replyArray[1],
 								Integer.parseInt(replyArray[2]) != 0, "");
 					} else {
 						try {
-							logger.log(TAG, "ReplyArray length=4");
+							//logger.log(TAG, "ReplyArray length=4");
 							initialize(replyArray[0], replyArray[1],
 									Integer.parseInt(replyArray[2]) != 0,
 									replyArray[3]);
@@ -95,7 +94,7 @@ public class Reply {
 		regID = inputRegID;
 		error = inputError;
 		callingCODE = inputCallingCode;
-		logger.log(TAG, "ReplyInfo: " + inputInfo);
+		//logger.log(TAG, "ReplyInfo: " + inputInfo);
 		info = inputInfo;
 	}
 
@@ -192,49 +191,8 @@ public class Reply {
 	 * @return the regID. Returns the argument of the command message
 	 */
 	public String[] getArgs() {
-		logger.log(TAG, "Processing the args :" + args);
+		//logger.log(TAG, "Processing the args :" + args);
 		String[] processedArgs = tools.split(args, "|");
 		return processedArgs;
-	}
-
-	/**
-	 * Splits an input string by its separators and returns each section as part
-	 * of an array
-	 * 
-	 * @param inputCSV
-	 *            input string
-	 * @return array of values between separators
-	 */
-	public static String[] stringToArray(String inputCSV) {
-		MMLinkedList tempList = new MMLinkedList();
-
-		char[] tempCharList = inputCSV.toCharArray();
-		int start = 0, end = 0;
-
-		for (int count = 0; count < tempCharList.length; count++) {
-			if (tempCharList[count] == ',') {
-				if (start == end) {
-					tempList.add(new String());
-				} else {
-					tempList.add(new String(inputCSV.substring(start, end)));
-				}
-				end++;
-				start = end;
-			} else {
-				end++;
-			}
-		}
-		// This accounts for the lasts value in the string, that will
-		// not be detected within the loop that searches for commas
-		if (start == end) {
-			tempList.add(new String());
-		} else {
-			tempList.add(new String(inputCSV.substring(start, end)));
-		}
-
-		String[] returnArray = new String[tempList.size()];// =
-															// tempList.toArray();
-		tempList.toArray(returnArray);
-		return returnArray;
 	}
 }

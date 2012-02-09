@@ -341,8 +341,8 @@ public class Server extends Thread implements MMServer, SurfaceResource {
 		}
 
 		crc.reset();
-		String[] replyArray = Reply.stringToArray(security.cryptFull(
-				tools.hexToString(tools.reverseTopAndTail(inputText)), false));
+		String[] replyArray = tools.split(security.cryptFull(
+				tools.hexToString(tools.reverseTopAndTail(inputText)), false), ",");
 
 		// rebuild message
 		for (int count = 2; count < replyArray.length; count++) {
