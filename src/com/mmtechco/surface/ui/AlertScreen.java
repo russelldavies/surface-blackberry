@@ -13,7 +13,6 @@ import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.component.BaseButtonField;
-import com.mmtechco.surface.ui.component.BitmapButtonField;
 import com.mmtechco.surface.ui.component.PillButtonField;
 import com.mmtechco.surface.ui.container.PillButtonSet;
 import com.mmtechco.surface.util.Logger;
@@ -273,7 +272,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	}
 
 	class ActionButtonField extends BaseButtonField implements Runnable {
-		private Bitmap wheel;
+		private Bitmap spinner;
 		private Bitmap button;
 		private int numFrames;
 		private int frameWidth;
@@ -288,14 +287,14 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		private Application app;
 		private boolean spinning;
 
-		public ActionButtonField(Bitmap button, Bitmap wheel, int numFrames,
+		public ActionButtonField(Bitmap button, Bitmap spinner, int numFrames,
 				int interval, long style) {
 			super(style);
 			this.button = button;
-			this.wheel = wheel;
+			this.spinner = spinner;
 			this.numFrames = numFrames;
-			this.frameWidth = wheel.getWidth() / numFrames;
-			this.frameHeight = wheel.getHeight();
+			this.frameWidth = spinner.getWidth() / numFrames;
+			this.frameHeight = spinner.getHeight();
 			this.interval = interval;
 
 			text = "Surface";
@@ -315,7 +314,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		protected void paint(Graphics g) {
 			// Wheel
-			g.drawBitmap(0, 0, frameWidth, frameHeight, wheel, frameWidth
+			g.drawBitmap(0, 0, frameWidth, frameHeight, spinner, frameWidth
 					* currentFrame, 0);
 			if (spinning) {
 				currentFrame++;
