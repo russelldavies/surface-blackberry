@@ -29,8 +29,8 @@ import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.EventInjector;
-import net.rim.device.api.system.PNGEncodedImage;
 import net.rim.device.api.system.RadioInfo;
 
 import com.mmtechco.surface.prototypes.FILESYSTEM;
@@ -318,9 +318,9 @@ public class ToolsBB extends Tools {
 		return classname;
 	}
 	
-	public PNGEncodedImage resizeImage(PNGEncodedImage image, int newWidth, int newHeight) {
+	public static EncodedImage resizeImage(EncodedImage image, int newWidth, int newHeight) {
 		int xscale = Fixed32.div(Fixed32.toFP(image.getWidth()), Fixed32.toFP(newWidth));
 		int yscale = Fixed32.div(Fixed32.toFP(image.getHeight()), Fixed32.toFP(newHeight));
-		return (PNGEncodedImage) image.scaleImage32(xscale, yscale);
+		return image.scaleImage32(xscale, yscale);
 	}
 }

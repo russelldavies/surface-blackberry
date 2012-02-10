@@ -1,23 +1,19 @@
 package com.mmtechco.surface.ui;
 
 import com.mmtechco.surface.ui.component.LockButtonField;
+import com.mmtechco.surface.ui.container.EvenlySpacedHorizontalFieldManager;
+import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.system.Backlight;
-import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
-import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Font;
-import net.rim.device.api.ui.FontFamily;
-import net.rim.device.api.ui.FontManager;
-import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
-import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.container.FullScreen;
-import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
 public class KeypadLockScreen extends FullScreen {
@@ -26,50 +22,43 @@ public class KeypadLockScreen extends FullScreen {
 
 	private static Logger logger = Logger.getInstance();
 
-	private LabelField surfaceLabel;
-
 	public KeypadLockScreen() {
-		super(Manager.NO_VERTICAL_SCROLL | Manager.USE_ALL_HEIGHT
-				| Manager.USE_ALL_WIDTH);
+		EvenlySpacedVerticalFieldManager dualManager = new EvenlySpacedVerticalFieldManager(
+				USE_ALL_HEIGHT);
 
-		surfaceLabel = new LabelField("Surface", Field.NON_FOCUSABLE
-				| DrawStyle.HCENTER) {
-			protected void paint(Graphics g) {
-				int oldColor = g.getColor();
-				try {
-					g.setColor(Color.WHITE);
-					super.paint(g);
-				} finally {
-					g.setColor(oldColor);
-				}
-			}
-		};
-		
-		if (FontManager.getInstance().load("kabel.ttf", "Kabel",
-				FontManager.APPLICATION_FONT) == FontManager.SUCCESS) {
-			try {
-				FontFamily typeface = FontFamily.forName("Kabel");
-				Font kabelFont = typeface.getFont(Font.PLAIN, 100);
-				surfaceLabel.setFont(kabelFont);
-			} catch (ClassNotFoundException e) {
-				logger.log(TAG, e.getMessage());
-			}
-		}
-		add(surfaceLabel);
+		EncodedImage logoImage = EncodedImage
+				.getEncodedImageResource("surface_logo.png");
+		float ratio = (float) logoImage.getWidth()
+				/ (float) logoImage.getHeight();
+		int width = (int) ((float) Display.getWidth() * 0.9);
+		int height = (int) ((float) width / ratio);
+		logoImage = ToolsBB.resizeImage(logoImage, width, height);
+		BitmapField logoField = new BitmapField(logoImage.getBitmap(),
+				Field.FIELD_HCENTER);
 
-		HorizontalFieldManager hfm = new HorizontalFieldManager();
-		hfm.add(new LockButtonField("Man Down", Bitmap
-				.getBitmapResource("lockscreen_mandown.png")));
-		hfm.add(new LockButtonField("Unlock", Bitmap
-				.getBitmapResource("lockscreen_unlock.png")));
-		hfm.add(new LockButtonField("Alert", Bitmap
-				.getBitmapResource("lockscreen_alert.png")));
-		add(hfm);
+		EvenlySpacedHorizontalFieldManager buttons = new EvenlySpacedHorizontalFieldManager(
+				USE_ALL_WIDTH);
+		int spacing = 7;
+		int buttonSize = (int) ((float) width / 3) - (spacing * 3);
+		buttons.add(new LockButtonField(ToolsBB.resizeImage(
+				EncodedImage.getEncodedImageResource("lockscreen_mandown.png"),
+				buttonSize, buttonSize), "Man Down"));
+		buttons.add(new LockButtonField(ToolsBB.resizeImage(
+				EncodedImage.getEncodedImageResource("lockscreen_unlock.png"),
+				buttonSize, buttonSize), "Unlock"));
+		buttons.add(new LockButtonField(ToolsBB.resizeImage(
+				EncodedImage.getEncodedImageResource("lockscreen_alert.png"),
+				buttonSize, buttonSize), "Alert"));
+
+		dualManager.add(logoField);
+		dualManager.add(buttons);
+		add(dualManager);
 		setBackground(BackgroundFactory.createLinearGradientBackground(
 				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
 	}
 
 	protected boolean keyDown(int keycode, int time) {
+		// Prevent user from locking the device
 		if (Keypad.key(keycode) == Keypad.KEY_LOCK) {
 			Backlight.enable(false);
 			return true;
