@@ -13,6 +13,7 @@ import com.mmtechco.util.Logger;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.SystemListener2;
+import net.rim.device.api.ui.FontManager;
 import net.rim.device.api.ui.UiApplication;
 
 /**
@@ -22,12 +23,12 @@ public class Surface extends UiApplication implements SystemListener2 {
 	private static final String TAG = "App";
 	public static ResourceBundle r = ResourceBundle.getBundle(
 			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
-	
+
 	private Logger logger = Logger.getInstance();
 
 	private AlertScreen alertscreen;
 	private Registration reg;
-	
+
 	/**
 	 * Entry point for application
 	 * 
@@ -57,7 +58,11 @@ public class Surface extends UiApplication implements SystemListener2 {
 
 		// Setup listener for removal of app. This needs to be set here before
 		// the app enters the event dispatcher.
-		//CodeModuleManager.addListener(app, new UninstallMonitor());
+		// CodeModuleManager.addListener(app, new UninstallMonitor());
+
+		// Load font
+		FontManager.getInstance().load("kabel.ttf", "Kabel Dm BT",
+				FontManager.APPLICATION_FONT);
 
 		// Start event thread
 		app.enterEventDispatcher();
