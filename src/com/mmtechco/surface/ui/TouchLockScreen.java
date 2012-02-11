@@ -40,9 +40,9 @@ public class TouchLockScreen extends FullScreen implements FieldChangeListener {
 
 		manager.add(mandownSlider = new LockSliderField(Bitmap
 				.getBitmapResource("lockscreen_slide_mandown.png"), Bitmap
-				.getBitmapResource("lockscreen_mandown.png"), 10, Field.FIELD_HCENTER));
+				.getBitmapResource("lockscreen_mandown.png"), 10, 0));
 		
-		mandownSlider.setChangeListener(this);
+		//mandownSlider.setChangeListener(this);
 		//unlockSlider.setChangeListener(this);
 		//alertSlider.setChangeListener(this);
 		
