@@ -13,7 +13,8 @@ public class LockSliderField extends Field {
 
 	private int numStates;
 	private int currentState;
-	private int initialState;
+	public final int initialState;
+	public final int finalState;
 
 	private int totalWidth;
 	private int totalHeight;
@@ -23,12 +24,18 @@ public class LockSliderField extends Field {
 
 	public LockSliderField(Bitmap slider, Bitmap thumb, int numStates,
 			int initialState) {
-		super(Field.FOCUSABLE);
+		super(Field.FOCUSABLE | Field.FIELD_HCENTER);
 
 		this.slider = slider;
 		this.thumb = thumb;
 		this.numStates = numStates;
 		setState(this.initialState = initialState);
+		
+		if(initialState < numStates) {
+			finalState = numStates;
+		} else {
+			finalState = 0;
+		}
 	}
 
 	public int getPreferredWidth() {
@@ -43,8 +50,8 @@ public class LockSliderField extends Field {
 		if (width < 0 || height < 0)
 			throw new IllegalArgumentException();
 
-		// Take all available width
-		totalWidth = width;
+		// Take all available width but leave some side margin
+		totalWidth = width - 40;
 
 		// Slider should be as wide as field width
 		float ratio = (float) slider.getWidth() / slider.getHeight();
@@ -78,7 +85,7 @@ public class LockSliderField extends Field {
 	}
 
 	protected void drawFocus(Graphics g, boolean on) {
-		// Nothing here to prevent default focus
+		// Empty method to prevent default focus effect
 	}
 
 	protected boolean touchEvent(TouchEvent message) {
@@ -106,6 +113,10 @@ public class LockSliderField extends Field {
 			}
 			currentState = numerator;
 			invalidate();
+			// Thumb is in actionable position
+			if(currentState == finalState) {
+				fieldChangeNotify(0);
+			}
 			isConsumed = true;
 			break;
 		case TouchEvent.UNCLICK:
@@ -121,11 +132,11 @@ public class LockSliderField extends Field {
 	protected boolean navigationMovement(int dx, int dy, int status, int time) {
 		if (dx > 0 || dy > 0) {
 			incrementState();
-			fieldChangeNotify(0);
+			//fieldChangeNotify(0);
 			return true;
 		} else if (dx < 0 || dy < 0) {
 			decrementState();
-			fieldChangeNotify(0);
+			//fieldChangeNotify(0);
 			return true;
 		}
 		return super.navigationMovement(dx, dy, status, time);

@@ -23,30 +23,38 @@ public class TouchLockScreen extends FullScreen implements FieldChangeListener {
 	LockSliderField alertSlider;
 
 	public TouchLockScreen() {
-		EvenlySpacedVerticalFieldManager manager = new EvenlySpacedVerticalFieldManager(
-				USE_ALL_HEIGHT);
+		//EvenlySpacedVerticalFieldManager manager = new EvenlySpacedVerticalFieldManager(USE_ALL_HEIGHT);
 
-		/*
+		// Mandown Slider
+		add(mandownSlider = new LockSliderField(Bitmap
+				.getBitmapResource("lockscreen_slider_mandown.png"), Bitmap
+				.getBitmapResource("lockscreen_mandown.png"), 10, 0));
+		
 		// Logo image
 		Bitmap logoBitmap = Bitmap.getBitmapResource("surface_logo.png");
 		float ratio = (float) logoBitmap.getWidth() / logoBitmap.getHeight();
 		int newWidth = (int) (Display.getWidth() * 0.9);
 		int newHeight = (int) (newWidth / ratio);
-		manager.add(new BitmapField(ToolsBB
+		add(new BitmapField(ToolsBB
 				.resizeBitmap(logoBitmap, newWidth, newHeight,
 						Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT),
 				Field.FIELD_HCENTER));
-		*/
 
-		manager.add(mandownSlider = new LockSliderField(Bitmap
-				.getBitmapResource("lockscreen_slide_mandown.png"), Bitmap
-				.getBitmapResource("lockscreen_mandown.png"), 10, 0));
+		// Alert Slider
+		add(alertSlider = new LockSliderField(Bitmap
+				.getBitmapResource("lockscreen_slider_alert.png"), Bitmap
+				.getBitmapResource("lockscreen_alert.png"), 10, 10));
 		
-		//mandownSlider.setChangeListener(this);
-		//unlockSlider.setChangeListener(this);
-		//alertSlider.setChangeListener(this);
+		// Unlock Slider
+		add(unlockSlider = new LockSliderField(Bitmap
+				.getBitmapResource("lockscreen_slider_unlock.png"), Bitmap
+				.getBitmapResource("lockscreen_lock.png"), 10, 0));
 		
-		add(manager);
+		mandownSlider.setChangeListener(this);
+		unlockSlider.setChangeListener(this);
+		alertSlider.setChangeListener(this);
+		
+		//add(manager);
 		setBackground(BackgroundFactory.createLinearGradientBackground(
 				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
 	}
@@ -57,8 +65,10 @@ public class TouchLockScreen extends FullScreen implements FieldChangeListener {
 		} else {
 			String message = "Sending...";
 			if (field == mandownSlider) {
+				mandownSlider.setState(mandownSlider.initialState);
 				Messager.sendMessage(Messager.type_mandown, message);
 			} else if (field == alertSlider) {
+				alertSlider.setState(alertSlider.initialState);
 				Messager.sendMessage(Messager.type_alert, message);
 			}
 		}
