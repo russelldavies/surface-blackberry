@@ -39,7 +39,7 @@ public class KeypadLockScreen extends FullScreen {
 		EvenlySpacedHorizontalFieldManager buttons = new EvenlySpacedHorizontalFieldManager(
 				USE_ALL_WIDTH);
 		int spacing = 7;
-		int buttonSize = (int) ((float) width / 3) - (spacing * 3);
+		int buttonSize = (int) ((float) Display.getWidth() / 3) - (spacing * 3);
 		buttons.add(new LockButtonField(ToolsBB.resizeImage(
 				EncodedImage.getEncodedImageResource("lockscreen_mandown.png"),
 				buttonSize, buttonSize), "Man Down"));
