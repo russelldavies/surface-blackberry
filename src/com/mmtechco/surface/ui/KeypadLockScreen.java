@@ -16,11 +16,12 @@ import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.container.FullScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
-public class KeypadLockScreen extends FullScreen {
+public class KeypadLockScreen extends FullScreen implements FieldChangeListener {
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(KeypadLockScreen.class);
-
 	private static Logger logger = Logger.getInstance();
+
+	private boolean locked;
 
 	public KeypadLockScreen() {
 		EvenlySpacedVerticalFieldManager dualManager = new EvenlySpacedVerticalFieldManager(
@@ -58,11 +59,38 @@ public class KeypadLockScreen extends FullScreen {
 	}
 
 	protected boolean keyDown(int keycode, int time) {
-		// Prevent user from locking the device
+		// Prevent user from locking the device but turn off backlight
 		if (Keypad.key(keycode) == Keypad.KEY_LOCK) {
-			Backlight.enable(false);
+			if (locked) {
+				Backlight.enable(true);
+				locked = false;
+				return true;
+			} else {
+				Backlight.enable(false);
+				locked = true;
+				return true;
+			}
+		}
+		if (locked) {
 			return true;
 		}
 		return super.keyDown(keycode, time);
+	}
+	
+	protected boolean keyChar(char ch, int status, int time) {
+		if(locked) {
+			return true;
+		}
+		return super.keyChar(ch, status, time);
+	}
+
+	public void fieldChanged(Field field, int context) {
+		if(field == mandownButton) {
+			Message.send(Surface.mandown);
+		} else if (field == unlockButton) {
+			UiApplication.getUiApplication().popScreen(this);
+		} else if (field == alertButton) {
+			Message.send(Surface.alertMsg);
+		}
 	}
 }
