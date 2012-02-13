@@ -43,7 +43,6 @@ public class ActionButtonField extends BaseButtonField {
 	private Application app;
 	private boolean spinning;
 
-	final Timer countdown = new Timer();
 	// In seconds
 	public final int cooldownInterval = 5;
 	public final int surfaceInterval = 3 * 60;
@@ -196,6 +195,7 @@ public class ActionButtonField extends BaseButtonField {
 		prevStatus = screen.getStatus();
 		
 		// Start countdown
+		final Timer countdown = new Timer();
 		countdown.scheduleAtFixedRate(new TimerTask() {
 			int counter = interval;
 
