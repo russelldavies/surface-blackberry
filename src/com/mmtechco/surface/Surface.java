@@ -4,13 +4,12 @@ package com.mmtechco.surface;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
-import com.mmtechco.surface.prototypes.FILESYSTEM;
 import com.mmtechco.surface.ui.AlertScreen;
+//#ifdef DEBUG
 import com.mmtechco.surface.ui.DebugScreen;
+//#endif
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
-import com.mmtechco.util.ToolsBB;
-
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.SystemListener2;
@@ -81,10 +80,8 @@ public class Surface extends UiApplication implements SystemListener2 {
 	 * Start components
 	 */
 	public void startComponents() {
-		//#ifndef VER_4.5.0
 		// Register application indicator
 		//alertscreen.registerIndicator();
-		//#endif
 
 		// Start monitors
 		logger.log(TAG, "Starting monitors...");
@@ -113,19 +110,7 @@ public class Surface extends UiApplication implements SystemListener2 {
 
 	public void powerUp() {
 		Logger.getInstance().log(TAG, "Started from powerup");
-
-		removeSystemListener(this);
-		// Wait up to 30 seconds for sdcard to mount
-		for (int i = 0; i < 30; i++) {
-			if (ToolsBB.fsMounted(FILESYSTEM.SDCARD)) {
-				break;
-			}
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		//removeSystemListener(this);
 		initialize();
 	}
 
