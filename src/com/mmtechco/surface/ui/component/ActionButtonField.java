@@ -185,14 +185,33 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		});
 	}
 
-	public void startCountdown(final String type, int interval) {
+	private void startCountdown(final String type, final int interval) {
 		startSpin();
 
 		setButtonText("Cancel");
 		prevStatus = statusLabelField.getText();
 		// Start countdown
-		countdown.scheduleAtFixedRate(new CountdownTask(interval, type), 0,
-				1000);
+		// countdown.scheduleAtFixedRate(new CountdownTask(interval, type), 0,
+		// 1000);
+		countdown.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				if (interval == 0) {
+					this.cancel();
+					return;
+				}
+				UiApplication.getUiApplication().invokeLater(new Runnable() {
+					public void run() {
+						statusLabelField.setText("Time remaining to cancel: "
+								+ String.valueOf(--interval));
+						if (interval == 0) {
+							statusLabelField.setText(prevStatus);
+							Messager.sendMessage(type);
+						}
+					}
+				});
+			}
+		}, 0, 1000);
+
 		// Set Action button to a cancel button
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
@@ -232,36 +251,6 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		} catch (Exception e) {
 			logger.log(TAG, e.getMessage());
 		}
-	}
-}
-
-/**
- * Pass in a number and it counts down to zero updating the status text
- */
-class CountdownTask extends TimerTask {
-	int count;
-	String type;
-
-	public CountdownTask(int period, final String type) {
-		count = period;
-		this.type = type;
-	}
-
-	public void run() {
-		if (count == 0) {
-			this.cancel();
-			return;
-		}
-		UiApplication.getUiApplication().invokeLater(new Runnable() {
-			public void run() {
-				statusLabelField.setText("Time remaining to cancel: "
-						+ String.valueOf(--count));
-				if (count == 0) {
-					statusLabelField.setText(prevStatus);
-					Messager.sendMessage(type);
-				}
-			}
-		});
 	}
 }
 
