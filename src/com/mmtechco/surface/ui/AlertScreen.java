@@ -65,7 +65,6 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		actionButton = new ActionButtonField(
 				Bitmap.getBitmapResource("alertbutton_normal.png"),
 				Bitmap.getBitmapResource("wait.png"), 19, FIELD_HCENTER);
-		actionButton.setSurface();
 
 		// Context Buttons
 		pills = new PillButtonSet();

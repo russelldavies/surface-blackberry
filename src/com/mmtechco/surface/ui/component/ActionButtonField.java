@@ -31,14 +31,13 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 			.getSimpleClassName(ActionButtonField.class);
 	private static Logger logger = Logger.getInstance();
 
+	private String text;
 	private Bitmap spinner;
 	private Bitmap button;
 	private int numFrames;
 	private int frameWidth;
 	private int frameHeight;
 	private int interval;
-
-	private String text;
 
 	private int currentFrame;
 	private int timerID = -1;
@@ -62,9 +61,9 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		this.numFrames = numFrames;
 		this.frameWidth = spinner.getWidth() / numFrames;
 		this.frameHeight = spinner.getHeight();
-
-		text = "Surface";
 		app = Application.getApplication();
+
+		setSurface();
 	}
 
 	protected void layout(int width, int height) {
