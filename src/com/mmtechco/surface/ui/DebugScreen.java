@@ -2,6 +2,7 @@ package com.mmtechco.surface.ui;
 
 import java.util.Hashtable;
 
+import com.mmtechco.surface.Messager;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
@@ -61,7 +62,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	/*
 	 * Update the screen label fields
 	 */
-	public void update() {
+	public void updateStatus() {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
 				// Leave label blank if reg id doesn't yet exist
@@ -117,19 +118,19 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		MenuItem surfaceMenu = new MenuItem(new StringProvider("Surface"),
 				0x100040, 3) {
 			public void run() {
-				sendMessage(AlertScreen.type_surface);
+				sendMessage(Messager.type_surface);
 			}
 		};
 
 		MenuItem alertMenu = new MenuItem(new StringProvider("Alert"), 0x100040, 3) {
 			public void run() {
-				sendMessage(AlertScreen.type_alert);
+				sendMessage(Messager.type_alert);
 			}
 		};
 		
 		MenuItem mandownMenu = new MenuItem(new StringProvider("Man Down"), 0x100040, 3) {
 			public void run() {
-				sendMessage(AlertScreen.type_mandown);
+				sendMessage(Messager.type_mandown);
 			}
 		};
 		
@@ -137,7 +138,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			public void run() {
 				ObserverScreen alertScreen = new AlertScreen();
 				UiApplication.getUiApplication().pushScreen((Screen) alertScreen);
-				alertScreen.update();
+				alertScreen.updateStatus();
 			}
 		};
 

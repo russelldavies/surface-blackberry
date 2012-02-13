@@ -210,12 +210,10 @@ public class Registration extends Thread implements Controllable,
 			break;
 		case 2: // Trial
 			stateText = r.getString(i18n_RegTrial);
-			//registered = true;
 			app.startComponents();
 			break;
 		case 3: // Fully active
 			stateText = r.getString(i18n_RegActive);
-			//registered = true;
 			app.startComponents();
 			break;
 		}
@@ -306,7 +304,7 @@ public class Registration extends Thread implements Controllable,
 
 	private void notifyObservers() {
 		for (int i = 0; i < observers.size(); i++) {
-			((ObserverScreen) observers.elementAt(i)).update();
+			((ObserverScreen) observers.elementAt(i)).updateStatus();
 		}
 	}
 }

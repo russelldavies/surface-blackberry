@@ -1,6 +1,6 @@
 package com.mmtechco.surface.prototypes;
 
 public interface ObserverScreen {
-	void update();
+	void updateStatus();
 	void surface();
 }
