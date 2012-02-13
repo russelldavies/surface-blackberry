@@ -37,7 +37,6 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 	private int numFrames;
 	private int frameWidth;
 	private int frameHeight;
-	private int interval;
 
 	private int currentFrame;
 	private int timerID = -1;
@@ -46,21 +45,19 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 	private boolean spinning;
 
 	final Timer countdown = new Timer();
-	// In seconds
-	public final int cooldownPeriod = 5 * 1000;
+	public final int cooldownInterval = 5 * 1000;
 	public final int surfaceInterval = 3 * 60 * 1000;
 
 	VibrateThread viber;
 	private Player player;
 
-	public ActionButtonField(Bitmap button, Bitmap spinner, int numFrames,
-			long style) {
+	public ActionButtonField(long style) {
 		super(style);
-		this.button = button;
-		this.spinner = spinner;
-		this.numFrames = numFrames;
-		this.frameWidth = spinner.getWidth() / numFrames;
-		this.frameHeight = spinner.getHeight();
+		button = Bitmap.getBitmapResource("alertbutton_normal.png");
+		spinner = Bitmap.getBitmapResource("wait.png");
+		numFrames = 19;
+		frameWidth = spinner.getWidth() / numFrames;
+		frameHeight = spinner.getHeight();
 		app = Application.getApplication();
 
 		setSurface();
@@ -109,7 +106,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 	public void startSpin() {
 		spinning = true;
 		if (timerID == -1) {
-			timerID = app.invokeLater(this, (interval / numFrames), true);
+			timerID = app.invokeLater(this, (cooldownInterval / numFrames), true);
 		}
 	}
 
@@ -170,7 +167,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.type_alert, interval);
+				startCountdown(Messager.type_alert, cooldownInterval);
 			}
 		});
 	}
@@ -180,7 +177,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.type_mandown, interval);
+				startCountdown(Messager.type_mandown, cooldownInterval);
 			}
 		});
 	}

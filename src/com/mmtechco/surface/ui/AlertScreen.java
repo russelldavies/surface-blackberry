@@ -9,7 +9,6 @@ import com.mmtechco.surface.ui.container.PillButtonSet;
 import com.mmtechco.surface.util.SurfaceResource;
 
 import net.rim.device.api.i18n.ResourceBundle;
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
@@ -18,6 +17,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 //#ifdef TOUCH
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.component.BitmapField;
 //#endif
 import net.rim.device.api.ui.component.LabelField;
@@ -62,9 +62,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		//#endif
 
 		// Action button
-		actionButton = new ActionButtonField(
-				Bitmap.getBitmapResource("alertbutton_normal.png"),
-				Bitmap.getBitmapResource("wait.png"), 19, FIELD_HCENTER);
+		actionButton = new ActionButtonField(Field.FIELD_HCENTER);
 
 		// Context Buttons
 		pills = new PillButtonSet();
