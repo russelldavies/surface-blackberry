@@ -8,7 +8,7 @@ import javax.microedition.media.Player;
 import javax.microedition.media.control.VolumeControl;
 
 import com.mmtechco.surface.Messager;
-import com.mmtechco.surface.prototypes.MMTools;
+import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -22,7 +22,6 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontFamily;
-import net.rim.device.api.ui.FontManager;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.UiApplication;
 
@@ -45,14 +44,19 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 	private boolean spinning;
 
 	final Timer countdown = new Timer();
-	public final int cooldownInterval = 5 * 1000;
-	public final int surfaceInterval = 3 * 60 * 1000;
+	// In seconds
+	public final int cooldownInterval = 5;
+	public final int surfaceInterval = 3 * 60;
 
 	VibrateThread viber;
 	private Player player;
+	
+	ObserverScreen screen;
 
-	public ActionButtonField(long style) {
+	public ActionButtonField(ObserverScreen screen, long style) {
 		super(style);
+		this.screen = screen;
+		
 		button = Bitmap.getBitmapResource("alertbutton_normal.png");
 		spinner = Bitmap.getBitmapResource("wait.png");
 		numFrames = 19;
@@ -87,7 +91,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		try {
 			g.setColor(Color.WHITE);
 			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
-			Font font = typeface.getFont(Font.PLAIN, button.getWidth());
+			Font font = typeface.getFont(Font.PLAIN, 30);
 			g.setFont(font);
 			g.drawText(text, getWidth() / 3, getHeight() / 3);
 		} catch (ClassNotFoundException e) {
@@ -106,7 +110,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 	public void startSpin() {
 		spinning = true;
 		if (timerID == -1) {
-			timerID = app.invokeLater(this, (cooldownInterval / numFrames), true);
+			timerID = app.invokeLater(this, (cooldownInterval * 1000 / numFrames), true);
 		}
 	}
 
@@ -142,7 +146,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				Messager.sendMessage(Messager.type_surface);
+				sendMessage(Messager.type_surface);
 			}
 		});
 		// Stop playing audio
@@ -186,23 +190,24 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		startSpin();
 
 		setButtonText("Cancel");
-		prevStatus = statusLabelField.getText();
+		final String prevStatus = screen.getStatus();
 		// Start countdown
 		// countdown.scheduleAtFixedRate(new CountdownTask(interval, type), 0,
 		// 1000);
 		countdown.scheduleAtFixedRate(new TimerTask() {
+			int count = interval;
+			
 			public void run() {
-				if (interval == 0) {
+				if (count == 0) {
 					this.cancel();
 					return;
 				}
 				UiApplication.getUiApplication().invokeLater(new Runnable() {
 					public void run() {
-						statusLabelField.setText("Time remaining to cancel: "
-								+ String.valueOf(--interval));
-						if (interval == 0) {
-							statusLabelField.setText(prevStatus);
-							Messager.sendMessage(type);
+						screen.setStatus("Time remaining to cancel: " + String.valueOf(--count));
+						if (count == 0) {
+							screen.setStatus(prevStatus);
+							sendMessage(type);
 						}
 					}
 				});
@@ -225,9 +230,37 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 				} else if (type.equals(Messager.type_mandown)) {
 					setManDown();
 				}
-				statusLabelField.setText(prevStatus);
+				screen.setStatus(prevStatus);
 			}
 		});
+	}
+	
+	private void sendMessage(String type) {
+		String statusMsg = "Sending ";
+		if (type.equals(Messager.type_surface)) {
+			statusMsg = statusMsg + "Surface";
+			setSurface();
+		} else if (type.equals(Messager.type_alert)) {
+			statusMsg = statusMsg + "Alert";
+			setAlert();
+			Messager.sendAlertSMS();
+		} else if (type.equals(Messager.type_mandown)) {
+			statusMsg = statusMsg + "Man Down";
+			setManDown();
+			Messager.makeCall();
+		}
+
+		stopSpin();
+
+		statusMsg = statusMsg + "...";
+		// Save existing status before changing
+		String prevStatus = screen.getStatus();
+		screen.setStatus(statusMsg);
+		
+		Messager.sendMessage(type);
+		
+		screen.setStatus("Message Sent...");
+		screen.setStatus(prevStatus);
 	}
 
 	private void play() {

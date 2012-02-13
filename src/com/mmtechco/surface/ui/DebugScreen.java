@@ -62,7 +62,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	/*
 	 * Update the screen label fields
 	 */
-	public void updateStatus() {
+	public void setStatus(String status) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
 				// Leave label blank if reg id doesn't yet exist
@@ -73,6 +73,10 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				statusTextField.setText(Registration.getStatus());
 			}
 		});
+	}
+
+	public String getStatus() {
+		return statusTextField.getText();
 	}
 
 	public void surface() {
@@ -138,7 +142,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			public void run() {
 				ObserverScreen alertScreen = new AlertScreen();
 				UiApplication.getUiApplication().pushScreen((Screen) alertScreen);
-				alertScreen.updateStatus();
+				alertScreen.setStatus("");
 			}
 		};
 

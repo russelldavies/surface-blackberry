@@ -62,7 +62,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		//#endif
 
 		// Action button
-		actionButton = new ActionButtonField(Field.FIELD_HCENTER);
+		actionButton = new ActionButtonField(this, Field.FIELD_HCENTER);
 
 		// Context Buttons
 		pills = new PillButtonSet();
@@ -101,21 +101,16 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	/**
 	 * Update the screen label fields showing registration status
 	 */
-	public void updateStatus() {
+	public void setStatus(final String status) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
-				// Only set text if reg id has been received
-				String regId = Registration.getRegID();
-				String regStatus = Registration.getStatus();
-				if (!regId.equals("0")) {
-					statusLabelField.setText("SN: " + regId + " | Status: "
-							+ regStatus);
-				} else {
-					statusLabelField.setText("SN: [none] | Status: "
-							+ regStatus);
-				}
+				statusLabelField.setText(status);
 			}
 		});
+	}
+	
+	public String getStatus() {
+		return statusLabelField.getText();
 	}
 
 	/**

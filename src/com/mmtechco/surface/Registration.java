@@ -42,7 +42,7 @@ public class Registration extends Thread implements Controllable,
 	public static String KEY_NUMBERS = "emergency_numbers";
 
 	private static int regStage;
-	private static String regID;
+	private static String regId;
 	private static String emergNums;
 	private static String status;
 	private final int sleepTimeLong = 1000 * 60 * 60 * 24; // 24h
@@ -64,8 +64,7 @@ public class Registration extends Thread implements Controllable,
 		server = new Server();
 
 		// Read registration data or set to default values
-		PersistentObject regData = PersistentStore
-				.getPersistentObject(ID);
+		PersistentObject regData = PersistentStore.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
 			if (regTable == null) {
@@ -80,7 +79,7 @@ public class Registration extends Thread implements Controllable,
 			}
 			regStage = Integer
 					.parseInt(String.valueOf(regTable.get(KEY_STAGE)));
-			regID = String.valueOf(regTable.get(KEY_ID));
+			regId = String.valueOf(regTable.get(KEY_ID));
 			emergNums = String.valueOf(regTable.get(KEY_NUMBERS));
 		}
 	}
@@ -106,7 +105,8 @@ public class Registration extends Thread implements Controllable,
 			currentStageValue = regStage;
 
 			logger.log(TAG, "Asking server for registration details");
-			response = server.contactServer(new RegistrationMessage(currentStageValue));
+			response = server.contactServer(new RegistrationMessage(
+					currentStageValue));
 			logger.log(TAG, "Server response: " + response.getREST());
 
 			if (response.isError()) {
@@ -140,8 +140,8 @@ public class Registration extends Thread implements Controllable,
 					if (0 == currentStageValue) {
 						logger.log(TAG, "currentStageValue = "
 								+ currentStageValue);
-						regID = response.getRegID();
-						setRegData(KEY_ID, regID);
+						regId = response.getRegID();
+						setRegData(KEY_ID, regId);
 					}
 					// assigns new stage
 					regStage = nextStage;
@@ -176,8 +176,7 @@ public class Registration extends Thread implements Controllable,
 	 * @return true if value was updated, false if value was created
 	 */
 	private boolean setRegData(String key, String value) {
-		PersistentObject regData = PersistentStore
-				.getPersistentObject(ID);
+		PersistentObject regData = PersistentStore.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
 			Object oldValue = regTable.put(key, value);
@@ -196,7 +195,7 @@ public class Registration extends Thread implements Controllable,
 	 *            - stage of registration.
 	 */
 	private void stageState(int inputStage) {
-		Surface app = (Surface)UiApplication.getUiApplication();
+		Surface app = (Surface) UiApplication.getUiApplication();
 		String stateText = "";
 
 		switch (inputStage) {
@@ -231,7 +230,7 @@ public class Registration extends Thread implements Controllable,
 		case 3: // Fully active
 			status = stateText;
 			logger.log(TAG, "Status text updated to: " + status);
-			logger.log(TAG, "Reg id:" + regID);
+			logger.log(TAG, "Reg id:" + regId);
 			break;
 		}
 		notifyObservers();
@@ -244,10 +243,10 @@ public class Registration extends Thread implements Controllable,
 	 * @return registration ID string. <strong>"0"</strong> if not available.
 	 */
 	public static String getRegID() {
-		if (regID == null) {
+		if (regId == null) {
 			return "0";
 		} else {
-			return regID;
+			return regId;
 		}
 	}
 
@@ -303,15 +302,22 @@ public class Registration extends Thread implements Controllable,
 	}
 
 	private void notifyObservers() {
+		String statusMsg;
+		if (!regId.equals("0")) {
+			statusMsg = "SN: " + regId + " | Status: " + status;
+		} else {
+			statusMsg = "SN: [none] | Status: " + status;
+		}
 		for (int i = 0; i < observers.size(); i++) {
-			((ObserverScreen) observers.elementAt(i)).updateStatus();
+			((ObserverScreen) observers.elementAt(i)).setStatus(statusMsg);
 		}
 	}
 }
 
 class RegistrationMessage implements Message {
 	private final static int type = 9;
-	private final String appVersion = ApplicationDescriptor.currentApplicationDescriptor().getVersion();
+	private final String appVersion = ApplicationDescriptor
+			.currentApplicationDescriptor().getVersion();
 	private String deviceTime;
 	private int stage;
 	private String phoneNum;
