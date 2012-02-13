@@ -25,7 +25,7 @@ import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.UiApplication;
 
-public class ActionButtonField extends BaseButtonField implements Runnable {
+public class ActionButtonField extends BaseButtonField {
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(ActionButtonField.class);
 	private static Logger logger = Logger.getInstance();
@@ -50,13 +50,15 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 
 	VibrateThread viber;
 	private Player player;
-	
+
 	ObserverScreen screen;
+	
+	String prevStatus;
 
 	public ActionButtonField(ObserverScreen screen, long style) {
 		super(style);
 		this.screen = screen;
-		
+
 		button = Bitmap.getBitmapResource("alertbutton_normal.png");
 		spinner = Bitmap.getBitmapResource("wait.png");
 		numFrames = 19;
@@ -110,7 +112,13 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 	public void startSpin() {
 		spinning = true;
 		if (timerID == -1) {
-			timerID = app.invokeLater(this, (cooldownInterval * 1000 / numFrames), true);
+			timerID = app.invokeLater(new Runnable() {
+				public void run() {
+					if (spinning) {
+						invalidate();
+					}
+				}
+			}, (cooldownInterval * 1000 / numFrames), true);
 		}
 	}
 
@@ -120,12 +128,6 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 			app.cancelInvokeLater(timerID);
 			timerID = -1;
 			currentFrame = 0;
-		}
-	}
-
-	public void run() {
-		if (spinning) {
-			invalidate();
 		}
 	}
 
@@ -146,6 +148,7 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
+				prevStatus = screen.getStatus();
 				sendMessage(Messager.type_surface);
 			}
 		});
@@ -190,22 +193,22 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 		startSpin();
 
 		setButtonText("Cancel");
-		final String prevStatus = screen.getStatus();
+		prevStatus = screen.getStatus();
+		
 		// Start countdown
-		// countdown.scheduleAtFixedRate(new CountdownTask(interval, type), 0,
-		// 1000);
 		countdown.scheduleAtFixedRate(new TimerTask() {
-			int count = interval;
-			
+			int counter = interval;
+
 			public void run() {
-				if (count == 0) {
+				if (counter == 0) {
 					this.cancel();
 					return;
 				}
 				UiApplication.getUiApplication().invokeLater(new Runnable() {
 					public void run() {
-						screen.setStatus("Time remaining to cancel: " + String.valueOf(--count));
-						if (count == 0) {
+						screen.setStatus("Time remaining to cancel: "
+								+ String.valueOf(--counter));
+						if (counter == 0) {
 							screen.setStatus(prevStatus);
 							sendMessage(type);
 						}
@@ -234,8 +237,9 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 			}
 		});
 	}
-	
+
 	private void sendMessage(String type) {
+		
 		String statusMsg = "Sending ";
 		if (type.equals(Messager.type_surface)) {
 			statusMsg = statusMsg + "Surface";
@@ -249,18 +253,14 @@ public class ActionButtonField extends BaseButtonField implements Runnable {
 			setManDown();
 			Messager.makeCall();
 		}
-
-		stopSpin();
-
 		statusMsg = statusMsg + "...";
-		// Save existing status before changing
-		String prevStatus = screen.getStatus();
+		
 		screen.setStatus(statusMsg);
-		
 		Messager.sendMessage(type);
-		
 		screen.setStatus("Message Sent...");
 		screen.setStatus(prevStatus);
+		
+		stopSpin();
 	}
 
 	private void play() {
