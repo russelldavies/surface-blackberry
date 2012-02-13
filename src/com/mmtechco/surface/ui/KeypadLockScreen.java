@@ -1,5 +1,6 @@
 package com.mmtechco.surface.ui;
 
+import com.mmtechco.surface.Messager;
 import com.mmtechco.surface.ui.component.LockButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedHorizontalFieldManager;
 import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
@@ -11,7 +12,9 @@ import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.container.FullScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -21,6 +24,10 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 			.getSimpleClassName(KeypadLockScreen.class);
 	private static Logger logger = Logger.getInstance();
 
+	LockButtonField mandownButton;
+	LockButtonField unlockButton;
+	LockButtonField alertButton;
+	
 	private boolean locked;
 
 	public KeypadLockScreen() {
@@ -41,13 +48,13 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 				USE_ALL_WIDTH);
 		int spacing = 7;
 		int buttonSize = (int) ((float) Display.getWidth() / 3) - (spacing * 3);
-		buttons.add(new LockButtonField(ToolsBB.resizeImage(
+		buttons.add(mandownButton = new LockButtonField(ToolsBB.resizeImage(
 				EncodedImage.getEncodedImageResource("lockscreen_mandown.png"),
 				buttonSize, buttonSize), "Man Down"));
-		buttons.add(new LockButtonField(ToolsBB.resizeImage(
+		buttons.add(unlockButton = new LockButtonField(ToolsBB.resizeImage(
 				EncodedImage.getEncodedImageResource("lockscreen_unlock.png"),
 				buttonSize, buttonSize), "Unlock"));
-		buttons.add(new LockButtonField(ToolsBB.resizeImage(
+		buttons.add(alertButton = new LockButtonField(ToolsBB.resizeImage(
 				EncodedImage.getEncodedImageResource("lockscreen_alert.png"),
 				buttonSize, buttonSize), "Alert"));
 
@@ -56,6 +63,10 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 		add(dualManager);
 		setBackground(BackgroundFactory.createLinearGradientBackground(
 				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
+		
+		mandownButton.setChangeListener(this);
+		unlockButton.setChangeListener(this);
+		alertButton.setChangeListener(this);
 	}
 
 	protected boolean keyDown(int keycode, int time) {
@@ -86,11 +97,11 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 
 	public void fieldChanged(Field field, int context) {
 		if(field == mandownButton) {
-			Message.send(Surface.mandown);
+			Messager.sendMessage(Messager.type_mandown);
 		} else if (field == unlockButton) {
 			UiApplication.getUiApplication().popScreen(this);
 		} else if (field == alertButton) {
-			Message.send(Surface.alertMsg);
+			Messager.sendMessage(Messager.type_alert);
 		}
 	}
 }
