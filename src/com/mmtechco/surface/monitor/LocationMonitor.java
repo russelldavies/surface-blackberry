@@ -15,6 +15,7 @@ import net.rim.device.api.gps.BlackBerryLocationProvider;
 import net.rim.device.api.gps.GPSInfo;
 import net.rim.device.api.gps.LocationInfo;
 
+import com.mmtechco.surface.Messager;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.net.Reply;
@@ -150,7 +151,7 @@ public class LocationMonitor implements LocationListener {
 			if (longitude != 0 && latitude != 0) {
 				logger.log(TAG, "Sending location to server");
 				Reply reply = server.contactServer(locMsg.getREST());
-				if (reply.getCallingCode().equals(AlertScreen.type_surface)) {
+				if (reply.getCallingCode().equals(Messager.type_surface)) {
 					logger.log(TAG, "Server has requested surface");
 					notifyObservers();
 				}
