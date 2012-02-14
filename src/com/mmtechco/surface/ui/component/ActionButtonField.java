@@ -16,6 +16,8 @@ import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.LED;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.Field;
@@ -54,15 +56,23 @@ public class ActionButtonField extends BaseButtonField {
 	
 	String prevStatus;
 
-	public ActionButtonField(ObserverScreen screen, long style) {
+	public ActionButtonField(ObserverScreen screen, int height, long style) {
 		super(style);
 		this.screen = screen;
 
-		button = Bitmap.getBitmapResource("alertbutton_normal.png");
-		spinner = Bitmap.getBitmapResource("wait.png");
+		EncodedImage spinnerImage = EncodedImage.getEncodedImageResource("wait.png");
 		numFrames = 19;
 		frameWidth = spinner.getWidth() / numFrames;
+		float ratio = (float) frameWidth / (float) spinnerImage.getHeight();
+		int width = (int) ((float) height * ratio);
+		spinner =  ToolsBB.resizeImage(spinnerImage, width, height).getBitmap();
+		
+		EncodedImage buttonImage = EncodedImage.getEncodedImageResource("alertbutton_normal.png");
+		int newSize = (int) ((float) height * 0.8);
+		button = ToolsBB.resizeImage(buttonImage, newSize, newSize).getBitmap();
+		
 		frameHeight = spinner.getHeight();
+		
 		app = Application.getApplication();
 
 		setSurface();

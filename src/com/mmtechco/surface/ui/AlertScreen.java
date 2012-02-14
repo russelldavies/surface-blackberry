@@ -16,9 +16,12 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.system.Display;
 //#ifdef TOUCH
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.component.BitmapField;
+import com.mmtechco.util.ToolsBB;
 //#endif
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
@@ -55,15 +58,22 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		VerticalFieldManager vfm = new VerticalFieldManager(USE_ALL_HEIGHT
 				| USE_ALL_WIDTH | FIELD_HCENTER);
 
-		// Logo - only add on touch-only devices
 		//#ifdef TOUCH
-		vfm.add(new BitmapField(Bitmap.getBitmapResource("surface_logo.png"),
-				Field.FIELD_HCENTER));
+		// Logo - only added on touch-only devices
+		EncodedImage logoImage = EncodedImage.getEncodedImageResource("surface_logo.png");
+		float ratio = (float) logoImage.getWidth() / (float) logoImage.getHeight();
+		int width = (int) ((float) Display.getWidth() * 0.9);
+		int height = (int) ((float) width / ratio);
+		logoImage = ToolsBB.resizeImage(logoImage, width, height);
+		BitmapField logoField = new BitmapField(logoImage.getBitmap(),
+				Field.FIELD_HCENTER);
+		logoField.setPadding(0, 0, 10, 0);
+		vfm.add(logoField);
 		//#endif
 
-		// Action button
-		actionButton = new ActionButtonField(this, Field.FIELD_HCENTER);
-
+		// Status field
+		StatusField statusField = new StatusField();
+		
 		// Context Buttons
 		pills = new PillButtonSet();
 		pillOne = new PillButtonField("Surface");
@@ -88,10 +98,14 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		pillOne.setChangeListener(pillListener);
 		pillTwo.setChangeListener(pillListener);
 		pillThree.setChangeListener(pillListener);
+		
+		// Action button
+		int actionHeight = Display.getHeight() - (statusField.getHeight() + pills.getHeight());
+		actionButton = new ActionButtonField(this, actionHeight, Field.FIELD_HCENTER);
 
 		// Add elements to field manager
 		vfm.add(actionButton);
-		vfm.add(new RegInfoStyleField());
+		vfm.add(statusField);
 		vfm.add(pills);
 		vfm.setBackground(BackgroundFactory.createLinearGradientBackground(
 				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
@@ -148,8 +162,8 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	/**
 	 * Creates a rounded rectangle to hold registration info fields
 	 */
-	private class RegInfoStyleField extends VerticalFieldManager {
-		RegInfoStyleField() {
+	private class StatusField extends VerticalFieldManager {
+		StatusField() {
 			super(Manager.FIELD_HCENTER);
 			add(statusLabelField);
 			setPadding(5, 5, 5, 5);
