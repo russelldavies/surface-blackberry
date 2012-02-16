@@ -43,7 +43,7 @@ public class ActionButtonField extends BaseButtonField {
 	private Bitmap spinnerWait;
 	private Bitmap spinnerTimer;
 	private int numFrames;
-	private int numFramesWait = 19;
+	private int numFramesWait = 20;
 	private int numFramesTimer = 21;
 	private int currentFrame;
 	private int frameWidth;
