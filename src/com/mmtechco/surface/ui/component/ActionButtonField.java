@@ -16,10 +16,9 @@ import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.Display;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.LED;
 import net.rim.device.api.ui.Color;
+import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
@@ -32,59 +31,87 @@ public class ActionButtonField extends BaseButtonField {
 			.getSimpleClassName(ActionButtonField.class);
 	private static Logger logger = Logger.getInstance();
 
+	private int fieldSize;
+
 	private String text;
-	private Bitmap spinner;
+	private String prevStatus;
 	private Bitmap button;
+	private int buttonSize;
+	private Font buttonFont;
+
+	private Bitmap spinner;
+	private Bitmap spinnerWait;
+	private Bitmap spinnerTimer;
 	private int numFrames;
-	private int frameWidth;
-	private int frameHeight;
-
+	private int numFramesWait = 19;
+	private int numFramesTimer = 21;
 	private int currentFrame;
-	private int timerID = -1;
-
-	private Application app;
+	private int frameWidth;
+	private int intervalSpinner;
+	private int intervalSpinnerWait = 100;
+	private int intervalSpinnerTimer = 250;
 	private boolean spinning;
+	private int timerID = -1;
 
 	// In seconds
 	public final int cooldownInterval = 5;
 	public final int surfaceInterval = 3 * 60;
 
-	VibrateThread viber;
+	private VibrateThread viber;
 	private Player player;
 
-	ObserverScreen screen;
-	
-	String prevStatus;
+	private ObserverScreen screen;
+	private Application app = Application.getApplication();
 
-	public ActionButtonField(ObserverScreen screen, int height, long style) {
+	public ActionButtonField(ObserverScreen screen, int fieldSize, long style) {
 		super(style);
 		this.screen = screen;
+		this.fieldSize = fieldSize;
 
-		EncodedImage spinnerImage = EncodedImage.getEncodedImageResource("wait.png");
-		numFrames = 19;
-		frameWidth = spinner.getWidth() / numFrames;
-		float ratio = (float) frameWidth / (float) spinnerImage.getHeight();
-		int width = (int) ((float) height * ratio);
-		spinner =  ToolsBB.resizeImage(spinnerImage, width, height).getBitmap();
-		
-		EncodedImage buttonImage = EncodedImage.getEncodedImageResource("alertbutton_normal.png");
-		int newSize = (int) ((float) height * 0.8);
-		button = ToolsBB.resizeImage(buttonImage, newSize, newSize).getBitmap();
-		
-		frameHeight = spinner.getHeight();
-		
-		app = Application.getApplication();
+		// Spinner should be the full width/height of the field
+		spinnerWait = ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("spinner_wait.png"), fieldSize
+						* numFramesWait, fieldSize, Bitmap.FILTER_LANCZOS,
+				Bitmap.SCALE_TO_FIT);
+		spinnerTimer = ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("spinner_timer.png"), fieldSize
+						* numFramesTimer, fieldSize, Bitmap.FILTER_LANCZOS,
+				Bitmap.SCALE_TO_FIT);
+		spinner = spinnerWait;
 
+		// Button should be 80% the size of the spinner
+		buttonSize = (int) (fieldSize * 0.6);
+		button = ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("alertbutton_normal.png"), buttonSize,
+				buttonSize, Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT);
+
+		// Surface is default action
 		setSurface();
 	}
+	
+	/*
+	public void applyFont() {
+		// Font should be 20% size of the image
+		buttonFont.getAdvance(text);
+		buttonFont = getFont().derive(Font.BOLD, image.getScaledHeight() / 5);
+	}
+	*/
 
+	public int getPreferredWidth() {
+		return fieldSize;
+	}
+
+	public int getPreferredHeight() {
+		return fieldSize;
+	}
+	
 	protected void layout(int width, int height) {
-		setExtent(frameWidth, frameHeight);
+		setExtent(fieldSize, fieldSize);
 	}
 
 	protected void paint(Graphics g) {
 		// Spinner
-		g.drawBitmap(0, 0, frameWidth, frameHeight, spinner, frameWidth
+		g.drawBitmap(0, 0, frameWidth, fieldSize, spinner, frameWidth
 				* currentFrame, 0);
 		if (spinning) {
 			currentFrame++;
@@ -94,7 +121,8 @@ public class ActionButtonField extends BaseButtonField {
 		}
 
 		// Action button
-		g.drawBitmap(0, 0, getWidth(), getHeight(), button, 0, 0);
+		int pos = (fieldSize - buttonSize) / 2;
+		g.drawBitmap(pos, pos, buttonSize, buttonSize, button, 0, 0);
 
 		// Draw text
 		int oldColor = g.getColor();
@@ -102,9 +130,9 @@ public class ActionButtonField extends BaseButtonField {
 		try {
 			g.setColor(Color.WHITE);
 			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
-			Font font = typeface.getFont(Font.PLAIN, 30);
+			Font font = typeface.getFont(Font.PLAIN, 40);
 			g.setFont(font);
-			g.drawText(text, getWidth() / 3, getHeight() / 3);
+			g.drawText(text, 0, fieldSize / 2, DrawStyle.HCENTER, fieldSize);
 		} catch (ClassNotFoundException e) {
 			logger.log(TAG, e.getMessage());
 		} finally {
@@ -127,7 +155,7 @@ public class ActionButtonField extends BaseButtonField {
 						invalidate();
 					}
 				}
-			}, (cooldownInterval * 1000 / numFrames), true);
+			}, (intervalSpinner), true);
 		}
 	}
 
@@ -141,6 +169,11 @@ public class ActionButtonField extends BaseButtonField {
 	}
 
 	public void surface() {
+		spinner = spinnerTimer;
+		intervalSpinner = intervalSpinnerTimer;
+		numFrames = numFramesTimer;
+		frameWidth = spinner.getWidth() / numFrames;
+
 		startCountdown(Messager.type_surface, surfaceInterval);
 		// Play sound
 		play();
@@ -154,6 +187,10 @@ public class ActionButtonField extends BaseButtonField {
 
 	public void setSurface() {
 		setButtonText("Surface");
+		spinner = spinnerTimer;
+		intervalSpinner = intervalSpinnerTimer;
+		numFrames = numFramesWait;
+		frameWidth = spinner.getWidth() / numFrames;
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
@@ -180,6 +217,10 @@ public class ActionButtonField extends BaseButtonField {
 
 	public void setAlert() {
 		setButtonText("Alert");
+		spinner = spinnerWait;
+		intervalSpinner = intervalSpinnerWait;
+		numFrames = numFramesWait;
+		frameWidth = spinner.getWidth() / numFrames;
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
@@ -190,6 +231,10 @@ public class ActionButtonField extends BaseButtonField {
 
 	public void setManDown() {
 		setButtonText("Man Down");
+		spinner = spinnerWait;
+		intervalSpinner = intervalSpinnerWait;
+		numFrames = numFramesWait;
+		frameWidth = spinner.getWidth() / numFrames;
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
@@ -203,7 +248,7 @@ public class ActionButtonField extends BaseButtonField {
 
 		setButtonText("Cancel");
 		prevStatus = screen.getStatus();
-		
+
 		// Start countdown
 		final Timer countdown = new Timer();
 		countdown.scheduleAtFixedRate(new TimerTask() {
@@ -249,7 +294,7 @@ public class ActionButtonField extends BaseButtonField {
 	}
 
 	private void sendMessage(String type) {
-		
+
 		String statusMsg = "Sending ";
 		if (type.equals(Messager.type_surface)) {
 			statusMsg = statusMsg + "Surface";
@@ -264,12 +309,12 @@ public class ActionButtonField extends BaseButtonField {
 			Messager.makeCall();
 		}
 		statusMsg = statusMsg + "...";
-		
+
 		screen.setStatus(statusMsg);
 		Messager.sendMessage(type);
 		screen.setStatus("Message Sent...");
 		screen.setStatus(prevStatus);
-		
+
 		stopSpin();
 	}
 

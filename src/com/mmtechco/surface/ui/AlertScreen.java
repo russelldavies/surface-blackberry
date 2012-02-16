@@ -7,6 +7,7 @@ import com.mmtechco.surface.ui.component.ActionButtonField;
 import com.mmtechco.surface.ui.component.PillButtonField;
 import com.mmtechco.surface.ui.container.PillButtonSet;
 import com.mmtechco.surface.util.SurfaceResource;
+import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.ui.Color;
@@ -17,13 +18,12 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.system.Display;
-//#ifdef TOUCH
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.component.BitmapField;
-import com.mmtechco.util.ToolsBB;
-//#endif
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.container.FlowFieldManager;
+import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -37,8 +37,13 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			"SN: [none] | Status: " + r.getString(i18n_RegRequesting),
 			Field.NON_FOCUSABLE | DrawStyle.HCENTER) {
 		protected void paint(Graphics graphics) {
-			graphics.setColor(Color.WHITE);
-			super.paint(graphics);
+			int oldColor = graphics.getColor();
+			try {
+				graphics.setColor(Color.WHITE);
+				super.paint(graphics);
+			} finally {
+				graphics.setColor(oldColor);
+			}
 		}
 	};
 	ActionButtonField actionButton;
@@ -60,8 +65,10 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		//#ifdef TOUCH
 		// Logo - only added on touch-only devices
-		EncodedImage logoImage = EncodedImage.getEncodedImageResource("surface_logo.png");
-		float ratio = (float) logoImage.getWidth() / (float) logoImage.getHeight();
+		EncodedImage logoImage = EncodedImage
+				.getEncodedImageResource("surface_logo.png");
+		float ratio = (float) logoImage.getWidth()
+				/ (float) logoImage.getHeight();
 		int width = (int) ((float) Display.getWidth() * 0.9);
 		int height = (int) ((float) width / ratio);
 		logoImage = ToolsBB.resizeImage(logoImage, width, height);
@@ -73,7 +80,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		// Status field
 		StatusField statusField = new StatusField();
-		
+
 		// Context Buttons
 		pills = new PillButtonSet();
 		pillOne = new PillButtonField("Surface");
@@ -98,17 +105,18 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		pillOne.setChangeListener(pillListener);
 		pillTwo.setChangeListener(pillListener);
 		pillThree.setChangeListener(pillListener);
-		
+
 		// Action button
-		int actionHeight = Display.getHeight() - (statusField.getHeight() + pills.getHeight());
-		actionButton = new ActionButtonField(this, actionHeight, Field.FIELD_HCENTER);
+		int size = (int) (Display.getHeight() * 0.75);
+		actionButton = new ActionButtonField(this, size, Field.FOCUSABLE | Field.FIELD_HCENTER);
 
 		// Add elements to field manager
 		vfm.add(actionButton);
 		vfm.add(statusField);
 		vfm.add(pills);
+		
 		vfm.setBackground(BackgroundFactory.createLinearGradientBackground(
-				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
+		Color.BLACK, Color.BLACK, Color.RED, Color.RED));
 		add(vfm);
 	}
 
@@ -122,7 +130,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			}
 		});
 	}
-	
+
 	public String getStatus() {
 		return statusLabelField.getText();
 	}
@@ -147,11 +155,11 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 	public void close() {
 		// App is pushed to background rather than terminated when screen is
 		// closed except in debug mode
-		//#ifndef DEBUG
+		// #ifndef DEBUG
 		UiApplication.getUiApplication().requestBackground();
-		//#else
+		// #else
 		super.close();
-		//#endif
+		// #endif
 	}
 
 	public boolean onSavePrompt() {
