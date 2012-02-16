@@ -30,7 +30,6 @@ import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
-import net.rim.device.api.util.StringProvider;
 
 /**
  * Screen that displays all the logging info. Useful for debugging. Enable by
@@ -95,15 +94,14 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	}
 
 	protected void makeMenu(Menu menu, int instance) {
-		MenuItem clearMenu = new MenuItem(new StringProvider("Clear Screen"),
-				0x100020, 1) {
+		MenuItem clearMenu = new MenuItem("Clear Screen", 0x100020, 1) {
 			public void run() {
 				deleteAll();
 			}
 		};
 
-		MenuItem delRegMenu = new MenuItem(new StringProvider(
-				"Delete Registration info"), 0x100030, 2) {
+		MenuItem delRegMenu = new MenuItem("Delete Registration info",
+				0x100030, 2) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(
 						new RegPopupScreen());
@@ -111,37 +109,38 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			}
 		};
 
-		MenuItem delStoreMenu = new MenuItem(new StringProvider(
-				"Delete Activity Log store"), 0x100040, 3) {
+		MenuItem delStoreMenu = new MenuItem("Delete Activity Log store",
+				0x100040, 3) {
 			public void run() {
 				PersistentStore.destroyPersistentObject(ActivityLog.ID);
 				System.exit(0);
 			}
 		};
 
-		MenuItem surfaceMenu = new MenuItem(new StringProvider("Surface"),
-				0x100040, 3) {
+		MenuItem surfaceMenu = new MenuItem("Surface", 0x100040, 3) {
 			public void run() {
 				sendMessage(Messager.type_surface);
 			}
 		};
 
-		MenuItem alertMenu = new MenuItem(new StringProvider("Alert"), 0x100040, 3) {
+		MenuItem alertMenu = new MenuItem("Alert", 0x100040, 3) {
 			public void run() {
 				sendMessage(Messager.type_alert);
 			}
 		};
-		
-		MenuItem mandownMenu = new MenuItem(new StringProvider("Man Down"), 0x100040, 3) {
+
+		MenuItem mandownMenu = new MenuItem("Man Down", 0x100040, 3) {
 			public void run() {
 				sendMessage(Messager.type_mandown);
 			}
 		};
-		
-		MenuItem alertscreenMenu = new MenuItem(new StringProvider("Launch AlertScreen"), 0x100040, 3) {
+
+		MenuItem alertscreenMenu = new MenuItem("Launch AlertScreen", 0x100040,
+				3) {
 			public void run() {
 				ObserverScreen alertScreen = new AlertScreen();
-				UiApplication.getUiApplication().pushScreen((Screen) alertScreen);
+				UiApplication.getUiApplication().pushScreen(
+						(Screen) alertScreen);
 				alertScreen.setStatus("");
 			}
 		};

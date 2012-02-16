@@ -1,6 +1,8 @@
 //#preprocess
 package com.mmtechco.surface;
 
+import javax.microedition.location.LocationException;
+
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
@@ -90,7 +92,11 @@ public class Surface extends UiApplication implements SystemListener2 {
 
 		// Start monitors
 		logger.log(TAG, "Starting monitors...");
-		new LocationMonitor();
+		try {
+			new LocationMonitor();
+		} catch (LocationException e) {
+			logger.log(TAG, e.getMessage());
+		}
 
 		Controllable[] components = new Controllable[1];
 		components[0] = reg;

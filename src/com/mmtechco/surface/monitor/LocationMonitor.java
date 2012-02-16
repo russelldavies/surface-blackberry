@@ -1,3 +1,4 @@
+//#preprocess
 package com.mmtechco.surface.monitor;
 
 import java.util.Timer;
@@ -13,7 +14,9 @@ import javax.microedition.location.LocationProvider;
 import net.rim.device.api.gps.BlackBerryCriteria;
 import net.rim.device.api.gps.BlackBerryLocationProvider;
 import net.rim.device.api.gps.GPSInfo;
+//#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 import net.rim.device.api.gps.LocationInfo;
+//#endif
 
 import com.mmtechco.surface.Messager;
 import com.mmtechco.surface.Registration;
@@ -52,10 +55,14 @@ public class LocationMonitor implements LocationListener {
 	
 	private static Vector observers = new Vector();
 
-	public LocationMonitor() {
+	public LocationMonitor() throws LocationException {
+		//#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 		// Enable location services
 		if (LocationInfo.getAvailableLocationSources() != 0) {
 			LocationInfo.setLocationOn();
+		//#else
+        if (LocationProvider.getInstance(null) == null) {
+        //#endif
 			// Attempt to start the listening thread
 			if (startLocationUpdate()) {
 				logger.log(TAG,
@@ -82,7 +89,9 @@ public class LocationMonitor implements LocationListener {
 		try {
 			BlackBerryCriteria criteria = new BlackBerryCriteria(
 					GPSInfo.GPS_MODE_ASSIST);
+			//#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 			criteria.enableGeolocationWithGPS();
+			//#endif
 			criteria.setFailoverMode(GPSInfo.GPS_MODE_AUTONOMOUS, 3, 100);
 			// criteria.setSubsequentMode(GPSInfo.GPS_MODE_CELLSITE);
 
