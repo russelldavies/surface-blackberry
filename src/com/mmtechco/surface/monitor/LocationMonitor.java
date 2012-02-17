@@ -18,9 +18,9 @@ import net.rim.device.api.gps.GPSInfo;
 import net.rim.device.api.gps.LocationInfo;
 //#endif
 
-import com.mmtechco.surface.Messager;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.data.ActivityLog;
+import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;

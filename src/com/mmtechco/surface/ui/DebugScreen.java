@@ -2,10 +2,10 @@ package com.mmtechco.surface.ui;
 
 import java.util.Hashtable;
 
-import com.mmtechco.surface.Messager;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
+import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;

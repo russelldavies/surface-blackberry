@@ -1,11 +1,14 @@
-package com.mmtechco.surface;
+package com.mmtechco.surface.net;
 
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.RadioException;
+import net.rim.device.api.ui.UiApplication;
+
+import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.monitor.LocationMonitor;
-import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.MMTools;
+import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
@@ -23,19 +26,37 @@ public class Messager {
 	public static final String type_alert = "13";
 	public static final String type_mandown = "15";
 
-	public static void sendMessage(final String type) {
+	public static void sendMessage(final String type,
+			final ToastPopupScreen screen) {
 		// Spawn new thread so the event lock is not blocked
 		new Thread() {
 			public void run() {
-				String queryString = Registration.getRegID()
-						+ Tools.ServerQueryStringSeparator + type
-						+ Tools.ServerQueryStringSeparator + tools.getDate()
-						+ Tools.ServerQueryStringSeparator
-						+ LocationMonitor.latitude
-						+ Tools.ServerQueryStringSeparator
-						+ LocationMonitor.longitude;
-				logger.log(TAG, queryString);
-				new Server().contactServer(queryString);
+				if (tools.isConnected()) {
+					String queryString = Registration.getRegID()
+							+ Tools.ServerQueryStringSeparator + type
+							+ Tools.ServerQueryStringSeparator
+							+ tools.getDate()
+							+ Tools.ServerQueryStringSeparator
+							+ LocationMonitor.latitude
+							+ Tools.ServerQueryStringSeparator
+							+ LocationMonitor.longitude;
+					logger.log(TAG, queryString);
+					Reply reply = new Server().contactServer(queryString);
+					logger.log(TAG, reply.getREST());
+					synchronized (UiApplication.getEventLock()) {
+						if (reply.isError()) {
+							screen.setText("Could not send message");
+						} else {
+							screen.setText("Message sent");
+						}
+						screen.dismiss(2000);
+					}
+				} else {
+					synchronized (UiApplication.getEventLock()) {
+						screen.setText("Please check your connectivity settings");
+						screen.dismiss(2500);
+					}
+				}
 			}
 		}.start();
 	}

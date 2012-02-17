@@ -7,8 +7,9 @@ import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VolumeControl;
 
-import com.mmtechco.surface.Messager;
+import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.prototypes.ObserverScreen;
+import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -294,7 +295,6 @@ public class ActionButtonField extends BaseButtonField {
 	}
 
 	private void sendMessage(String type) {
-
 		String statusMsg = "Sending ";
 		if (type.equals(Messager.type_surface)) {
 			statusMsg = statusMsg + "Surface";
@@ -309,12 +309,12 @@ public class ActionButtonField extends BaseButtonField {
 			Messager.makeCall();
 		}
 		statusMsg = statusMsg + "...";
-
-		screen.setStatus(statusMsg);
-		Messager.sendMessage(type);
-		screen.setStatus("Message Sent...");
-		screen.setStatus(prevStatus);
-
+		//screen.setStatus(statusMsg);
+		ToastPopupScreen toast = new ToastPopupScreen(statusMsg);
+		UiApplication.getUiApplication().pushScreen(toast);
+		Messager.sendMessage(type, toast);
+		//screen.setStatus("Message Sent...");
+		//screen.setStatus(prevStatus);
 		stopSpin();
 	}
 

@@ -1,9 +1,6 @@
 package com.mmtechco.surface.ui;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-import com.mmtechco.surface.Messager;
+import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.ui.component.LockButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedHorizontalFieldManager;
@@ -12,7 +9,6 @@ import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.system.Backlight;
-import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
@@ -21,10 +17,7 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.BitmapField;
-import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.FullScreen;
-import net.rim.device.api.ui.container.PopupScreen;
-import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
 public class KeypadLockScreen extends FullScreen implements FieldChangeListener {
@@ -78,6 +71,20 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 		alertButton.setChangeListener(this);
 	}
 
+	public void fieldChanged(Field field, int context) {
+		if (field == unlockButton) {
+			close();
+		} else {
+			ToastPopupScreen toast = new ToastPopupScreen("Sending...");
+			UiApplication.getUiApplication().pushScreen(toast);
+			if (field == mandownButton) {
+				Messager.sendMessage(Messager.type_mandown, toast);
+			} else if (field == alertButton) {
+				Messager.sendMessage(Messager.type_alert, toast);
+			}
+		}
+	}
+
 	protected boolean keyDown(int keycode, int time) {
 		// Prevent user from locking the device but turn off backlight
 		if (Keypad.key(keycode) == Keypad.KEY_LOCK) {
@@ -102,71 +109,5 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 			return true;
 		}
 		return super.keyChar(ch, status, time);
-	}
-
-	public void fieldChanged(Field field, int context) {
-		UiApplication app = UiApplication.getUiApplication();
-
-		if (field == unlockButton) {
-			close();
-		} else {
-			if (tools.isConnected()) {
-				if (field == mandownButton) {
-					Messager.sendMessage(Messager.type_mandown);
-					app.pushScreen(new ToastPopupScreen("Sent Man Down", 2500));
-				} else if (field == alertButton) {
-					Messager.sendMessage(Messager.type_alert);
-					app.pushScreen(new ToastPopupScreen("Sent Man Down", 2500));
-				}
-			} else {
-				app.pushScreen(new ToastPopupScreen(
-						"Please check your connectivity settings", 2500));
-			}
-		}
-	}
-}
-
-/**
- * Popupscreen that displays a message and then closes after a specified time.
- */
-class ToastPopupScreen extends PopupScreen {
-	Timer timer;
-
-	/**
-	 * Create a new popup screen that will close after a specified time
-	 * 
-	 * @param message
-	 *            The message to display
-	 * @param duration
-	 *            The number of milliseconds to display the screen
-	 */
-	public ToastPopupScreen(String message, int duration) {
-		super(new VerticalFieldManager());
-		add(new LabelField(message));
-		timer = new Timer();
-		timer.schedule(new TimerTask() {
-			public void run() {
-				UiApplication.getUiApplication().invokeLater(new Runnable() {
-					public void run() {
-						close();
-					}
-				});
-			}
-		}, duration);
-	}
-
-	/**
-	 * Overrides the default implementation. Closes the popup screen when the
-	 * Escape key is pressed.
-	 * 
-	 * @see net.rim.device.api.ui.Screen#keyChar(char,int,int)
-	 */
-	public boolean keyChar(char c, int status, int time) {
-		if (c == Characters.ESCAPE) {
-			timer.cancel();
-			close();
-			return true;
-		}
-		return super.keyChar(c, status, time);
 	}
 }
