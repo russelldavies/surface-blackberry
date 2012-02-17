@@ -17,13 +17,10 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.component.BitmapField;
-import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.container.FlowFieldManager;
-import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -65,15 +62,11 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 
 		//#ifdef TOUCH
 		// Logo - only added on touch-only devices
-		EncodedImage logoImage = EncodedImage
-				.getEncodedImageResource("surface_logo.png");
-		float ratio = (float) logoImage.getWidth()
-				/ (float) logoImage.getHeight();
-		int width = (int) ((float) Display.getWidth() * 0.9);
-		int height = (int) ((float) width / ratio);
-		logoImage = ToolsBB.resizeImage(logoImage, width, height);
-		BitmapField logoField = new BitmapField(logoImage.getBitmap(),
-				Field.FIELD_HCENTER);
+		Bitmap logoBitmap = Bitmap.getBitmapResource("surface_logo.png");
+		float ratio = (float) logoBitmap.getWidth() / logoBitmap.getHeight();
+		int newWidth = (int) (Display.getWidth() * 0.9);
+		int newHeight = (int) ( newWidth / ratio);
+		BitmapField logoField = new BitmapField(ToolsBB.resizeBitmap(logoBitmap, newWidth, newHeight, Bitmap.FILTER_LANCZOS,Bitmap.SCALE_TO_FIT), Field.FIELD_HCENTER);
 		logoField.setPadding(0, 0, 10, 0);
 		vfm.add(logoField);
 		//#endif

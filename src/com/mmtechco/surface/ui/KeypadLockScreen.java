@@ -9,6 +9,7 @@ import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.system.Backlight;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
@@ -36,39 +37,42 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 		EvenlySpacedVerticalFieldManager dualManager = new EvenlySpacedVerticalFieldManager(
 				USE_ALL_HEIGHT);
 
-		EncodedImage logoImage = EncodedImage
-				.getEncodedImageResource("surface_logo.png");
-		float ratio = (float) logoImage.getWidth()
-				/ (float) logoImage.getHeight();
-		int width = (int) ((float) Display.getWidth() * 0.9);
-		int height = (int) ((float) width / ratio);
-		logoImage = ToolsBB.resizeImage(logoImage, width, height);
-		BitmapField logoField = new BitmapField(logoImage.getBitmap(),
-				Field.FIELD_HCENTER);
+		// Logo image
+		Bitmap logoBitmap = Bitmap.getBitmapResource("surface_logo.png");
+		float ratio = (float) logoBitmap.getWidth() / logoBitmap.getHeight();
+		int newWidth = (int) (Display.getWidth() * 0.9);
+		int newHeight = (int) (newWidth / ratio);
+		dualManager.add(new BitmapField(ToolsBB
+				.resizeBitmap(logoBitmap, newWidth, newHeight,
+						Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT),
+				Field.FIELD_HCENTER));
 
+		// Three buttons
 		EvenlySpacedHorizontalFieldManager buttons = new EvenlySpacedHorizontalFieldManager(
 				USE_ALL_WIDTH);
 		int spacing = 7;
 		int buttonSize = (int) ((float) Display.getWidth() / 3) - (spacing * 3);
-		buttons.add(mandownButton = new LockButtonField(ToolsBB.resizeImage(
-				EncodedImage.getEncodedImageResource("lockscreen_mandown.png"),
-				buttonSize, buttonSize), "Man Down"));
-		buttons.add(unlockButton = new LockButtonField(ToolsBB.resizeImage(
-				EncodedImage.getEncodedImageResource("lockscreen_unlock.png"),
-				buttonSize, buttonSize), "Unlock"));
-		buttons.add(alertButton = new LockButtonField(ToolsBB.resizeImage(
-				EncodedImage.getEncodedImageResource("lockscreen_alert.png"),
-				buttonSize, buttonSize), "Alert"));
+		buttons.add(mandownButton = new LockButtonField(ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("lockscreen_mandown.png"), buttonSize,
+				buttonSize, Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT),
+				"Man Down"));
+		buttons.add(unlockButton = new LockButtonField(ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("lockscreen_unlock.png"), buttonSize,
+				buttonSize, Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT),
+				"Unlock"));
+		buttons.add(alertButton = new LockButtonField(ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("lockscreen_alert.png"), buttonSize,
+				buttonSize, Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT),
+				"Alert"));
 
-		dualManager.add(logoField);
 		dualManager.add(buttons);
-		add(dualManager);
-		setBackground(BackgroundFactory.createLinearGradientBackground(
-				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
-
 		mandownButton.setChangeListener(this);
 		unlockButton.setChangeListener(this);
 		alertButton.setChangeListener(this);
+
+		add(dualManager);
+		setBackground(BackgroundFactory.createLinearGradientBackground(
+				Color.BLACK, Color.BLACK, Color.RED, Color.RED));
 	}
 
 	public void fieldChanged(Field field, int context) {
