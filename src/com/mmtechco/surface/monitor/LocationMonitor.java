@@ -16,6 +16,8 @@ import net.rim.device.api.gps.BlackBerryLocationProvider;
 import net.rim.device.api.gps.GPSInfo;
 //#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 import net.rim.device.api.gps.LocationInfo;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 //#endif
 
 import com.mmtechco.surface.Registration;
@@ -24,8 +26,7 @@ import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;
-import com.mmtechco.surface.prototypes.ObserverScreen;
-import com.mmtechco.surface.ui.AlertScreen;
+import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.util.ErrorMessage;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
@@ -140,20 +141,6 @@ public class LocationMonitor implements LocationListener {
 		}
 	}
 	
-	public static void addObserver(ObserverScreen screen) {
-		observers.addElement(screen);
-	}
-
-	public static void removeObserver(ObserverScreen screen) {
-		observers.removeElement(screen);
-	}
-
-	private void notifyObservers() {
-		for (int i = 0; i < observers.size(); i++) {
-			((ObserverScreen) observers.elementAt(i)).surface();
-		}
-	}
-
 	private class UploadTask extends TimerTask {
 		public void run() {
 			// Check there are valid values
@@ -162,7 +149,7 @@ public class LocationMonitor implements LocationListener {
 				Reply reply = server.contactServer(locMsg.getREST());
 				if (reply.getCallingCode().equals(Messager.type_surface)) {
 					logger.log(TAG, "Server has requested surface");
-					notifyObservers();
+					UiApplication.getUiApplication().pushGlobalScreen(new SurfaceScreen(), -1000, UiEngine.GLOBAL_MODAL);
 				}
 			}
 		}

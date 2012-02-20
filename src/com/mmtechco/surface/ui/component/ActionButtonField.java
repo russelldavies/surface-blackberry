@@ -3,21 +3,14 @@ package com.mmtechco.surface.ui.component;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.microedition.media.MediaException;
-import javax.microedition.media.Player;
-import javax.microedition.media.control.VolumeControl;
-
 import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
-import net.rim.device.api.media.control.AudioPathControl;
-import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.LED;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
@@ -32,60 +25,47 @@ public class ActionButtonField extends BaseButtonField {
 			.getSimpleClassName(ActionButtonField.class);
 	private static Logger logger = Logger.getInstance();
 
-	private int fieldSize;
-
-	private String text;
-	private String prevStatus;
-	private Bitmap button;
-	private int buttonSize;
-	private Font buttonFont;
-
 	private Bitmap spinner;
-	private Bitmap spinnerWait;
-	private Bitmap spinnerTimer;
 	private int numFrames;
-	private int numFramesWait = 20;
-	private int numFramesTimer = 21;
-	private int currentFrame;
 	private int frameWidth;
-	private int intervalSpinner;
-	private int intervalSpinnerWait = 100;
-	private int intervalSpinnerTimer = 250;
-	private boolean spinning;
+	private int frameHeight;
+	private int currentFrame;
 	private int timerID = -1;
+	private boolean spinning;
+	
+	private Bitmap button;
+	private int buttonWidth;
+	private int buttonHeight;
+	private String buttonText;
+	private Font buttonFont;
+	
+	private String prevStatus;
 
-	// In seconds
-	public final int cooldownInterval = 5;
-	public final int surfaceInterval = 3 * 60;
+	// Specified in seconds
+	private int interval;
 
-	private VibrateThread viber;
-	private Player player;
 
 	private ObserverScreen screen;
-	private Application app = Application.getApplication();
+	
+	private static Application app = Application.getApplication();
 
-	public ActionButtonField(ObserverScreen screen, int fieldSize, long style) {
+	//public ActionButtonField(ObserverScreen screen, int fieldSize, long style) {
+	public ActionButtonField(ObserverScreen screen, Bitmap spinner, int numFrames, int interval, long style) {
 		super(style);
 		this.screen = screen;
-		this.fieldSize = fieldSize;
-
-		// Spinner should be the full width/height of the field
-		spinnerWait = ToolsBB.resizeBitmap(
-				Bitmap.getBitmapResource("spinner_wait.png"), fieldSize
-						* numFramesWait, fieldSize, Bitmap.FILTER_LANCZOS,
-				Bitmap.SCALE_TO_FIT);
-		spinnerTimer = ToolsBB.resizeBitmap(
-				Bitmap.getBitmapResource("spinner_timer.png"), fieldSize
-						* numFramesTimer, fieldSize, Bitmap.FILTER_LANCZOS,
-				Bitmap.SCALE_TO_FIT);
-		spinner = spinnerWait;
-
-		// Button should be 80% the size of the spinner
-		buttonSize = (int) (fieldSize * 0.6);
-		button = ToolsBB.resizeBitmap(
-				Bitmap.getBitmapResource("alertbutton_normal.png"), buttonSize,
-				buttonSize, Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT);
-
+		this.spinner = spinner;
+		this.numFrames = numFrames;
+		this.interval = interval;
+		
+		frameWidth = spinner.getWidth() / numFrames;
+		frameHeight = spinner.getHeight();
+		
+		// Button should be 60% the size of the spinner
+		double factor = 0.6;
+		buttonWidth = (int) (frameWidth * factor);
+		buttonHeight = (int) (frameHeight * factor);
+		button = ToolsBB.resizeBitmap( Bitmap.getBitmapResource("alertbutton_normal.png"), buttonWidth, buttonHeight, Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT); 
+		
 		// Surface is default action
 		setSurface();
 	}
@@ -99,21 +79,20 @@ public class ActionButtonField extends BaseButtonField {
 	*/
 
 	public int getPreferredWidth() {
-		return fieldSize;
+		return frameWidth;
 	}
 
 	public int getPreferredHeight() {
-		return fieldSize;
+		return frameHeight;
 	}
 	
 	protected void layout(int width, int height) {
-		setExtent(fieldSize, fieldSize);
+		setExtent(frameWidth, frameHeight);
 	}
 
 	protected void paint(Graphics g) {
 		// Spinner
-		g.drawBitmap(0, 0, frameWidth, fieldSize, spinner, frameWidth
-				* currentFrame, 0);
+		g.drawBitmap(0, 0, frameWidth, frameHeight, spinner, frameWidth * currentFrame, 0);
 		if (spinning) {
 			currentFrame++;
 			if (currentFrame >= numFrames) {
@@ -122,8 +101,7 @@ public class ActionButtonField extends BaseButtonField {
 		}
 
 		// Action button
-		int pos = (fieldSize - buttonSize) / 2;
-		g.drawBitmap(pos, pos, buttonSize, buttonSize, button, 0, 0);
+		g.drawBitmap((frameWidth - buttonWidth) / 2, (frameHeight - buttonHeight) / 2, buttonWidth, buttonHeight, button, 0, 0);
 
 		// Draw text
 		int oldColor = g.getColor();
@@ -133,7 +111,7 @@ public class ActionButtonField extends BaseButtonField {
 			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
 			Font font = typeface.getFont(Font.PLAIN, 40);
 			g.setFont(font);
-			g.drawText(text, 0, fieldSize / 2, DrawStyle.HCENTER, fieldSize);
+			g.drawText(buttonText, 0, frameWidth / 2, DrawStyle.HCENTER, frameWidth);
 		} catch (ClassNotFoundException e) {
 			logger.log(TAG, e.getMessage());
 		} finally {
@@ -142,12 +120,12 @@ public class ActionButtonField extends BaseButtonField {
 		}
 	}
 
-	public void setButtonText(String text) {
-		this.text = text;
+	private void setButtonText(String text) {
+		this.buttonText = text;
 		invalidate();
 	}
 
-	public void startSpin() {
+	private void startSpin() {
 		spinning = true;
 		if (timerID == -1) {
 			timerID = app.invokeLater(new Runnable() {
@@ -156,11 +134,11 @@ public class ActionButtonField extends BaseButtonField {
 						invalidate();
 					}
 				}
-			}, (intervalSpinner), true);
+			}, (interval * 1000 / numFrames), true);
 		}
 	}
 
-	public void stopSpin() {
+	private void stopSpin() {
 		spinning = false;
 		if (timerID != -1) {
 			app.cancelInvokeLater(timerID);
@@ -169,29 +147,8 @@ public class ActionButtonField extends BaseButtonField {
 		}
 	}
 
-	public void surface() {
-		spinner = spinnerTimer;
-		intervalSpinner = intervalSpinnerTimer;
-		numFrames = numFramesTimer;
-		frameWidth = spinner.getWidth() / numFrames;
-
-		startCountdown(Messager.type_surface, surfaceInterval);
-		// Play sound
-		play();
-		// Vibrate phone to sound
-		viber = new VibrateThread();
-		viber.start();
-		// Blink LED
-		LED.setConfiguration(500, 250, LED.BRIGHTNESS_100);
-		LED.setState(LED.STATE_BLINKING);
-	}
-
 	public void setSurface() {
 		setButtonText("Surface");
-		spinner = spinnerTimer;
-		intervalSpinner = intervalSpinnerTimer;
-		numFrames = numFramesWait;
-		frameWidth = spinner.getWidth() / numFrames;
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
@@ -199,52 +156,29 @@ public class ActionButtonField extends BaseButtonField {
 				sendMessage(Messager.type_surface);
 			}
 		});
-		// Stop playing audio
-		if (player != null && player.getState() == Player.STARTED) {
-			try {
-				player.stop();
-				player.close();
-			} catch (MediaException e) {
-				logger.log(TAG, e.getMessage());
-			}
-		}
-		// Stop vibrating
-		if (viber != null) {
-			viber.stop();
-		}
-		// Stop LED
-		LED.setState(LED.STATE_OFF);
 	}
 
 	public void setAlert() {
 		setButtonText("Alert");
-		spinner = spinnerWait;
-		intervalSpinner = intervalSpinnerWait;
-		numFrames = numFramesWait;
-		frameWidth = spinner.getWidth() / numFrames;
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.type_alert, cooldownInterval);
+				startCountdown(Messager.type_alert, interval);
 			}
 		});
 	}
 
 	public void setManDown() {
 		setButtonText("Man Down");
-		spinner = spinnerWait;
-		intervalSpinner = intervalSpinnerWait;
-		numFrames = numFramesWait;
-		frameWidth = spinner.getWidth() / numFrames;
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.type_mandown, cooldownInterval);
+				startCountdown(Messager.type_mandown, interval);
 			}
 		});
 	}
 
-	private void startCountdown(final String type, final int interval) {
+	public void startCountdown(final String type, final int interval) {
 		startSpin();
 
 		setButtonText("Cancel");
@@ -318,58 +252,4 @@ public class ActionButtonField extends BaseButtonField {
 		stopSpin();
 	}
 
-	private void play() {
-		try {
-			Player player = javax.microedition.media.Manager.createPlayer(
-					getClass().getResourceAsStream("/sounds/beep.mp3"),
-					"audio/mpeg");
-			player.realize();
-			VolumeControl volume = (VolumeControl) player
-					.getControl("VolumeControl");
-			volume.setLevel(100);
-			// Direct audio to speaker even if headset/headphones are plugged in
-			AudioPathControl apc = (AudioPathControl) player
-					.getControl("net.rim.device.api.media.control.AudioPathControl");
-			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
-			player.prefetch();
-			player.start();
-		} catch (Exception e) {
-			logger.log(TAG, e.getMessage());
-		}
-	}
 }
-
-class VibrateThread extends Thread {
-	private final int[] vibePattern = { 650, 208, 992, 225, 983, 200, 1000,
-			200, 1009, 191, 1009, 208, 983, 217, 1042, 216, 1100, 200, 1159,
-			200, 1208, 208, 1259, 200, 1308, 208, 1367, 208, 1409, 208, 1258,
-			117, 83, 117, 92, 116, 1659, 108, 83, 117, 92, 108, 1667, 108, 92,
-			116, 75, 117, 1675, 100, 92, 108, 100, 100, 1667, 116, 84, 108,
-			100, 108, 1667, 108, 84, 116, 92, 108, 1667, 108, 92, 108, 100, 92,
-			1667, 108, 100, 109, 75, 116, 1675, 100, 92, 117, 91, 109, 1658,
-			117, 83, 117, 83, 117, 66, 62225, 13217, 0 };
-	private boolean stop;
-
-	public void run() {
-		int duration = 0;
-		int sleep = 0;
-		for (int i = 0; i < vibePattern.length - 1; i++) {
-			if (stop) {
-				break;
-			}
-			if (i % 2 == 0) {
-				duration = vibePattern[i];
-				sleep = vibePattern[i + 1];
-				Alert.startVibrate(duration);
-				try {
-					Thread.sleep(duration + sleep);
-				} catch (InterruptedException e) {
-				}
-			}
-		}
-	}
-
-	public void stop() {
-		stop = true;
-	}
-};

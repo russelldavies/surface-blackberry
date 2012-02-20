@@ -28,6 +28,9 @@ import net.rim.device.api.ui.decor.BackgroundFactory;
 public final class AlertScreen extends MainScreen implements ObserverScreen,
 		SurfaceResource {
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
+	
+	// Specified in seconds
+	private final int interval = 5;
 
 	// GUI widgets
 	private LabelField statusLabelField = new LabelField(
@@ -100,8 +103,15 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		pillThree.setChangeListener(pillListener);
 
 		// Action button
-		int size = (int) (Display.getHeight() * 0.75);
-		actionButton = new ActionButtonField(this, size, Field.FOCUSABLE | Field.FIELD_HCENTER);
+		double factor = 0.75;
+		int spinnerSize = (int) (Display.getHeight() * factor);
+		int numFrames = 20;
+		Bitmap spinner = ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("spinner_alert-mandown.png"),
+				spinnerSize * numFrames, spinnerSize, Bitmap.FILTER_LANCZOS,
+				Bitmap.SCALE_TO_FIT);
+		actionButton = new ActionButtonField(this, spinner, numFrames,
+				interval, Field.FOCUSABLE | Field.FIELD_HCENTER);
 
 		// Add elements to field manager
 		vfm.add(actionButton);
@@ -128,31 +138,14 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		return statusLabelField.getText();
 	}
 
-	/**
-	 * Show screen and request user to surface
-	 */
-	public void surface() {
-		// Bring screen to front
-		UiApplication.getUiApplication().requestForeground();
-
-		UiApplication.getUiApplication().invokeLater(new Runnable() {
-			public void run() {
-				// Select Surface pill
-				pills.setSelectedField(pillOne);
-				// Start countdown
-				actionButton.surface();
-			}
-		});
-	}
-
 	public void close() {
 		// App is pushed to background rather than terminated when screen is
 		// closed except in debug mode
-		// #ifndef DEBUG
+		//#ifndef DEBUG
 		UiApplication.getUiApplication().requestBackground();
-		// #else
+		//#else
 		super.close();
-		// #endif
+		//#endif
 	}
 
 	public boolean onSavePrompt() {
