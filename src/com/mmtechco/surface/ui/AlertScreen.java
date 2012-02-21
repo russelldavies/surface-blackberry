@@ -46,11 +46,6 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 			}
 		}
 	};
-	ActionButtonField actionButton;
-	PillButtonSet pills;
-	PillButtonField pillOne;
-	PillButtonField pillTwo;
-	PillButtonField pillThree;
 
 	public AlertScreen() {
 		super(NO_VERTICAL_SCROLL | USE_ALL_HEIGHT | USE_ALL_WIDTH);
@@ -68,20 +63,33 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		Bitmap logoBitmap = Bitmap.getBitmapResource("surface_logo.png");
 		float ratio = (float) logoBitmap.getWidth() / logoBitmap.getHeight();
 		int newWidth = (int) (Display.getWidth() * 0.9);
-		int newHeight = (int) ( newWidth / ratio);
-		BitmapField logoField = new BitmapField(ToolsBB.resizeBitmap(logoBitmap, newWidth, newHeight, Bitmap.FILTER_LANCZOS,Bitmap.SCALE_TO_FIT), Field.FIELD_HCENTER);
+		int newHeight = (int) (newWidth / ratio);
+		BitmapField logoField = new BitmapField(ToolsBB.resizeBitmap(
+				logoBitmap, newWidth, newHeight, Bitmap.FILTER_LANCZOS,
+				Bitmap.SCALE_TO_FIT), Field.FIELD_HCENTER);
 		logoField.setPadding(0, 0, 10, 0);
 		vfm.add(logoField);
 		//#endif
+		
+		// Action button
+		double factor = 0.75;
+		int spinnerSize = (int) (Display.getHeight() * factor);
+		int numFrames = 20;
+		Bitmap spinner = ToolsBB.resizeBitmap(
+				Bitmap.getBitmapResource("spinner_alert-mandown.png"),
+				spinnerSize * numFrames, spinnerSize, Bitmap.FILTER_LANCZOS,
+				Bitmap.SCALE_TO_FIT);
+		final ActionButtonField actionButton = new ActionButtonField(this, spinner, numFrames,
+				interval, Field.FIELD_HCENTER);
 
 		// Status field
-		StatusField statusField = new StatusField();
+		StatusField statusField = new StatusField(statusLabelField);
 
 		// Context Buttons
-		pills = new PillButtonSet();
-		pillOne = new PillButtonField("Surface");
-		pillTwo = new PillButtonField("Alert");
-		pillThree = new PillButtonField("Man Down");
+		PillButtonSet pills = new PillButtonSet();
+		final PillButtonField pillOne = new PillButtonField("Surface");
+		final PillButtonField pillTwo = new PillButtonField("Alert");
+		final PillButtonField pillThree = new PillButtonField("Man Down");
 		pills.add(pillOne);
 		pills.add(pillTwo);
 		pills.add(pillThree);
@@ -102,16 +110,6 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		pillTwo.setChangeListener(pillListener);
 		pillThree.setChangeListener(pillListener);
 
-		// Action button
-		double factor = 0.75;
-		int spinnerSize = (int) (Display.getHeight() * factor);
-		int numFrames = 20;
-		Bitmap spinner = ToolsBB.resizeBitmap(
-				Bitmap.getBitmapResource("spinner_alert-mandown.png"),
-				spinnerSize * numFrames, spinnerSize, Bitmap.FILTER_LANCZOS,
-				Bitmap.SCALE_TO_FIT);
-		actionButton = new ActionButtonField(this, spinner, numFrames,
-				interval, Field.FOCUSABLE | Field.FIELD_HCENTER);
 
 		// Add elements to field manager
 		vfm.add(actionButton);
@@ -148,32 +146,28 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		//#endif
 	}
 
-	public boolean onSavePrompt() {
-		// Prevent the save dialog from being displayed
-		return true;
+}
+
+/**
+ * Creates a rounded rectangle to hold registration info fields
+ */
+class StatusField extends VerticalFieldManager {
+	StatusField(Field field) {
+		super(Manager.FIELD_HCENTER);
+		add(field);
+		setPadding(5, 5, 5, 5);
+		setMargin(10, 10, 10, 10);
 	}
 
-	/**
-	 * Creates a rounded rectangle to hold registration info fields
-	 */
-	private class StatusField extends VerticalFieldManager {
-		StatusField() {
-			super(Manager.FIELD_HCENTER);
-			add(statusLabelField);
-			setPadding(5, 5, 5, 5);
-			setMargin(10, 10, 10, 10);
-		}
-
-		protected void paintBackground(Graphics g) {
-			int oldColor = g.getColor();
-			try {
-				g.setColor(Color.BLACK);
-				g.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-				// g.setColor(Color.GRAY);
-				// g.drawRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-			} finally {
-				g.setColor(oldColor);
-			}
+	protected void paintBackground(Graphics g) {
+		int oldColor = g.getColor();
+		try {
+			g.setColor(Color.BLACK);
+			g.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+			// g.setColor(Color.GRAY);
+			// g.drawRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+		} finally {
+			g.setColor(oldColor);
 		}
 	}
 }

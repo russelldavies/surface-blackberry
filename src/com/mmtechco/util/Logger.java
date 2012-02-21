@@ -47,7 +47,7 @@ public class Logger {
 	}
 
 	public void log(String tag, String msg) {
-		//#ifndef DEBUG
+		//#ifdef DEBUG
 		out(tag, msg);
 		if (scr != null) {
 			scr.addNewLog(tag + "::" + msg);

@@ -21,12 +21,12 @@ import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
+//#ifdef TOUCH
 import net.rim.device.api.ui.component.BitmapField;
+//#endif
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.FullScreen;
-import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
 public class SurfaceScreen extends FullScreen implements ObserverScreen {
@@ -58,22 +58,22 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 		super(NO_VERTICAL_SCROLL | USE_ALL_HEIGHT | USE_ALL_WIDTH);
 
 		EvenlySpacedVerticalFieldManager dualManager = new EvenlySpacedVerticalFieldManager(
-				USE_ALL_HEIGHT);
+				USE_ALL_HEIGHT | FIELD_HCENTER);
 
 		// Status field
-		StatusField statusField = new StatusField();
+		StatusField statusField = new StatusField(statusLabelField);
 
-		// #ifdef TOUCH
+		//#ifdef TOUCH
 		// Logo - only added on touch-only devices
 		Bitmap logoBitmap = Bitmap.getBitmapResource("surface_logo.png");
 		float ratio = (float) logoBitmap.getWidth() / logoBitmap.getHeight();
-		int newWidth = (int) (Display.getWidth() * 0.9);
-		int newHeight = (int) (newWidth / ratio);
+		int logoWidth = (int) (Display.getWidth() * 0.9);
+		int logoHeight = (int) (logoWidth / ratio);
 		dualManager.add(new BitmapField(ToolsBB
-				.resizeBitmap(logoBitmap, newWidth, newHeight,
+				.resizeBitmap(logoBitmap, logoWidth, logoHeight,
 						Bitmap.FILTER_LANCZOS, Bitmap.SCALE_TO_FIT),
 				Field.FIELD_HCENTER));
-		// #endif
+		//#endif
 
 		// Action button
 		double factor = 0.75;
@@ -84,7 +84,7 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 						* numFrames, spinnerSize, Bitmap.FILTER_LANCZOS,
 				Bitmap.SCALE_TO_FIT);
 		surfaceButton = new ActionButtonField(this, spinner, numFrames,
-				interval, Field.FOCUSABLE | Field.FIELD_HCENTER);
+				interval, Field.FIELD_HCENTER);
 
 		// Add fields to manager
 		dualManager.add(surfaceButton);
@@ -98,6 +98,7 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 	
 	public void surface() {
 		surfaceButton.startCountdown(Messager.type_surface, interval);
+		
 		// Play sound
 		play();
 		// Vibrate phone to sound
@@ -108,7 +109,7 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 		LED.setState(LED.STATE_BLINKING);
 	}
 	
-	public boolean onClose() {
+	public void stopAlerts() {
 		// Stop playing audio
 		if (player != null && player.getState() == Player.STARTED) {
 			try {
@@ -124,13 +125,19 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 		}
 		// Stop LED
 		LED.setState(LED.STATE_OFF);
-		
+	}
+	
+	public boolean onClose() {
+		stopAlerts();
 		// Close normally
 		return super.onClose();
 	}
+	
+    protected void onUndisplay() 
+    {
+    }
 
 	public void setStatus(final String status) {
-		// TODO: check whether this needs event lock
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
 				statusLabelField.setText(status);
@@ -159,30 +166,6 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 			player.start();
 		} catch (Exception e) {
 			logger.log(TAG, e.getMessage());
-		}
-	}
-
-	/**
-	 * Creates a rounded rectangle to hold registration info fields
-	 */
-	private class StatusField extends VerticalFieldManager {
-		StatusField() {
-			super(Manager.FIELD_HCENTER);
-			add(statusLabelField);
-			setPadding(5, 5, 5, 5);
-			setMargin(10, 10, 10, 10);
-		}
-
-		protected void paintBackground(Graphics g) {
-			int oldColor = g.getColor();
-			try {
-				g.setColor(Color.BLACK);
-				g.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-				// g.setColor(Color.GRAY);
-				// g.drawRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-			} finally {
-				g.setColor(oldColor);
-			}
 		}
 	}
 }
