@@ -138,7 +138,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		MenuItem alertscreenMenu = new MenuItem("Launch AlertScreen", 0x100040,
 				3) {
 			public void run() {
-				ObserverScreen alertScreen = new AlertScreen();
+				ObserverScreen alertScreen = new DefaultScreen();
 				UiApplication.getUiApplication().pushScreen(
 						(Screen) alertScreen);
 				alertScreen.setStatus("");

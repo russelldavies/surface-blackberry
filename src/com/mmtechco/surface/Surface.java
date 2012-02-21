@@ -8,7 +8,7 @@ import javax.microedition.location.LocationException;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
-import com.mmtechco.surface.ui.AlertScreen;
+import com.mmtechco.surface.ui.DefaultScreen;
 //#ifdef DEBUG
 import com.mmtechco.surface.ui.DebugScreen;
 //#endif
@@ -42,7 +42,7 @@ public class Surface extends UiApplication implements SystemListener2 {
 	public static  Boolean lockOn;
 	public static  Boolean alertOn;
 
-	private AlertScreen alertscreen;
+	private DefaultScreen alertscreen;
 	private Registration reg;
 
 	/**
@@ -92,7 +92,7 @@ public class Surface extends UiApplication implements SystemListener2 {
 		//#ifdef DEBUG
 		pushScreen(new DebugScreen());
 		//#else
-		alertscreen = new AlertScreen();
+		alertscreen = new DefaultScreen();
 		pushScreen(alertscreen);
 		//#endif
 

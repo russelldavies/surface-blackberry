@@ -27,7 +27,7 @@ import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
-public final class AlertScreen extends MainScreen implements ObserverScreen,
+public final class DefaultScreen extends MainScreen implements ObserverScreen,
 		SurfaceResource {
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
 	
@@ -49,7 +49,7 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		}
 	};
 
-	public AlertScreen() {
+	public DefaultScreen() {
 		super(NO_VERTICAL_SCROLL | USE_ALL_HEIGHT | USE_ALL_WIDTH);
 
 		// Give reference of self to Registration so registration status can be
