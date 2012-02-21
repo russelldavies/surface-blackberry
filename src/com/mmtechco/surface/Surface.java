@@ -1,6 +1,8 @@
 //#preprocess
 package com.mmtechco.surface;
 
+import java.util.Hashtable;
+
 import javax.microedition.location.LocationException;
 
 import com.mmtechco.surface.monitor.LocationMonitor;
@@ -13,10 +15,14 @@ import com.mmtechco.surface.ui.DebugScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.ui.FontManager;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.util.StringUtilities;
 
 /**
  * Main entry point of the application.
@@ -27,6 +33,14 @@ public class Surface extends UiApplication implements SystemListener2 {
 			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
 
 	private Logger logger = Logger.getInstance();
+	
+	// Settings keys and values
+	public static long ID;
+	
+	public static String KEY_LOCKSCREEN = "lockscreen";
+	public static String KEY_ALERTBUTTON = "alertbutton";
+	public static  Boolean lockOn;
+	public static  Boolean alertOn;
 
 	private AlertScreen alertscreen;
 	private Registration reg;
@@ -71,6 +85,10 @@ public class Surface extends UiApplication implements SystemListener2 {
 	}
 
 	private void initialize() {
+		ID = StringUtilities.stringHashToLong(Application.getApplication()
+				.getClass().getName());
+		readSettings();
+		
 		//#ifdef DEBUG
 		pushScreen(new DebugScreen());
 		//#else
@@ -106,6 +124,24 @@ public class Surface extends UiApplication implements SystemListener2 {
 		new Server().start();
 	}
 
+	public void readSettings() {
+		PersistentObject settings = PersistentStore.getPersistentObject(ID);
+		synchronized (settings) {
+			Hashtable settingsTable = (Hashtable) settings.getContents();
+			if (settingsTable == null) {
+				// Populate with default values
+				settingsTable = new Hashtable();
+				settingsTable.put(KEY_LOCKSCREEN, new Boolean(false));
+				settingsTable.put(KEY_ALERTBUTTON, new Boolean(false));
+				// Store
+				settings.setContents(settingsTable);
+				settings.commit();
+			}
+			lockOn = (Boolean) settingsTable.get(KEY_LOCKSCREEN);
+			alertOn = (Boolean) settingsTable.get(KEY_ALERTBUTTON);
+		}
+	}
+	
 	/**
 	 * Perform the start up work on a new Runnable using the invokeLater
 	 * construct to ensure that it is executed after the event thread has been

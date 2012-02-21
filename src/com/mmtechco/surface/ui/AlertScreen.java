@@ -16,11 +16,13 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -146,6 +148,30 @@ public final class AlertScreen extends MainScreen implements ObserverScreen,
 		//#endif
 	}
 
+	protected void makeMenu(Menu menu, int instance) {
+		MenuItem lockscreenMenu = new MenuItem("Lock Screen", 0x100020, 0) {
+			public void run() {
+				//UiApplication.getUiApplication().pushScreen(new SettingsScreen());
+			}
+		};
+		menu.add(lockscreenMenu);
+		
+		MenuItem settingsMenu = new MenuItem("Settings", 0x100010, 1) {
+			public void run() {
+				UiApplication.getUiApplication().pushScreen(new SettingsScreen());
+			}
+		};
+		menu.add(settingsMenu);
+		
+		MenuItem helpMenu = new MenuItem("Help", 0x100030, 2) {
+			public void run() {
+				//UiApplication.getUiApplication().pushScreen(new HelpScreen());
+			}
+		};
+		menu.add(helpMenu);
+		
+		super.makeMenu(menu, instance);
+	}
 }
 
 /**
