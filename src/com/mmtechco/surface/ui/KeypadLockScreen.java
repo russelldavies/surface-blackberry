@@ -80,14 +80,11 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 		if (field == unlockButton) {
 			close();
 		} else {
-			ToastPopupScreen toast = new ToastPopupScreen("Sending...");
-			Ui.getUiEngine().pushGlobalScreen(toast,
-					Surface.SCREEN_PRIORITY_LOCKSCREEN,
-					UiEngine.GLOBAL_SHOW_LOWER);
+			String message = "Sending...";
 			if (field == mandownButton) {
-				Messager.sendMessage(Messager.type_mandown, toast);
+				Messager.sendMessage(Messager.type_mandown, message);
 			} else if (field == alertButton) {
-				Messager.sendMessage(Messager.type_alert, toast);
+				Messager.sendMessage(Messager.type_alert, message);
 			}
 		}
 	}

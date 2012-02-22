@@ -3,9 +3,12 @@ package com.mmtechco.surface.net;
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.RadioException;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 
 import com.mmtechco.surface.Registration;
+import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.ui.ToastPopupScreen;
@@ -26,8 +29,11 @@ public class Messager {
 	public static final String type_alert = "13";
 	public static final String type_mandown = "15";
 
-	public static void sendMessage(final String type,
-			final ToastPopupScreen screen) {
+	public static void sendMessage(final String type, String initialMessage) {
+		final ToastPopupScreen screen = new ToastPopupScreen(initialMessage);
+		Ui.getUiEngine().pushGlobalScreen(screen,
+				Surface.SCREEN_PRIORITY_LOCKSCREEN, UiEngine.GLOBAL_SHOW_LOWER);
+		
 		// Spawn new thread so the event lock is not blocked
 		new Thread() {
 			public void run() {

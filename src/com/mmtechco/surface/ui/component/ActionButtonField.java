@@ -256,9 +256,7 @@ public class ActionButtonField extends BaseButtonField {
 		}
 		statusMsg = statusMsg + "...";
 		//screen.setStatus(statusMsg);
-		ToastPopupScreen toast = new ToastPopupScreen(statusMsg);
-		UiApplication.getUiApplication().pushScreen(toast);
-		Messager.sendMessage(type, toast);
+		Messager.sendMessage(type, statusMsg);
 		//screen.setStatus("Message Sent...");
 		//screen.setStatus(prevStatus);
 		stopSpin();
