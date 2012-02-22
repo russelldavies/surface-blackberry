@@ -2,6 +2,7 @@
 package com.mmtechco.surface.ui;
 
 import com.mmtechco.surface.Registration;
+import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.component.ActionButtonField;
 import com.mmtechco.surface.ui.component.PillButtonField;
@@ -17,7 +18,10 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.component.BitmapField;
@@ -151,7 +155,14 @@ public final class DefaultScreen extends MainScreen implements ObserverScreen,
 	protected void makeMenu(Menu menu, int instance) {
 		MenuItem lockscreenMenu = new MenuItem("Lock Screen", 0x100020, 0) {
 			public void run() {
-				//UiApplication.getUiApplication().pushScreen(new SettingsScreen());
+				//#ifdef TOUCH
+				Screen lockscreen = new TouchLockScreen();
+				//#else
+				Screen lockscreen = new KeypadLockScreen();
+				//#endif
+				Ui.getUiEngine().pushGlobalScreen(lockscreen,
+						Surface.SCREEN_PRIORITY_LOCKSCREEN,
+						UiEngine.GLOBAL_SHOW_LOWER);
 			}
 		};
 		menu.add(lockscreenMenu);

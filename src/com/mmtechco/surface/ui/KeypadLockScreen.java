@@ -1,5 +1,6 @@
 package com.mmtechco.surface.ui;
 
+import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.ui.component.LockButtonField;
@@ -11,12 +12,11 @@ import com.mmtechco.util.ToolsBB;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
-import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.container.FullScreen;
@@ -81,8 +81,9 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 			close();
 		} else {
 			ToastPopupScreen toast = new ToastPopupScreen("Sending...");
-			//UiApplication.getUiApplication().pushScreen(toast);
-			UiApplication.getUiApplication().pushGlobalScreen(toast, -2000, UiEngine.GLOBAL_QUEUE);
+			Ui.getUiEngine().pushGlobalScreen(toast,
+					Surface.SCREEN_PRIORITY_LOCKSCREEN,
+					UiEngine.GLOBAL_SHOW_LOWER);
 			if (field == mandownButton) {
 				Messager.sendMessage(Messager.type_mandown, toast);
 			} else if (field == alertButton) {

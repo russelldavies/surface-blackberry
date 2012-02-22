@@ -32,18 +32,20 @@ public class Surface extends UiApplication implements SystemListener2 {
 	private static final String TAG = "App";
 	public static ResourceBundle r = ResourceBundle.getBundle(
 			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
-
 	private Logger logger = Logger.getInstance();
 	
 	// Settings keys and values
 	public static long ID;
-	
 	public static String KEY_LOCKSCREEN = "lockscreen";
 	public static String KEY_ALERTBUTTON = "alertbutton";
 	public static  Boolean lockOn;
 	public static  Boolean alertOn;
+	
+	// Global screen priorities; lower is higher priority
+	public static int SCREEN_PRIORITY_SURFACE = 1;
+	public static int SCREEN_PRIORITY_LOCKSCREEN = 2;
 
-	private DefaultScreen alertscreen;
+	private DefaultScreen defaultScreen;
 	private Registration reg;
 
 	/**
@@ -92,8 +94,8 @@ public class Surface extends UiApplication implements SystemListener2 {
 		//#ifdef DEBUG
 		pushScreen(new DebugScreen());
 		//#else
-		alertscreen = new DefaultScreen();
-		pushScreen(alertscreen);
+		defaultScreen = new DefaultScreen();
+		pushScreen(defaultScreen);
 		//#endif
 
 		logger.log(TAG, "Starting registration");
