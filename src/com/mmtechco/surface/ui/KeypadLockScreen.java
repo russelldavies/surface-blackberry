@@ -17,6 +17,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.container.FullScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -80,7 +81,8 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 			close();
 		} else {
 			ToastPopupScreen toast = new ToastPopupScreen("Sending...");
-			UiApplication.getUiApplication().pushScreen(toast);
+			//UiApplication.getUiApplication().pushScreen(toast);
+			UiApplication.getUiApplication().pushGlobalScreen(toast, -2000, UiEngine.GLOBAL_QUEUE);
 			if (field == mandownButton) {
 				Messager.sendMessage(Messager.type_mandown, toast);
 			} else if (field == alertButton) {

@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import javax.microedition.location.LocationException;
 
 import com.mmtechco.surface.monitor.LocationMonitor;
+import com.mmtechco.surface.monitor.LockKeyListener;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
 import com.mmtechco.surface.ui.DefaultScreen;
@@ -72,10 +73,9 @@ public class Surface extends UiApplication implements SystemListener2 {
 			app.initializeLater();
 		}
 
-		// Setup listener for removal of app. This needs to be set here before
-		// the app enters the event dispatcher.
-		// CodeModuleManager.addListener(app, new UninstallMonitor());
-
+		// Listen for button presses
+		app.addKeyListener(new LockKeyListener());
+		
 		// Load font
 		FontManager.getInstance().load("kabel.ttf", "Kabel Dm BT",
 				FontManager.APPLICATION_FONT);
