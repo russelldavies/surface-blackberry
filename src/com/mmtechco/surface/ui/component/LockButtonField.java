@@ -1,7 +1,6 @@
 package com.mmtechco.surface.ui.component;
 
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
@@ -11,7 +10,6 @@ import net.rim.device.api.ui.Graphics;
 public class LockButtonField extends BaseButtonField {
 	String text;
 	Bitmap bitmap;
-	Font buttonFont;
 
 	// Stroke width for the highlight circle
 	int strokeWidth = 6;
@@ -26,7 +24,7 @@ public class LockButtonField extends BaseButtonField {
 
 	public void applyFont() {
 		// Font should be 20% size of the image
-		buttonFont = getFont().derive(Font.BOLD, bitmap.getWidth() / 5);
+		setFont(getFont().derive(Font.BOLD, bitmap.getWidth() / 5));
 	}
 
 	public int getPreferredWidth() {
@@ -38,8 +36,8 @@ public class LockButtonField extends BaseButtonField {
 	}
 
 	protected void layout(int width, int height) {
-		textWidth = buttonFont.getAdvance(text);
-		textHeight = buttonFont.getHeight();
+		textWidth = getFont().getAdvance(text);
+		textHeight = getFont().getHeight();
 
 		totalWidth = Math.max(bitmap.getWidth() + (strokeWidth * 2), textWidth);
 		totalHeight = bitmap.getHeight() + (strokeWidth * 2) + textHeight;
@@ -51,14 +49,8 @@ public class LockButtonField extends BaseButtonField {
 		g.drawBitmap(strokeWidth, strokeWidth, bitmap.getWidth(),
 				bitmap.getHeight(), bitmap, 0, 0);
 
-		Font oldFont = g.getFont();
-		try {
-			g.setFont(buttonFont);
-			g.drawText(text, 0, (totalHeight - textHeight), DrawStyle.HCENTER,
-					totalWidth);
-		} finally {
-			g.setFont(oldFont);
-		}
+		g.drawText(text, 0, (totalHeight - textHeight), DrawStyle.HCENTER,
+				totalWidth);
 	}
 
 	protected void drawFocus(Graphics g, boolean on) {

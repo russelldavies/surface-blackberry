@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.SurfaceScreen;
-import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -21,7 +20,6 @@ import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.UiEngine;
 
 public class ActionButtonField extends BaseButtonField {
 	private static final String TAG = ToolsBB
@@ -40,7 +38,6 @@ public class ActionButtonField extends BaseButtonField {
 	private int buttonWidth;
 	private int buttonHeight;
 	private String buttonText;
-	private Font buttonFont;
 	
 	// Specified in seconds
 	private int interval;
@@ -72,14 +69,6 @@ public class ActionButtonField extends BaseButtonField {
 		setSurface();
 	}
 	
-	/*
-	public void applyFont() {
-		// Font should be 20% size of the image
-		buttonFont.getAdvance(text);
-		buttonFont = getFont().derive(Font.BOLD, image.getScaledHeight() / 5);
-	}
-	*/
-
 	public int getPreferredWidth() {
 		return frameWidth;
 	}
@@ -108,26 +97,57 @@ public class ActionButtonField extends BaseButtonField {
 				(frameHeight - buttonHeight) / 2, buttonWidth, buttonHeight,
 				button, 0, 0);
 
-		// Draw text
+		// Draw button text
 		int oldColor = g.getColor();
 		Font oldFont = g.getFont();
 		try {
 			g.setColor(Color.WHITE);
-			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
-			Font font = typeface.getFont(Font.PLAIN, 40);
-			g.setFont(font);
-			g.drawText(buttonText, 0, frameWidth / 2, DrawStyle.HCENTER,
+			int aY = (frameWidth / 2) - (getFont().getHeight() / 2);
+			g.drawText(buttonText, 0, aY, DrawStyle.HCENTER,
 					frameWidth);
-		} catch (ClassNotFoundException e) {
-			logger.log(TAG, e.getMessage());
 		} finally {
 			g.setColor(oldColor);
 			g.setFont(oldFont);
 		}
 	}
+	
+	public void applyFont() {
+		try {
+			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
+			setFont(typeface.getFont(Font.PLAIN, 20));
+		} catch (ClassNotFoundException e) {
+			logger.log(TAG, e.getMessage());
+		}
+		resizeFont();
+	}
+	
+	private void resizeFont() {
+		Font font = getFont();
+		int textLength = font.derive(Font.PLAIN, font.getHeight()).getBounds(buttonText);
+		int desiredLength = buttonWidth - 45;
+		
+		if(textLength > desiredLength) {
+			for(int height = font.getHeight(); height > 20; height--) {
+				textLength = font.derive(Font.PLAIN, height).getBounds(buttonText);
+				if (textLength <= desiredLength) {
+					setFont(font.derive(Font.PLAIN, height));
+					break;
+				}
+			}
+		} else {
+			for(int height = font.getHeight(); height < 100; height++) {
+				textLength = font.derive(Font.PLAIN, height).getBounds(buttonText);
+				if (textLength >= desiredLength) {
+					setFont(font.derive(Font.PLAIN, height));
+					break;
+				}
+			}
+		}
+	}
 
 	private void setButtonText(String text) {
 		this.buttonText = text;
+		resizeFont();
 		invalidate();
 	}
 
