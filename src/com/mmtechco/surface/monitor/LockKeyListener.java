@@ -2,6 +2,7 @@
 package com.mmtechco.surface.monitor;
 
 import com.mmtechco.surface.Surface;
+import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.ui.KeypadLockScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
@@ -25,7 +26,7 @@ public final class LockKeyListener implements KeyListener {
 
 	public boolean keyDown(int keycode, int time) {
 		if (Keypad.key(keycode) == Keypad.KEY_VOLUME_UP) {
-			logger.log(TAG, "Volume key caught. Last time: " + lastTime + " Current time: " + time);
+			logger.log(TAG, "Volume up caught.");
 			// Continue if second press is within a second
 			if (time - lastTime < 1000) {
 				logger.log(TAG, "Pushing lockscreen");
@@ -37,6 +38,17 @@ public final class LockKeyListener implements KeyListener {
 				Ui.getUiEngine().pushGlobalScreen(lockscreen,
 						Surface.SCREEN_PRIORITY_LOCKSCREEN,
 						UiEngine.GLOBAL_SHOW_LOWER);
+			}
+			lastTime = time;
+			// Consume event
+			return true;
+		}
+		else if (Keypad.key(keycode) == Keypad.KEY_VOLUME_DOWN) {
+			logger.log(TAG, "Volume down caught.");
+			// Continue if second press is within a second
+			if (time - lastTime < 1000) {
+				logger.log(TAG, "Sending Alert");
+				Messager.sendMessage(Messager.type_alert, "Sending Alert...");
 			}
 			lastTime = time;
 			// Consume event
