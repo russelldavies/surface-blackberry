@@ -222,6 +222,7 @@ public class ActionButtonField extends BaseButtonField {
 								+ String.valueOf(--counter));
 						if (counter == 0) {
 							if (type.equals(Messager.type_surface)) {
+								((SurfaceScreen)screen).stopAlerts();
 								((Screen)screen).close();
 							} else {
 								screen.setStatus(origStatus);

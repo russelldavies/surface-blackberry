@@ -96,11 +96,27 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 		surface();
 	}
 	
-	public void surface() {
+	private void surface() {
 		surfaceButton.startCountdown(Messager.type_surface, interval);
 		
 		// Play sound
-		play();
+		try {
+			player = javax.microedition.media.Manager.createPlayer(
+					getClass().getResourceAsStream("/sounds/beep.mp3"),
+					"audio/mpeg");
+			player.realize();
+			VolumeControl volume = (VolumeControl) player
+					.getControl("VolumeControl");
+			volume.setLevel(100);
+			// Direct audio to speaker even if headset/headphones are plugged in
+			AudioPathControl apc = (AudioPathControl) player
+					.getControl("net.rim.device.api.media.control.AudioPathControl");
+			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
+			player.prefetch();
+			player.start();
+		} catch (Exception e) {
+			logger.log(TAG, e.getMessage());
+		}
 		// Vibrate phone to sound
 		viber = new VibrateThread();
 		viber.start();
@@ -127,16 +143,6 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 		LED.setState(LED.STATE_OFF);
 	}
 	
-	public boolean onClose() {
-		stopAlerts();
-		// Close normally
-		return super.onClose();
-	}
-	
-    protected void onUndisplay() 
-    {
-    }
-
 	public void setStatus(final String status) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
@@ -147,26 +153,6 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 
 	public String getStatus() {
 		return statusLabelField.getText();
-	}
-	
-	private void play() {
-		try {
-			Player player = javax.microedition.media.Manager.createPlayer(
-					getClass().getResourceAsStream("/sounds/beep.mp3"),
-					"audio/mpeg");
-			player.realize();
-			VolumeControl volume = (VolumeControl) player
-					.getControl("VolumeControl");
-			volume.setLevel(100);
-			// Direct audio to speaker even if headset/headphones are plugged in
-			AudioPathControl apc = (AudioPathControl) player
-					.getControl("net.rim.device.api.media.control.AudioPathControl");
-			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
-			player.prefetch();
-			player.start();
-		} catch (Exception e) {
-			logger.log(TAG, e.getMessage());
-		}
 	}
 }
 
