@@ -16,6 +16,7 @@ import net.rim.device.api.gps.BlackBerryLocationProvider;
 import net.rim.device.api.gps.GPSInfo;
 //#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 import net.rim.device.api.gps.LocationInfo;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -151,10 +152,11 @@ public class LocationMonitor implements LocationListener {
 				Reply reply = server.contactServer(locMsg.getREST());
 				if (reply.getCallingCode().equals(Messager.type_surface)) {
 					logger.log(TAG, "Server has requested surface");
-					Ui.getUiEngine().pushGlobalScreen(
-							new SurfaceScreen(),
-							Surface.SCREEN_PRIORITY_SURFACE,
-							UiEngine.GLOBAL_SHOW_LOWER);
+					synchronized (Application.getEventLock()) {
+						Ui.getUiEngine().pushGlobalScreen(new SurfaceScreen(),
+								Surface.SCREEN_PRIORITY_SURFACE,
+								UiEngine.GLOBAL_SHOW_LOWER);
+					}
 				}
 			}
 		}
