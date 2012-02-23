@@ -152,11 +152,14 @@ public class LocationMonitor implements LocationListener {
 				Reply reply = server.contactServer(locMsg.getREST());
 				if (reply.getCallingCode().equals(Messager.type_surface)) {
 					logger.log(TAG, "Server has requested surface");
-					synchronized (Application.getEventLock()) {
-						Ui.getUiEngine().pushGlobalScreen(new SurfaceScreen(),
-								Surface.SCREEN_PRIORITY_SURFACE,
-								UiEngine.GLOBAL_SHOW_LOWER);
-					}
+					Application.getApplication().invokeLater(new Runnable() {
+						public void run() {
+							Ui.getUiEngine().pushGlobalScreen(
+									new SurfaceScreen(),
+									Surface.SCREEN_PRIORITY_SURFACE,
+									UiEngine.GLOBAL_SHOW_LOWER);
+						}
+					});
 				}
 			}
 		}
