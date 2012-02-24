@@ -105,10 +105,13 @@ public final class DefaultScreen extends MainScreen implements ObserverScreen,
 			public void fieldChanged(Field field, int context) {
 				if (field == pillOne) {
 					actionButton.setSurface();
+					actionButton.setFocus();
 				} else if (field == pillTwo) {
 					actionButton.setAlert();
+					actionButton.setFocus();
 				} else if (field == pillThree) {
 					actionButton.setManDown();
+					actionButton.setFocus();
 				}
 			}
 		};

@@ -111,6 +111,24 @@ public class ActionButtonField extends BaseButtonField {
 		}
 	}
 	
+	protected void drawFocus(Graphics g, boolean on) {
+		int strokeWidth = 10;
+		
+		int oldColor = g.getColor();
+		try {
+			g.setColor(Color.WHITE);
+			g.setStrokeWidth(strokeWidth);
+			int cx = frameWidth / 2;
+			int cy = frameHeight / 2;
+			//int r = buttonWidth / 2 - strokeWidth;
+			int r = buttonWidth / 2;
+			g.drawEllipse(cx, cy, cx + r, cy, cx, cy + r, 0, 360);
+		} finally {
+			g.setColor(oldColor);
+			g.setStrokeStyle(1);
+		}
+	}
+	
 	public void applyFont() {
 		try {
 			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
