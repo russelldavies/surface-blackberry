@@ -1,8 +1,12 @@
+//#preprocess
 package com.mmtechco.surface.ui;
 
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.mmtechco.surface.Registration;
+import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Messager;
@@ -24,8 +28,11 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.SeparatorField;
@@ -106,7 +113,6 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				deleteAll();
 			}
 		};
-
 		MenuItem delRegMenu = new MenuItem("Delete Registration info",
 				0x100030, 2) {
 			public void run() {
@@ -115,7 +121,6 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				PersistentStore.destroyPersistentObject(Registration.ID);
 			}
 		};
-
 		MenuItem delStoreMenu = new MenuItem("Delete Activity Log store",
 				0x100040, 3) {
 			public void run() {
@@ -123,32 +128,51 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				System.exit(0);
 			}
 		};
-
-		MenuItem surfaceMenu = new MenuItem("Surface", 0x100040, 3) {
+		MenuItem surfaceMenu = new MenuItem("Send Surface", 0x100040, 3) {
 			public void run() {
 				sendMessage(Messager.type_surface);
 			}
 		};
-
-		MenuItem alertMenu = new MenuItem("Alert", 0x100040, 3) {
+		MenuItem alertMenu = new MenuItem("Send Alert", 0x100040, 3) {
 			public void run() {
 				sendMessage(Messager.type_alert);
 			}
 		};
-
-		MenuItem mandownMenu = new MenuItem("Man Down", 0x100040, 3) {
+		MenuItem mandownMenu = new MenuItem("Send Man Down", 0x100040, 3) {
 			public void run() {
 				sendMessage(Messager.type_mandown);
 			}
 		};
-
-		MenuItem alertscreenMenu = new MenuItem("Launch AlertScreen", 0x100040,
+		MenuItem alertscreenMenu = new MenuItem("Launch Default Screen", 0x100040,
 				3) {
 			public void run() {
-				ObserverScreen alertScreen = new DefaultScreen();
-				UiApplication.getUiApplication().pushScreen(
-						(Screen) alertScreen);
-				alertScreen.setStatus("");
+				ObserverScreen defaultScreen = new DefaultScreen();
+				Registration.addObserver(defaultScreen);
+				defaultScreen.setStatus(statusTextField.getText());
+				Ui.getUiEngine().pushScreen((Screen)defaultScreen);
+			}
+		};
+		MenuItem lockscreenMenu = new MenuItem("Launch Lock Screen", 0x100040,
+				3) {
+			public void run() {
+				//#ifdef TOUCH
+				Ui.getUiEngine().pushScreen(new TouchLockScreen());
+				//#else
+				Ui.getUiEngine().pushScreen(new KeypadLockScreen());
+				//#endif
+			}
+		};
+		MenuItem simulateSurfaceMenu = new MenuItem("Simulate Receiving a Surface", 0x100040,
+				3) {
+			public void run() {
+				Dialog.inform("A Surface screen will display after one minute");
+				new Timer().schedule(new TimerTask() {
+					public void run() {
+						Ui.getUiEngine().pushGlobalScreen(new SurfaceScreen(),
+								Surface.SCREEN_PRIORITY_SURFACE,
+								UiEngine.GLOBAL_SHOW_LOWER);
+					}
+				}, 60 * 1000);
 			}
 		};
 
@@ -159,6 +183,8 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		menu.add(alertMenu);
 		menu.add(mandownMenu);
 		menu.add(alertscreenMenu);
+		menu.add(lockscreenMenu);
+		menu.add(simulateSurfaceMenu);
 
 		super.makeMenu(menu, instance);
 	}
