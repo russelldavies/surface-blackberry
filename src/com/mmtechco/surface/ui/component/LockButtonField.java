@@ -48,7 +48,6 @@ public class LockButtonField extends BaseButtonField {
 	protected void paint(Graphics g) {
 		g.drawBitmap(strokeWidth, strokeWidth, bitmap.getWidth(),
 				bitmap.getHeight(), bitmap, 0, 0);
-
 		g.drawText(text, 0, (totalHeight - textHeight), DrawStyle.HCENTER,
 				totalWidth);
 	}
@@ -62,6 +61,9 @@ public class LockButtonField extends BaseButtonField {
 			int cy = cx;
 			int r = totalWidth / 2 - strokeWidth;
 			g.drawEllipse(cx, cy, cx + r, cy, cx, cy + r, 0, 360);
+			// Draw text in white this time
+			g.drawText(text, 0, (totalHeight - textHeight), DrawStyle.HCENTER,
+					totalWidth);
 		} finally {
 			g.setColor(oldColor);
 			g.setStrokeStyle(1);
