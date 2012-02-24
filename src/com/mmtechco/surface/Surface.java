@@ -46,8 +46,8 @@ public class Surface extends UiApplication implements SystemListener2 {
 	public static long ID;
 	public static String KEY_LOCKSCREEN = "lockscreen";
 	public static String KEY_ALERTBUTTON = "alertbutton";
-	public static Boolean lockOn;
-	public static Boolean alertOn;
+	public static boolean lockOn;
+	public static boolean alertOn;
 	
 	// Global screen priorities; lower is higher priority
 	public static int SCREEN_PRIORITY_SURFACE = 1;
@@ -163,8 +163,10 @@ public class Surface extends UiApplication implements SystemListener2 {
 				settings.setContents(settingsTable);
 				settings.commit();
 			}
-			lockOn = (Boolean) settingsTable.get(KEY_LOCKSCREEN);
-			alertOn = (Boolean) settingsTable.get(KEY_ALERTBUTTON);
+			lockOn = ((Boolean) settingsTable.get(KEY_LOCKSCREEN))
+					.booleanValue();
+			alertOn = ((Boolean) settingsTable.get(KEY_ALERTBUTTON))
+					.booleanValue();
 		}
 	}
 
@@ -176,7 +178,7 @@ public class Surface extends UiApplication implements SystemListener2 {
 	
 	public void backlightStateChange(boolean on) {
 		// Display lockscreen when display turns off
-		if (!on) {
+		if (lockOn && !on) {
 			if (!lockscreen.isDisplayed()) {
 				pushGlobalScreen(lockscreen, SCREEN_PRIORITY_LOCKSCREEN,
 						UiEngine.GLOBAL_SHOW_LOWER);

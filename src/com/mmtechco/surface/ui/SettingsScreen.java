@@ -27,7 +27,7 @@ public class SettingsScreen extends MainScreen {
 
 		final LabeledSwitch lockSwitch = new LabeledSwitch(switch_left,
 				switch_right, switch_left_focus, switch_right_focus, "on",
-				"off", Surface.lockOn.booleanValue());
+				"off", Surface.lockOn);
 		JustifiedHorizontalFieldManager lockScreen = new JustifiedHorizontalFieldManager(
 				new LabelField("LockScreen"), lockSwitch, false, USE_ALL_WIDTH);
 		lockScreen.setPadding(5, 5, 5, 5);
@@ -35,7 +35,7 @@ public class SettingsScreen extends MainScreen {
 
 		final LabeledSwitch alertSwitch = new LabeledSwitch(switch_left,
 				switch_right, switch_left_focus, switch_right_focus, "on",
-				"off", Surface.alertOn.booleanValue());
+				"off", Surface.alertOn);
 		JustifiedHorizontalFieldManager alertButton = new JustifiedHorizontalFieldManager(
 				new LabelField("Alert Button"), alertSwitch, false,
 				USE_ALL_WIDTH);
@@ -45,15 +45,11 @@ public class SettingsScreen extends MainScreen {
 		FieldChangeListener listener = new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
 				if (field == lockSwitch) {
-					updateSettings(
-							Surface.KEY_LOCKSCREEN,
-							Surface.lockOn = new Boolean(lockSwitch
-									.getOnState()));
+					updateSettings(Surface.KEY_LOCKSCREEN,
+							Surface.lockOn = lockSwitch.getOnState());
 				} else if (field == alertSwitch) {
-					updateSettings(
-							Surface.KEY_ALERTBUTTON,
-							Surface.alertOn = new Boolean(alertSwitch
-									.getOnState()));
+					updateSettings(Surface.KEY_ALERTBUTTON,
+							Surface.alertOn = alertSwitch.getOnState());
 				}
 			}
 		};
@@ -61,12 +57,12 @@ public class SettingsScreen extends MainScreen {
 		alertSwitch.setChangeListener(listener);
 	}
 
-	private void updateSettings(String key, Boolean value) {
+	private void updateSettings(String key, boolean value) {
 		PersistentObject settings = PersistentStore
 				.getPersistentObject(Surface.ID);
 		synchronized (settings) {
 			Hashtable settingsTable = (Hashtable) settings.getContents();
-			settingsTable.put(key, value);
+			settingsTable.put(key, new Boolean(value));
 		}
 	}
 }
