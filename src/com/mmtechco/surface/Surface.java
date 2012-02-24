@@ -23,6 +23,7 @@ import com.mmtechco.util.Logger;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.system.SystemListener2;
@@ -103,21 +104,23 @@ public class Surface extends UiApplication implements SystemListener2 {
 				.getClass().getName());
 		readSettings();
 		
-		//#ifdef DEBUG
-		pushScreen(new DebugScreen());
-		//#else
-		defaultScreen = new DefaultScreen();
-		pushScreen(defaultScreen);
-		//#endif
-		
 		//#ifdef TOUCH
 		lockscreen = new TouchLockScreen();
 		//#else
 		lockscreen = new KeypadLockScreen();
 		//#endif
-		// Listen for button presses
-		addKeyListener(new LockKeyListener(lockscreen));
 
+		// Listen for button presses
+		KeyListener lockkeyListener = new LockKeyListener(lockscreen);
+		addKeyListener(lockkeyListener);
+		
+		//#ifdef DEBUG
+		pushScreen(new DebugScreen(lockkeyListener));
+		//#else
+		defaultScreen = new DefaultScreen();
+		pushScreen(defaultScreen);
+		//#endif
+		
 		logger.log(TAG, "Starting registration");
 		reg = new Registration();
 		reg.start();

@@ -14,9 +14,12 @@ import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
 
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Characters;
+import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
+import net.rim.device.api.system.SystemListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.MenuItem;
@@ -43,7 +46,11 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	private TextField statusTextField = new TextField(Field.NON_FOCUSABLE);
 	private TextField idTextField = new TextField(Field.NON_FOCUSABLE);
 
-	public DebugScreen() {
+	private KeyListener keyListener;
+	
+	public DebugScreen(KeyListener keyListener) {
+		this.keyListener = keyListener;
+		
 		Registration.addObserver(this);
 		Logger.addObserver(this);
 
@@ -175,7 +182,9 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	}
 
 	public void close() {
-		// TODO: remove filesystem listener, remove call and sms listeners.
+		Application app = Application.getApplication();
+		app.removeSystemListener((SystemListener) app);
+		app.removeKeyListener(keyListener);
 		super.close();
 	}
 
