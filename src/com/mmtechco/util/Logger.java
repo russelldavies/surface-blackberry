@@ -92,7 +92,7 @@ public class Logger {
 
 	// These methods are for logging to BlackBerry EventLog. Useful for device
 	// debugging.
-	public void startEventLogger() {
+	public static void startEventLogger() {
 		EventLogger.register(GUID, APP_NAME,
 				EventLogger.VIEWER_STRING);
 	}

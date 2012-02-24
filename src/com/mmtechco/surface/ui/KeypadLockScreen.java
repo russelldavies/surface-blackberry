@@ -1,14 +1,13 @@
 package com.mmtechco.surface.ui;
 
-import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.net.Messager;
-import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.ui.component.LockButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedHorizontalFieldManager;
 import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
+import net.rim.device.api.media.MediaActionHandler;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
@@ -16,8 +15,6 @@ import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
-import net.rim.device.api.ui.Ui;
-import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.container.FullScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
@@ -26,13 +23,10 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(KeypadLockScreen.class);
 	private static Logger logger = Logger.getInstance();
-	private static MMTools tools = ToolsBB.getInstance();
 
 	LockButtonField mandownButton;
 	LockButtonField unlockButton;
 	LockButtonField alertButton;
-
-	private boolean locked;
 
 	public KeypadLockScreen() {
 		EvenlySpacedVerticalFieldManager dualManager = new EvenlySpacedVerticalFieldManager(
@@ -90,28 +84,13 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 	}
 
 	protected boolean keyDown(int keycode, int time) {
-		// Prevent user from locking the device but turn off backlight
-		if (Keypad.key(keycode) == Keypad.KEY_LOCK) {
-			if (locked) {
-				Backlight.enable(true);
-				locked = false;
-				return true;
-			} else {
-				Backlight.enable(false);
-				locked = true;
-				return true;
-			}
+		// Prevent user from locking the device and instead turn off backlight
+		int key = Keypad.key(keycode);
+		if (key == Keypad.KEY_LOCK
+				|| key == MediaActionHandler.MEDIA_ACTION_PLAYPAUSE_TOGGLE
+				|| key == Keypad.KEY_VOLUME_UP) {
+			Backlight.enable(false);
 		}
-		if (locked) {
-			return true;
-		}
-		return super.keyDown(keycode, time);
-	}
-
-	protected boolean keyChar(char ch, int status, int time) {
-		if (locked) {
-			return true;
-		}
-		return super.keyChar(ch, status, time);
+		return false;
 	}
 }

@@ -3,7 +3,6 @@ package com.mmtechco.surface.monitor;
 
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.net.Messager;
-import com.mmtechco.surface.ui.KeypadLockScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -22,12 +21,8 @@ public final class LockKeyListener implements KeyListener {
 	private int lastTime;
 	private Screen lockscreen;
 	
-	public LockKeyListener() {
-		//#ifdef TOUCH
-		lockscreen = new TouchLockScreen();
-		//#else
-		lockscreen = new KeypadLockScreen();
-		//#endif
+	public LockKeyListener(Screen lockscreen) {
+		this.lockscreen = lockscreen;
 	}
 	
 	public boolean keyDown(int keycode, int time) {
