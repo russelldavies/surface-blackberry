@@ -179,7 +179,7 @@ public final class DefaultScreen extends MainScreen implements ObserverScreen,
 		
 		MenuItem helpMenu = new MenuItem("Help", 0x100030, 2) {
 			public void run() {
-				//UiApplication.getUiApplication().pushScreen(new HelpScreen());
+				UiApplication.getUiApplication().pushScreen(new HelpScreen());
 			}
 		};
 		menu.add(helpMenu);
