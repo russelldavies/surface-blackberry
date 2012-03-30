@@ -14,6 +14,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.component.BitmapField;
+import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.FullScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
@@ -24,6 +25,13 @@ public class TouchLockScreen extends FullScreen implements FieldChangeListener {
 
 	public TouchLockScreen() {
 		//EvenlySpacedVerticalFieldManager manager = new EvenlySpacedVerticalFieldManager(USE_ALL_HEIGHT);
+		
+		// Title bar
+		StandardTitleBar titleBar = new StandardTitleBar().addClock()
+				.addNotifications().addSignalIndicator();
+		titleBar.setPropertyValue(StandardTitleBar.PROPERTY_BATTERY_VISIBILITY,
+				StandardTitleBar.BATTERY_VISIBLE_ALWAYS);
+		setTitleBar(titleBar);
 
 		// Mandown Slider
 		add(mandownSlider = new LockSliderField(Bitmap

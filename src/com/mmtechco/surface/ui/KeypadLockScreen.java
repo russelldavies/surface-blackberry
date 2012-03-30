@@ -16,6 +16,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.component.BitmapField;
+import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.FullScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
 
@@ -31,6 +32,13 @@ public class KeypadLockScreen extends FullScreen implements FieldChangeListener 
 	public KeypadLockScreen() {
 		EvenlySpacedVerticalFieldManager dualManager = new EvenlySpacedVerticalFieldManager(
 				USE_ALL_HEIGHT);
+
+		// Title bar
+		StandardTitleBar titleBar = new StandardTitleBar().addClock()
+				.addNotifications().addSignalIndicator();
+		titleBar.setPropertyValue(StandardTitleBar.PROPERTY_BATTERY_VISIBILITY,
+				StandardTitleBar.BATTERY_VISIBLE_ALWAYS);
+		setTitleBar(titleBar);
 
 		// Logo image
 		Bitmap logoBitmap = Bitmap.getBitmapResource("surface_logo.png");
