@@ -24,13 +24,11 @@ import net.rim.device.api.ui.UiEngine;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.ui.SurfaceScreen;
-import com.mmtechco.util.ErrorMessage;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
