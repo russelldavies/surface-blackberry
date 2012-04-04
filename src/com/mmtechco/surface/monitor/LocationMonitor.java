@@ -25,7 +25,6 @@ import net.rim.device.api.ui.UiEngine;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.net.Messager;
-import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.ui.SurfaceScreen;
@@ -53,8 +52,6 @@ public class LocationMonitor implements LocationListener {
 	public static double longitude;
 	private Message locMsg;
 	
-	private Server server;
-	
 	private static Vector observers = new Vector();
 
 	public LocationMonitor() throws LocationException {
@@ -74,8 +71,6 @@ public class LocationMonitor implements LocationListener {
 			logger.log(TAG, "Could not start location services");
 			return;
 		}
-
-		server = new Server();
 
 		// Initialize lat/long
 		latitude = 0;
@@ -147,8 +142,9 @@ public class LocationMonitor implements LocationListener {
 			// Check there are valid values
 			if (longitude != 0 && latitude != 0) {
 				logger.log(TAG, "Sending location to server");
-				Reply reply = server.contactServer(locMsg.getREST());
-				if (reply.getCallingCode().equals(Messager.type_surface)) {
+				//Reply reply = server.contactServer(locMsg.getREST());
+				//if (reply.getCallingCode().equals(Messager.type_surface)) {
+				if (true) {
 					logger.log(TAG, "Server has requested surface");
 					Application.getApplication().invokeLater(new Runnable() {
 						public void run() {

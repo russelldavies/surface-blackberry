@@ -17,7 +17,6 @@ import net.rim.device.api.system.RuntimeStore;
 import net.rim.device.api.util.StringUtilities;
 
 import com.mmtechco.surface.data.ActivityLog;
-import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
 import com.mmtechco.surface.prototypes.Controllable;
@@ -62,7 +61,8 @@ public class Registration implements Controllable, SurfaceResource {
 		
 		// Contact server and get new values, if any
 		logger.log(TAG, "Requesting reg details from server");
-		Reply response = new Server().contactServer(new RegistrationMessage(stage));
+		/*
+		Reply response = Server.get(new RegistrationMessage(stage));
 		logger.log(TAG, "Server response: " + response.getREST());
 		if (response.isError()) {
 			logger.log(TAG, "Bad server response. Scheduling short run");
@@ -71,6 +71,7 @@ public class Registration implements Controllable, SurfaceResource {
 		}
 		stage = Integer.parseInt(response.getInfo());
 		id = response.getRegID();
+		*/
 		storeDetails();
 		updateStatus();
 		

@@ -3,49 +3,32 @@ package com.mmtechco.surface.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 
+import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
-import javax.microedition.io.file.FileConnection;
-
-import net.rim.blackberry.api.browser.MultipartPostData;
-import net.rim.blackberry.api.browser.URLEncodedPostData;
-import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.io.http.HttpProtocolConstants;
+import net.rim.device.api.io.transport.ConnectionDescriptor;
+import net.rim.device.api.io.transport.ConnectionFactory;
 import net.rim.device.api.io.transport.TransportInfo;
+import net.rim.device.api.system.DeviceInfo;
+
 import com.mmtechco.surface.data.ActivityLog;
-import com.mmtechco.surface.prototypes.MMTools;
-import com.mmtechco.surface.prototypes.Message;
-import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
-import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
 
 /**
  * Monitors for new actions stored in the local storage for recording actions
  * and sends them to the web server at specific intervals.
  */
-public class Server extends Thread implements SurfaceResource {
+public class Server extends Thread {
 	private static final String TAG = ToolsBB.getSimpleClassName(Server.class);
-	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
 
 	private Logger logger = Logger.getInstance();
-	private MMTools tools = ToolsBB.getInstance();
-	private final String URL = "http://dash.surfacemobile.com/WebService.php?";
+	private static final String URL = "http://192.168.2.13/surface_sys/REST.php";
+	private static final String PROTOCOL_VER = "1";
 	private int freq = 1000 * 30; // 30 seconds
-	private String serverErrorReply = Tools.ServerQueryStringSeparator
-			+ Tools.ServerQueryStringSeparator + 1
-			+ Tools.ServerQueryStringSeparator
-			+ Tools.ServerQueryStringSeparator;
 
-	/**
-	 * Initializes server parameters, creates a new security instance and starts
-	 * the server connection.
-	 */
-	public Server() {
-		logger.log(TAG, "Started");
-	}
 
 	/**
 	 * Monitors the local storage for new messages stored at specific intervals
@@ -53,20 +36,17 @@ public class Server extends Thread implements SurfaceResource {
 	 */
 	public void run() {
 		while (true) {
-			String[] serverReply = null;
-			int counter = -1;
-			if (tools.isConnected()) {
+			if (isConnected()) {
 				logger.log(TAG,
 						"Checking for new messages to send. Message queue length: "
 								+ ActivityLog.length());
 				// Check is a message is in the local storage
-				while (ActivityLog.length() > 0 && tools.isConnected()) {
+				while (ActivityLog.length() > 0 && isConnected()) {
+					/*
 					try {
 						// Send the first message from the queue to the server
 						// and parse reply
-						serverReply = tools.split(
-								get(ActivityLog.getMessage()),
-								Tools.ServerQueryStringSeparator);
+						serverReply = tools.split( get(ActivityLog.getMessage()), Tools.ServerQueryStringSeparator);
 						// No error
 						if (serverReply.length > 2
 								&& (Integer.parseInt(serverReply[2]) == 0)) {
@@ -100,6 +80,7 @@ public class Server extends Thread implements SurfaceResource {
 							break;
 						}
 					}
+					*/
 				}
 			}
 			// Sleep so loop doesn't spin
@@ -111,35 +92,10 @@ public class Server extends Thread implements SurfaceResource {
 		}
 	}
 
-	public Reply contactServer(Message inputMessage) {
-		return contactServer(inputMessage.getREST());
-	}
-
-	public Reply contactServer(String inputMessage) {
-		return new Reply(get(inputMessage));
-	}
-
-	public Reply contactServer(String inputBody, String crc, String pic) {
-		return new Reply(post(inputBody, crc, pic));
-	}
-
-	public Reply contactServer(String inputBody, FileConnection pic) {
-		return new Reply(postMultiPart(inputBody, pic));
-	}
-
-	/**
-	 * Performs a HTTP GET request
-	 * 
-	 * @param queryString
-	 *            - the query string that is appended to the URL that contains
-	 *            data to be passed to the server.
-	 * @return the server reply.
-	 */
-	public String get(String queryString) {
-		logger.log(TAG, "GET query string: " + queryString);
+	public static String get(String queryString) {
+		//logger.log(TAG, "GET query string: " + queryString);
 		try {
-			HttpConnection connection = setupConnection(URL
-					+ encodeQueryString(queryString));
+			HttpConnection connection = setupConnection(URL + queryString);
 			connection.setRequestMethod(HttpConnection.GET);
 
 			int status = connection.getResponseCode();
@@ -148,49 +104,32 @@ public class Server extends Thread implements SurfaceResource {
 				byte[] reply = IOUtilities.streamToBytes(input);
 				input.close();
 				connection.close();
-				return processReply(new String(reply));
+				return new String(reply);
 			} else {
-				return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
+				return null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.log(TAG, e.toString());
-			return serverErrorReply + r.getString(i18n_ErrorServer);
+			//logger.log(TAG, e.toString());
+			return null;
 		}
 	}
 
-	/**
-	 * Performs a HTTP POST request passing the data in the message body URL
-	 * encoded.
-	 * 
-	 * @param queryString
-	 *            - the query string that is appended to the URL that contains
-	 *            data to be passed to the server.he
-	 * @param crc
-	 *            - CRC of the file.
-	 * @param pic
-	 *            - picture file converted to a hex stream.
-	 * @return the server reply.
-	 */
-	private String post(String queryString, String crc, String pic) {
-		if (!tools.isConnected()) {
-			return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
+	public static String post(String messageBody) {
+		if (!isConnected()) {
+			return null;
 		}
-		logger.log(TAG, "POST query string: " + queryString);
+		Logger.getInstance().log(TAG, "POST data" + messageBody);
 		try {
-			HttpConnection connection = setupConnection(URL
-					+ encodeQueryString(queryString));
+			// Setup connection and HTTP headers
+			HttpConnection connection = setupConnection(URL);
 			connection.setRequestMethod(HttpConnection.POST);
-			connection
-					.setRequestProperty(
-							HttpProtocolConstants.HEADER_CONTENT_TYPE,
-							HttpProtocolConstants.CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED);
+			//connection .setRequestProperty( HttpProtocolConstants.HEADER_CONTENT_TYPE, "application/json");
+			connection .setRequestProperty( HttpProtocolConstants.HEADER_CONTENT_TYPE, HttpProtocolConstants.CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED);
+			connection.setRequestProperty(HttpProtocolConstants.HEADER_ACCEPT, "application/json");
 
-			URLEncodedPostData encPostData = new URLEncodedPostData("UTF-8",
-					false);
-			encPostData.append("crc", crc);
-			encPostData.append("pic", pic);
-			byte[] postData = encPostData.toString().getBytes("UTF-8");
+			// Add messageBody and set Content-Length 
+			byte[] postData = (PROTOCOL_VER + "=" + messageBody).getBytes("UTF-8");
 			connection.setRequestProperty(
 					HttpProtocolConstants.HEADER_CONTENT_LENGTH,
 					String.valueOf(postData.length));
@@ -206,95 +145,61 @@ public class Server extends Thread implements SurfaceResource {
 				byte[] reply = IOUtilities.streamToBytes(input);
 				input.close();
 				connection.close();
-				return processReply(new String(reply));
+				return new String(reply);
 			} else {
-				return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
+				// TODO: inspect headers and log error
+				return null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.log(TAG, e.toString());
-			return serverErrorReply + r.getString(i18n_ErrorServer);
+			Logger.getInstance().log(TAG, e.toString());
+			return null;
 		}
 	}
-
-	/**
-	 * Performs a HTTP POST request passing the data in the message body using
-	 * multipart MIME.
-	 * 
-	 * @param queryString
-	 *            - the query string that is appended to the URL that contains
-	 *            data to be passed to the server.he
-	 * @param pic
-	 *            - the picture file.
-	 * @return the server reply.
-	 */
-	private String postMultiPart(String queryString, FileConnection pic) {
-		// Don't start if no connection or there is no WiFi
-		if (!tools.isConnected()
-				&& TransportInfo
-						.hasSufficientCoverage(TransportInfo.TRANSPORT_TCP_WIFI)) {
-			return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
+	
+	private static HttpConnection setupConnection(String url) throws IOException {
+		if (DeviceInfo.isSimulator()) {
+			// If running the MDS simulator append ";deviceside=false"
+			return (HttpConnection) Connector.open(url + ";deviceside=true",
+					Connector.READ_WRITE);
 		}
-		logger.log(TAG, "POST multipart query string: " + queryString);
+		ConnectionFactory cf = new ConnectionFactory();
+		// Ordered list of preferred transports
+		int[] transportPrefs = { TransportInfo.TRANSPORT_TCP_WIFI,
+				TransportInfo.TRANSPORT_TCP_CELLULAR,
+				TransportInfo.TRANSPORT_WAP2, TransportInfo.TRANSPORT_WAP,
+				TransportInfo.TRANSPORT_MDS, TransportInfo.TRANSPORT_BIS_B };
+		cf.setPreferredTransportTypes(transportPrefs);
+		ConnectionDescriptor cd = cf.getConnection(url);
+		return (HttpConnection) cd.getConnection();
+	}
+	
+	/**
+	 * Checks if there is a valid internet connection.
+	 * 
+	 * @return true if connected.
+	 */
+	public static boolean isConnected() {
+		String url = "http://www.msftncsi.com/ncsi.txt";
+		String expectedResponse = "Microsoft NCSI";
+
+		Logger.getInstance().log(TAG, "Checking connectivity");
+
 		try {
-			// Open file and stream to byte stream
-			InputStream is = pic.openInputStream();
-			byte[] fileData = IOUtilities.streamToBytes(is);
-			// Setup connection
-			HttpConnection connection = setupConnection(URL
-					+ encodeQueryString(queryString));
-			connection.setRequestMethod(HttpConnection.POST);
-			String boundary = Long.toString(new Date().getTime()); // Uniqueness
-			connection.setRequestProperty(
-					HttpProtocolConstants.HEADER_CONTENT_TYPE,
-					HttpProtocolConstants.CONTENT_TYPE_MULTIPART_FORM_DATA
-							+ ";boundary=" + boundary);
-			connection.setRequestProperty(
-					HttpProtocolConstants.HEADER_CONTENT_LENGTH,
-					String.valueOf(fileData.length));
-			connection.setRequestProperty("xim-rim-transcode-content", "none");
-			// Create payload
-			MultipartPostData postData = new MultipartPostData("UTF-8", true);
-			postData.setData(fileData);
-			// Send data via POST
-			OutputStream output = connection.openOutputStream();
-			output.write(postData.getBytes());
-			// Read response
-			if (connection.getResponseCode() == HttpConnection.HTTP_OK) {
+			HttpConnection connection = setupConnection(url);
+			connection.setRequestMethod(HttpConnection.GET);
+
+			int status = connection.getResponseCode();
+			if (status == HttpConnection.HTTP_OK) {
 				InputStream input = connection.openInputStream();
 				byte[] reply = IOUtilities.streamToBytes(input);
 				input.close();
 				connection.close();
-				return processReply(new String(reply));
-			} else {
-				return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
+				return expectedResponse.equals(new String(reply));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			logger.log(TAG, e.toString());
-			return serverErrorReply + r.getString(i18n_ErrorServer);
+			Logger.getInstance().log(TAG, "Connectivity test failed");
 		}
-	}
-
-	private String encodeQueryString(String queryString) {
-		// Encrypt and convert to hex
-		//return tools.topAndTail( tools.stringToHex(encrypt(tools.safeRangeTextUTF(queryString .trim())))).toUpperCase();
-		
-		// Encryption is disabled for now
-		return tools.stringToHex((queryString.trim()));
-	}
-
-	private String processReply(String reply) {
-		if (reply != null && tools.isHex(reply)) {
-			// Encryption is disabled for now
-			//return decrypt(reply);
-			return reply;
-		} else {
-			return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
-		}
-	}
-
-	private HttpConnection setupConnection(String url) throws IOException {
-		return ((ToolsBB) ToolsBB.getInstance()).setupConnection(url);
+		return false;
 	}
 }

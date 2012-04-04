@@ -39,7 +39,7 @@ public class Messager {
 		// Spawn new thread so the event lock is not blocked
 		new Thread() {
 			public void run() {
-				if (tools.isConnected()) {
+				if (Server.isConnected()) {
 					String queryString = Registration.getRegID()
 							+ Tools.ServerQueryStringSeparator + type
 							+ Tools.ServerQueryStringSeparator
@@ -49,8 +49,8 @@ public class Messager {
 							+ Tools.ServerQueryStringSeparator
 							+ LocationMonitor.longitude;
 					logger.log(TAG, queryString);
-					Reply reply = new Server().contactServer(queryString);
-					logger.log(TAG, reply.getREST());
+					String reply = Server.get(queryString);
+					/*
 					synchronized (UiApplication.getEventLock()) {
 						if (reply.isError()) {
 							screen.setText("Could not send message");
@@ -59,6 +59,7 @@ public class Messager {
 						}
 						screen.dismiss(2000);
 					}
+					*/
 				} else {
 					synchronized (UiApplication.getEventLock()) {
 						screen.setText("Please check your connectivity settings");

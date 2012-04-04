@@ -190,7 +190,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 						+ Tools.ServerQueryStringSeparator
 						+ LocationMonitor.longitude;
 				addNewLog(queryString);
-				new Server().contactServer(queryString);
+				Server.get(queryString);
 			}
 		}).start();
 	}

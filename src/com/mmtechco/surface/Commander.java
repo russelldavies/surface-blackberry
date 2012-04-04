@@ -1,7 +1,6 @@
 package com.mmtechco.surface;
 
 import com.mmtechco.surface.data.ActivityLog;
-import com.mmtechco.surface.net.Reply;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
 import com.mmtechco.surface.prototypes.MMTools;
@@ -18,7 +17,6 @@ import com.mmtechco.util.ToolsBB;
 public class Commander extends Thread {
 	private static final String TAG = ToolsBB.getSimpleClassName(Commander.class);
 
-	private Server server;
 	private Controllable componentList[];
 	private final int time;
 	private final int commandSignal = 0;
@@ -30,7 +28,6 @@ public class Commander extends Thread {
 	 * {@link Controllable} objects.
 	 */
 	public Commander(Controllable[] components) {
-		server = new Server();
 		time = 1000 * 60 * 5; // 5mins
 		componentList = components;
 	}
@@ -39,16 +36,17 @@ public class Commander extends Thread {
 	 * Contacts to server and gets reply from server. Process reply if valid.
 	 */
 	public void run() {
+		/*
 		while (true) {
 			boolean commandQueued = true;
-			while (commandQueued && tools.isConnected()) {
+			while (commandQueued && Server.isConnected()) {
 				CommandMessage commandMessageFirst = new CommandMessage();
 				commandMessageFirst.setMessage(commandSignal);
 
 				// Sample reply. Enable for debugging:
 				// Reply reply = new
 				// Reply("12349,0,32,FILES,FILE_DEL_/sdcard/download/images.jpeg");
-				Reply reply = server.contactServer(commandMessageFirst);
+				String reply = Server.get(commandMessageFirst.getREST());
 				logger.log(TAG, "Reply Index:" + reply.getIndex());
 
 				// No more commands to process
@@ -95,6 +93,7 @@ public class Commander extends Thread {
 				ActivityLog.addMessage(new ErrorMessage(e));
 			}
 		}
+		*/
 	}
 
 	/**
