@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.Random;
 
 import javax.microedition.io.HttpConnection;
 import javax.microedition.io.file.FileConnection;
@@ -19,7 +18,6 @@ import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.util.SurfaceResource;
-import com.mmtechco.util.CRC32;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
@@ -40,16 +38,12 @@ public class Server extends Thread implements SurfaceResource {
 			+ Tools.ServerQueryStringSeparator + 1
 			+ Tools.ServerQueryStringSeparator
 			+ Tools.ServerQueryStringSeparator;
-	private Security security;
-	private CRC32 crc;
 
 	/**
 	 * Initializes server parameters, creates a new security instance and starts
 	 * the server connection.
 	 */
 	public Server() {
-		security = new Security();
-		crc = new CRC32();
 		logger.log(TAG, "Started");
 	}
 
@@ -297,68 +291,6 @@ public class Server extends Thread implements SurfaceResource {
 			return reply;
 		} else {
 			return serverErrorReply + r.getString(i18n_ErrorCorruptedMsg);
-		}
-	}
-
-	public long getCrcValue(String inputText) {
-		return getCrcValue(inputText.getBytes());
-	}
-
-	public long getCrcValue(byte[] inputText) {
-		crc.reset();
-		crc.update(inputText);
-		return crc.getValue();
-	}
-
-	/**
-	 * Encrypts the message.
-	 * 
-	 * @param inputText
-	 *            - message to be encrypted.
-	 * @return an encrypted message.
-	 */
-	private String encrypt(String inputText) {
-		// Add random text and CRC
-		inputText = tools.getRandomString(new Random().nextInt(10))
-				+ Tools.ServerQueryStringSeparator + getCrcValue(inputText)
-				+ Tools.ServerQueryStringSeparator + inputText;
-		return security.cryptFull(inputText, true);
-	}
-
-	/**
-	 * Decrypts the message which was encrypted.
-	 * 
-	 * @param inputText
-	 *            - message to be decrypted.
-	 * @return an decrypted message.
-	 */
-	private String decrypt(String inputText) {
-		String text = "";
-		// Messages with bad checksums will return blank
-		if (null == inputText || 0 == inputText.length()) {
-			return null;
-		}
-
-		crc.reset();
-		String[] replyArray = tools.split(security.cryptFull(
-				tools.hexToString(tools.reverseTopAndTail(inputText)), false), ",");
-
-		// rebuild message
-		for (int count = 2; count < replyArray.length; count++) {
-			text += replyArray[count];
-			if ((replyArray.length - 1) > count) {
-				text += Tools.ServerQueryStringSeparator;
-			}
-		}
-		crc.update(text.getBytes());
-		//logger.log(TAG, "Server CRC: " + Long.parseLong(replyArray[1]));
-		//logger.log(TAG, "Client CRC: " + crc.getValue());
-		logger.log(TAG, "Decrypted server reply: " + text);
-		// Check CRC
-		if (Long.parseLong(replyArray[1]) == crc.getValue()) {
-			return text;
-		} else {
-			return null;
 		}
 	}
 
