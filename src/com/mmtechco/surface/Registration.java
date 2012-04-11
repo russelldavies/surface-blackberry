@@ -11,7 +11,6 @@ import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
-import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.StringUtilities;
 
 import com.mmtechco.surface.data.ActivityLog;
@@ -43,9 +42,8 @@ public class Registration implements Controllable, SurfaceResource {
 	
 	public static String[] scheduleArgs = {"reg"};
 
-	private final int sleepTimeLong = 1000 * 60 * 60 * 24; // 24h
-	private final int sleepTimeShort = 1000 * 60 * 2; // 2 min
-	private static int sleepTime;
+	private final static int intervalShort = 1000 * 60 * 2; // 2 min
+	private final static int intervalLong = 1000 * 60 * 60 * 24; // 24h
 	
 	private static Integer stage;
 	private static String id;
@@ -71,26 +69,22 @@ public class Registration implements Controllable, SurfaceResource {
 					stage.intValue()));
 			logger.log(TAG, "Server response: " + response.getREST());
 			
+			if (response.isError()) {
+				logger.log(TAG,
+						"Bad server response. Sleeping for a short time.");
+				scheduleRun(intervalShort);
+				return;
+			}
+			stage = Integer.valueOf(response.getInfo());
+			id = response.getRegID();
+			updateUi();
+			storeDetails();
+			checkStatus();
+		} else {
+			scheduleRun(intervalLong);
 		}
-		
-		
-		ApplicationManager.getApplicationManager().postGlobalEvent(ID);
-		
-		
-        ApplicationDescriptor current = ApplicationDescriptor.
-                currentApplicationDescriptor();
-		current = new ApplicationDescriptor(current, current.getName(), scheduleArgs);
-		current.setPowerOnBehavior(ApplicationDescriptor.DO_NOT_POWER_ON);
-        ApplicationManager.getApplicationManager().scheduleApplication(current,
-				System.currentTimeMillis() + sleepTime, true);
 	}
-	
 
-	/**
-	 * 
-	 * Constantly checks the account status of the device at defined intervals.
-	 * Checks if the SIM card of the device has been unlocked.
-	 */
 	public void run() {
 		logger.log(TAG, "Running");
 
@@ -114,7 +108,7 @@ public class Registration implements Controllable, SurfaceResource {
 				logger.log(TAG,
 						"Bad server response. Sleeping for a short time.");
 				newState = false;
-				time = sleepTimeShort;
+				time = intervalShort;
 			} else {
 				logger.log(TAG,
 						"Requesting registration: " + response.getInfo());
@@ -130,9 +124,9 @@ public class Registration implements Controllable, SurfaceResource {
 					newState = false;
 					// Just waiting to reg online
 					if (currentStageValue < 2) {
-						time = sleepTimeShort;
+						time = intervalShort;
 					} else {
-						time = sleepTimeLong;
+						time = intervalLong;
 					}
 				} else {
 					logger.log(TAG, "currentStageValue != nextStage: "
@@ -146,7 +140,7 @@ public class Registration implements Controllable, SurfaceResource {
 					// assigns new stage
 					stage = new Integer(nextStage);
 					// Saves stage to memory
-					updateDetails();
+					storeDetails();
 					// Process stage
 				}
 			}
@@ -165,6 +159,15 @@ public class Registration implements Controllable, SurfaceResource {
 		}
 	}
 
+	private static void scheduleRun(int sleepTime) {
+        ApplicationDescriptor current = ApplicationDescriptor.
+                currentApplicationDescriptor();
+		current = new ApplicationDescriptor(current, current.getName(), scheduleArgs);
+		current.setPowerOnBehavior(ApplicationDescriptor.DO_NOT_POWER_ON);
+        ApplicationManager.getApplicationManager().scheduleApplication(current,
+				System.currentTimeMillis() + sleepTime, true);
+	}
+	
 	private static void readDetails() {
 		// Read registration data or set to default values
 		PersistentObject regData = PersistentStore.getPersistentObject(ID);
@@ -188,7 +191,7 @@ public class Registration implements Controllable, SurfaceResource {
 		}
 	}
 	
-	private void updateDetails() {
+	private static void storeDetails() {
 		PersistentObject regData = PersistentStore.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
@@ -216,10 +219,14 @@ public class Registration implements Controllable, SurfaceResource {
 		case 2: // Trial
 			status = r.getString(i18n_RegTrial);
 			//app.startComponents();
+			// TODO: should this be here?
+			ApplicationManager.getApplicationManager().postGlobalEvent(ID);
 			break;
 		case 3: // Fully active
 			status = r.getString(i18n_RegActive);
 			//app.startComponents();
+			// TODO: should this be here?
+			ApplicationManager.getApplicationManager().postGlobalEvent(ID);
 			break;
 		}
 		logger.log(TAG, "Status text updated to: " + status);
@@ -286,7 +293,7 @@ public class Registration implements Controllable, SurfaceResource {
 			logger.log(TAG, "args[2] :" + inputArgs[2]);
 			try {
 				emergNums.addElement(inputArgs[2]);
-				updateDetails();
+				storeDetails();
 				complete = true;
 			} catch (Exception e) {
 				ActivityLog.addMessage(new ErrorMessage(e));

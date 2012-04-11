@@ -23,6 +23,7 @@ import com.mmtechco.util.Logger;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
@@ -36,7 +37,7 @@ import net.rim.device.api.util.StringUtilities;
 /**
  * Main entry point of the application.
  */
-public class Surface extends UiApplication implements SystemListener2 {
+public class Surface extends UiApplication implements SystemListener2, GlobalEventListener {
 	private static final String TAG = "App";
 	public static ResourceBundle r = ResourceBundle.getBundle(
 			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
@@ -127,8 +128,17 @@ public class Surface extends UiApplication implements SystemListener2 {
 		pushScreen(defaultScreen);
 		//#endif
 		
-		logger.log(TAG, "Starting registration");
+		// TODO: this here?
 		Registration.checkStatus();
+	}
+	
+	public void eventOccurred(long guid, int data0, int data1, Object object0,
+			Object object1) {
+		if (guid == Registration.ID) {
+			logger.log(TAG, "Picked up global event");
+			// TODO: persistent store boolean to prevent multiple calls
+			startComponents();
+		}
 	}
 	
 	/**
