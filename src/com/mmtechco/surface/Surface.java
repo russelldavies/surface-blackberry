@@ -64,6 +64,12 @@ public class Surface extends UiApplication implements SystemListener2 {
 	 *            Alternate entry point arguments.
 	 */
 	public static void main(String[] args) {
+		if (args != null & args.length > 0
+				&& Registration.scheduleArgs[0].equals(args[0])) {
+			Registration.checkStatus();
+			return;
+		}
+		
 		final Surface app = new Surface();
 		
 		// Add a system listener to detect when system is ready to startup and
@@ -122,8 +128,7 @@ public class Surface extends UiApplication implements SystemListener2 {
 		//#endif
 		
 		logger.log(TAG, "Starting registration");
-		reg = new Registration();
-		reg.start();
+		Registration.checkStatus();
 	}
 	
 	/**

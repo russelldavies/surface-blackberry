@@ -78,11 +78,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	public void setStatus(String status) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
-				// Leave label blank if reg id doesn't yet exist
-				String regId = Registration.getRegID();
-				if (!regId.equals("0")) {
-					idTextField.setText(regId);
-				}
+				idTextField.setText(Registration.getRegID());
 				statusTextField.setText(Registration.getStatus());
 			}
 		});

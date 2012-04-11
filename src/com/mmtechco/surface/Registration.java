@@ -6,6 +6,7 @@ import java.util.Vector;
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentObject;
@@ -29,8 +30,7 @@ import com.mmtechco.util.ToolsBB;
 /**
  * Checks the registration stage that currently the device is in.
  */
-public class Registration extends Thread implements Controllable,
-		SurfaceResource {
+public class Registration implements Controllable, SurfaceResource {
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(Registration.class);
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
@@ -40,49 +40,51 @@ public class Registration extends Thread implements Controllable,
 	public static String KEY_STAGE = "registration_stage";
 	public static String KEY_ID = "registration_id";
 	public static String KEY_NUMBERS = "emergency_numbers";
+	
+	public static String[] scheduleArgs = {"reg"};
 
-	private static int regStage;
-	private static String regId;
-	private static String emergNums;
-	private static String status;
 	private final int sleepTimeLong = 1000 * 60 * 60 * 24; // 24h
 	private final int sleepTimeShort = 1000 * 60 * 2; // 2 min
+	private static int sleepTime;
+	
+	private static Integer stage;
+	private static String id;
+	private static String status;
+	private static Vector emergNums;
 
-	private Server server;
-	private Logger logger = Logger.getInstance();
-	private ToolsBB tools = (ToolsBB) ToolsBB.getInstance();
+	private static Server server;
+	private static Logger logger = Logger.getInstance();
+	private static ToolsBB tools = (ToolsBB) ToolsBB.getInstance();
 
 	private static Vector observers = new Vector();
 
-	/**
-	 * Initializes context, creates own instance of Server. Requests a
-	 * registration ID and the and the registration state of the current device
-	 * from server.
-	 */
-	public Registration() {
-		logger.log(TAG, "Started");
-		server = new Server();
-
-		// Read registration data or set to default values
-		PersistentObject regData = PersistentStore.getPersistentObject(ID);
-		synchronized (regData) {
-			Hashtable regTable = (Hashtable) regData.getContents();
-			if (regTable == null) {
-				// Populate with default values
-				regTable = new Hashtable();
-				regTable.put(KEY_STAGE, "0");
-				regTable.put(KEY_ID, "0");
-				regTable.put(KEY_NUMBERS, "");
-				// Store
-				regData.setContents(regTable);
-				regData.commit();
-			}
-			regStage = Integer
-					.parseInt(String.valueOf(regTable.get(KEY_STAGE)));
-			regId = String.valueOf(regTable.get(KEY_ID));
-			emergNums = String.valueOf(regTable.get(KEY_NUMBERS));
+	
+	public static void checkStatus() {
+		// Read details from storage
+		readDetails();
+		updateUi();
+		
+		// Contact server and get new values, if any
+		if (stage.intValue() < 2) {
+			logger.log(TAG, "Requesting reg details from server");
+			Reply response = server.contactServer(new RegistrationMessage(
+					stage.intValue()));
+			logger.log(TAG, "Server response: " + response.getREST());
+			
 		}
+		
+		
+		ApplicationManager.getApplicationManager().postGlobalEvent(ID);
+		
+		
+        ApplicationDescriptor current = ApplicationDescriptor.
+                currentApplicationDescriptor();
+		current = new ApplicationDescriptor(current, current.getName(), scheduleArgs);
+		current.setPowerOnBehavior(ApplicationDescriptor.DO_NOT_POWER_ON);
+        ApplicationManager.getApplicationManager().scheduleApplication(current,
+				System.currentTimeMillis() + sleepTime, true);
 	}
+	
 
 	/**
 	 * 
@@ -95,14 +97,13 @@ public class Registration extends Thread implements Controllable,
 		boolean newState = true;
 		Reply response;
 		int nextStage;
-		int currentStageValue = regStage;
+		int currentStageValue = stage.intValue();
 		int time = 0;
 
-		stageState(regStage);
-		logger.log(TAG, "Registration stage: " + regStage);
+		logger.log(TAG, "Registration stage: " + stage);
 
-		while (regStage < 2) {
-			currentStageValue = regStage;
+		while (stage.intValue() < 2) {
+			currentStageValue = stage.intValue();
 
 			logger.log(TAG, "Asking server for registration details");
 			response = server.contactServer(new RegistrationMessage(
@@ -140,15 +141,13 @@ public class Registration extends Thread implements Controllable,
 					if (0 == currentStageValue) {
 						logger.log(TAG, "currentStageValue = "
 								+ currentStageValue);
-						regId = response.getRegID();
-						setRegData(KEY_ID, regId);
+						id = response.getRegID();
 					}
 					// assigns new stage
-					regStage = nextStage;
+					stage = new Integer(nextStage);
 					// Saves stage to memory
-					setRegData(KEY_STAGE, String.valueOf(regStage));
+					updateDetails();
 					// Process stage
-					stageState(regStage);
 				}
 			}
 
@@ -166,87 +165,100 @@ public class Registration extends Thread implements Controllable,
 		}
 	}
 
-	/**
-	 * Update the registration preferences info and commit to storage.
-	 * 
-	 * @param key
-	 *            - the registration key. Use class constants.
-	 * @param value
-	 *            - the new value to commit.
-	 * @return true if value was updated, false if value was created
-	 */
-	private boolean setRegData(String key, String value) {
+	private static void readDetails() {
+		// Read registration data or set to default values
 		PersistentObject regData = PersistentStore.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
-			Object oldValue = regTable.put(key, value);
-			if (oldValue == null) {
-				return false;
+			if (regTable == null) {
+				// Populate with default values
+				regTable = new Hashtable();
+				regTable.put(KEY_STAGE, stage = new Integer(0));
+				regTable.put(KEY_ID, id = null);
+				regTable.put(KEY_NUMBERS, emergNums = new Vector());
+				// Store
+				regData.setContents(regTable);
+				regData.commit();
+			} else {
+				// Read values from storage
+				stage = (Integer) regTable.get(KEY_STAGE);
+				id = (String) regTable.get(KEY_ID);
+				emergNums = (Vector) regTable.get(KEY_NUMBERS);
 			}
-			return true;
+		}
+	}
+	
+	private void updateDetails() {
+		PersistentObject regData = PersistentStore.getPersistentObject(ID);
+		synchronized (regData) {
+			Hashtable regTable = (Hashtable) regData.getContents();
+			regTable.put(KEY_STAGE, stage);
+			regTable.put(KEY_ID, id);
+			regTable.put(KEY_NUMBERS, emergNums);
+			// Store
+			regData.setContents(regTable);
+			regData.commit();
 		}
 	}
 
-	/**
-	 * Acts as a lookup for stages for the current device to display the
-	 * registration stage to the user.
-	 * 
-	 * @param inputStage
-	 *            - stage of registration.
-	 */
-	private void stageState(int inputStage) {
-		Surface app = (Surface) UiApplication.getUiApplication();
-		String stateText = "";
+	private static void updateUi() {
+		//Surface app = (Surface) UiApplication.getUiApplication();
 
-		switch (inputStage) {
+		switch (stage.intValue()) {
 		case 0: // New install
-			stateText = r.getString(i18n_RegRequesting);
+			status = r.getString(i18n_RegRequesting);
 			break;
-		case 1:// New & has SN
-			stateText = r.getString(i18n_RegNotActivated);
+		case 1:// New & has id
+			status = r.getString(i18n_RegNotActivated);
 			// TODO: put this into thread
 			// tools.addMsgToInbox(r.getString(i18n_WelcomeMsg));
 			break;
 		case 2: // Trial
-			stateText = r.getString(i18n_RegTrial);
-			app.startComponents();
+			status = r.getString(i18n_RegTrial);
+			//app.startComponents();
 			break;
 		case 3: // Fully active
-			stateText = r.getString(i18n_RegActive);
-			app.startComponents();
+			status = r.getString(i18n_RegActive);
+			//app.startComponents();
 			break;
 		}
-		switchStage(inputStage, stateText);
+		logger.log(TAG, "Status text updated to: " + status);
+		logger.log(TAG, "Reg id:" + id);
+		
+		// Tell screens to update themselves
+		notifyObservers();
+	}
+	
+	private static void notifyObservers() {
+		String statusMsg;
+		if (id == null) {
+			statusMsg = "SN: [none] | Status: " + status;
+		} else {
+			statusMsg = "SN: " + id + " | Status: " + status;
+		}
+		for (int i = 0; i < observers.size(); i++) {
+			((ObserverScreen) observers.elementAt(i)).setStatus(statusMsg);
+		}
+	}
+	
+	public static void addObserver(ObserverScreen screen) {
+		observers.addElement(screen);
 	}
 
-	private void switchStage(int inputStage, String stateText) {
-		switch (inputStage) {
-		case 0: // New install
-			status = stateText;
-			logger.log(TAG, "Status text updated to: " + status);
-			break;
-		case 1: // New & has SN
-		case 2: // Trial
-		case 3: // Fully active
-			status = stateText;
-			logger.log(TAG, "Status text updated to: " + status);
-			logger.log(TAG, "Reg id:" + regId);
-			break;
-		}
-		notifyObservers();
+	public static void removeObserver(ObserverScreen screen) {
+		observers.removeElement(screen);
 	}
 
 	/**
-	 * Get the device registration ID. Can be called from anywhere in the
-	 * system.
+	 * Get the device registration ID. 
 	 * 
 	 * @return registration ID string. <strong>"0"</strong> if not available.
 	 */
 	public static String getRegID() {
-		if (regId == null) {
+		if (id == null) {
 			return "0";
 		} else {
-			return regId;
+			return id;
 		}
 	}
 
@@ -255,13 +267,12 @@ public class Registration extends Thread implements Controllable,
 	}
 
 	/**
-	 * Gets the emergency numbers associated with the account. Can be used
-	 * anywhere in the system.
+	 * Gets the emergency numbers associated with the account.
 	 * 
 	 * @return String array of emergency numbers.
 	 */
-	public static String[] getEmergNums() {
-		return ToolsBB.getInstance().split(emergNums, "&");
+	public static Vector getEmergNums() {
+		return emergNums;
 	}
 
 	public boolean processCommand(String[] inputArgs) {
@@ -274,8 +285,8 @@ public class Registration extends Thread implements Controllable,
 			logger.log(TAG, "args[1] :" + inputArgs[1]);
 			logger.log(TAG, "args[2] :" + inputArgs[2]);
 			try {
-				emergNums = inputArgs[2];
-				setRegData(KEY_NUMBERS, emergNums);
+				emergNums.addElement(inputArgs[2]);
+				updateDetails();
 				complete = true;
 			} catch (Exception e) {
 				ActivityLog.addMessage(new ErrorMessage(e));
@@ -290,26 +301,6 @@ public class Registration extends Thread implements Controllable,
 			return true;
 		} else {
 			return false;
-		}
-	}
-
-	public static void addObserver(ObserverScreen screen) {
-		observers.addElement(screen);
-	}
-
-	public static void removeObserver(ObserverScreen screen) {
-		observers.removeElement(screen);
-	}
-
-	private void notifyObservers() {
-		String statusMsg;
-		if (!regId.equals("0")) {
-			statusMsg = "SN: " + regId + " | Status: " + status;
-		} else {
-			statusMsg = "SN: [none] | Status: " + status;
-		}
-		for (int i = 0; i < observers.size(); i++) {
-			((ObserverScreen) observers.elementAt(i)).setStatus(statusMsg);
 		}
 	}
 }
