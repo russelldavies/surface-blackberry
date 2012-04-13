@@ -4,6 +4,7 @@ package com.mmtechco.surface.ui;
 import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
@@ -50,8 +51,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
 
 	// GUI widgets
-	private TextField statusTextField = new TextField(Field.NON_FOCUSABLE);
-	private TextField idTextField = new TextField(Field.NON_FOCUSABLE);
+	private LabelField statusLabelField = new LabelField("", Field.NON_FOCUSABLE);
 
 	private KeyListener keyListener;
 	
@@ -61,31 +61,23 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		Registration.addObserver(this);
 		Logger.addObserver(this);
 
-		// Add label fields with no layout managers
-		statusTextField.setLabel("Status: ");
-		statusTextField.setText(r.getString(i18n_RegRequesting));
-		idTextField.setLabel("ID: ");
-		idTextField.setText("[none]");
-
-		add(statusTextField);
-		add(idTextField);
+		add(statusLabelField);
 		add(new SeparatorField());
 	}
 
 	/*
 	 * Update the screen label fields
 	 */
-	public void setStatus(String status) {
+	public void setStatus(final String status) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
-				idTextField.setText(Registration.getRegID());
-				statusTextField.setText(Registration.getStatus());
+				statusLabelField.setText(status);
 			}
 		});
 	}
 
 	public String getStatus() {
-		return statusTextField.getText();
+		return statusLabelField.getText();
 	}
 
 	public void surface() {
@@ -109,12 +101,11 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				deleteAll();
 			}
 		};
-		MenuItem delRegMenu = new MenuItem("Delete Registration info",
+		MenuItem delRegMenu = new MenuItem("View Registration info",
 				0x100030, 2) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(
 						new RegPopupScreen());
-				PersistentStore.destroyPersistentObject(Registration.ID);
 			}
 		};
 		MenuItem delStoreMenu = new MenuItem("Delete Activity Log store",
@@ -144,7 +135,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 			public void run() {
 				ObserverScreen defaultScreen = new DefaultScreen();
 				Registration.addObserver(defaultScreen);
-				defaultScreen.setStatus(statusTextField.getText());
+				defaultScreen.setStatus(statusLabelField.getText());
 				Ui.getUiEngine().pushScreen((Screen)defaultScreen);
 			}
 		};
@@ -225,22 +216,21 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				if (regTable == null) {
 					add(new LabelField("No values were in the store"));
 				} else {
-					add(new LabelField(regTable.get(Registration.KEY_STAGE)));
-					add(new LabelField(regTable.get(Registration.KEY_ID)));
-					String num = (String) regTable
-							.get(Registration.KEY_NUMBERS);
-					if (num.equals("")) {
-						add(new LabelField("No emergency numbers stored"));
-					} else {
-						add(new LabelField(num));
-					}
+					String stage = (String) regTable.get(Registration.KEY_STAGE);
+					String id = (String) regTable.get(Registration.KEY_ID);
+					Vector nums = (Vector) regTable.get(Registration.KEY_NUMBERS);
+					
+					add(new LabelField("Stage: " + stage));
+					add(new LabelField("ID: " + id.toString()));
+					add(new LabelField("Emergency numbers: " + nums.toString()));
 				}
 			}
 
-			ButtonField exitButton = new ButtonField("Exit",
+			ButtonField exitButton = new ButtonField("Delete info and exit",
 					ButtonField.FIELD_HCENTER | ButtonField.CONSUME_CLICK);
 			exitButton.setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
+					PersistentStore.destroyPersistentObject(Registration.ID);
 					System.exit(0);
 				}
 			});

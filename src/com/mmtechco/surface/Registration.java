@@ -11,6 +11,7 @@ import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
+import net.rim.device.api.system.RuntimeStore;
 import net.rim.device.api.util.StringUtilities;
 
 import com.mmtechco.surface.data.ActivityLog;
@@ -36,53 +37,49 @@ public class Registration implements Controllable, SurfaceResource {
 	public static final long ID = StringUtilities
 			.stringHashToLong(Registration.class.getName());
 
-	public static String KEY_STAGE = "registration_stage";
-	public static String KEY_ID = "registration_id";
-	public static String KEY_NUMBERS = "emergency_numbers";
+	public final static String KEY_STAGE = "registration_stage";
+	public final static String KEY_ID = "registration_id";
+	public final static String KEY_NUMBERS = "emergency_numbers";
 	
 	public static String[] scheduleArgs = {"reg"};
 
-	private final static int intervalShort = 1000 * 60 * 2; // 2 min
-	private final static int intervalLong = 1000 * 60 * 60 * 24; // 24h
+	// TODO: set these back
+	private final static int intervalShort = 30000; //1000 * 60 * 2; // 2 min
+	private final static int intervalLong = 60000; //1000 * 60 * 60 * 24; // 24h
 	
-	private static Integer stage;
+	private static int stage;
 	private static String id;
-	private static String status;
+	private static String status = r.getString(i18n_RegRequesting);
 	private static Vector emergNums;
 
-	private static Server server;
 	private static Logger logger = Logger.getInstance();
-	private static ToolsBB tools = (ToolsBB) ToolsBB.getInstance();
-
 	private static Vector observers = new Vector();
 
 	
 	public static void checkStatus() {
-		// Read details from storage
 		readDetails();
-		updateUi();
 		
 		// Contact server and get new values, if any
-		if (stage.intValue() < 2) {
-			logger.log(TAG, "Requesting reg details from server");
-			Reply response = server.contactServer(new RegistrationMessage(
-					stage.intValue()));
-			logger.log(TAG, "Server response: " + response.getREST());
-			
-			if (response.isError()) {
-				logger.log(TAG,
-						"Bad server response. Sleeping for a short time.");
-				scheduleRun(intervalShort);
-				return;
-			}
-			stage = Integer.valueOf(response.getInfo());
-			id = response.getRegID();
-			updateUi();
-			storeDetails();
-			checkStatus();
+		logger.log(TAG, "Requesting reg details from server");
+		Reply response = new Server().contactServer(new RegistrationMessage(stage));
+		logger.log(TAG, "Server response: " + response.getREST());
+		if (response.isError()) {
+			logger.log(TAG, "Bad server response. Scheduling short run");
+			scheduleRun(intervalShort);
+			return;
+		}
+		stage = Integer.parseInt(response.getInfo());
+		id = response.getRegID();
+		storeDetails();
+		if (stage < 2) {
+			logger.log(TAG, "Scheduling short run");
+			scheduleRun(intervalShort);
 		} else {
+			startComponents();
+			logger.log(TAG, "Scheduling long run");
 			scheduleRun(intervalLong);
 		}
+		updateStatus();
 	}
 
 	private static void scheduleRun(int sleepTime) {
@@ -100,17 +97,19 @@ public class Registration implements Controllable, SurfaceResource {
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
 			if (regTable == null) {
+				logger.log(TAG, "Populating with default values");
 				// Populate with default values
 				regTable = new Hashtable();
-				regTable.put(KEY_STAGE, stage = new Integer(0));
-				regTable.put(KEY_ID, id = null);
+				regTable.put(KEY_STAGE, "0"); stage = 0;
+				regTable.put(KEY_ID, id = "");
 				regTable.put(KEY_NUMBERS, emergNums = new Vector());
-				// Store
+				// Store to device
 				regData.setContents(regTable);
 				regData.commit();
 			} else {
+				logger.log(TAG, "Reading details from storage");
 				// Read values from storage
-				stage = (Integer) regTable.get(KEY_STAGE);
+				stage = Integer.parseInt((String) regTable.get(KEY_STAGE));
 				id = (String) regTable.get(KEY_ID);
 				emergNums = (Vector) regTable.get(KEY_NUMBERS);
 			}
@@ -121,42 +120,45 @@ public class Registration implements Controllable, SurfaceResource {
 		PersistentObject regData = PersistentStore.getPersistentObject(ID);
 		synchronized (regData) {
 			Hashtable regTable = (Hashtable) regData.getContents();
-			regTable.put(KEY_STAGE, stage);
+			regTable.put(KEY_STAGE, String.valueOf(stage));
 			regTable.put(KEY_ID, id);
 			regTable.put(KEY_NUMBERS, emergNums);
-			// Store
+			// Store to device
 			regData.setContents(regTable);
 			regData.commit();
 		}
+		logger.log(TAG, "Stored details");
 	}
 
-	private static void updateUi() {
-		//Surface app = (Surface) UiApplication.getUiApplication();
-
-		switch (stage.intValue()) {
-		case 0: // New install
+	private static void startComponents() {
+		// Check to see if haven't already started components
+		Boolean started = (Boolean) RuntimeStore.getRuntimeStore().get(ID);
+		if (started == null || !started.booleanValue()) {
+			if (ApplicationManager.getApplicationManager().postGlobalEvent(ID)) {
+				logger.log(TAG, "Fired event to start components");
+				RuntimeStore.getRuntimeStore().put(ID, new Boolean(true));
+			}
+		}
+	}
+	
+	private static void updateStatus() {
+		switch (stage) {
+		case 0: // Initialization state
 			status = r.getString(i18n_RegRequesting);
 			break;
-		case 1:// New & has id
+		case 1: // Has id but not activated
 			status = r.getString(i18n_RegNotActivated);
 			// TODO: put this into thread
 			// tools.addMsgToInbox(r.getString(i18n_WelcomeMsg));
 			break;
 		case 2: // Trial
 			status = r.getString(i18n_RegTrial);
-			//app.startComponents();
-			// TODO: should this be here?
-			ApplicationManager.getApplicationManager().postGlobalEvent(ID);
 			break;
 		case 3: // Fully active
 			status = r.getString(i18n_RegActive);
-			//app.startComponents();
-			// TODO: should this be here?
-			ApplicationManager.getApplicationManager().postGlobalEvent(ID);
 			break;
 		}
-		logger.log(TAG, "Status text updated to: " + status);
-		logger.log(TAG, "Reg id:" + id);
+		logger.log(TAG, "Update status: " + stage + ";" + id + ";" + status);
 		
 		// Tell screens to update themselves
 		notifyObservers();
@@ -164,7 +166,7 @@ public class Registration implements Controllable, SurfaceResource {
 	
 	private static void notifyObservers() {
 		String statusMsg;
-		if (id == null) {
+		if (id.length() == 0) {
 			statusMsg = "SN: [none] | Status: " + status;
 		} else {
 			statusMsg = "SN: " + id + " | Status: " + status;
@@ -188,15 +190,11 @@ public class Registration implements Controllable, SurfaceResource {
 	 * @return registration ID string. <strong>"0"</strong> if not available.
 	 */
 	public static String getRegID() {
-		if (id == null) {
+		if (id.length() == 0) {
 			return "0";
 		} else {
 			return id;
 		}
-	}
-
-	public static String getStatus() {
-		return status;
 	}
 
 	/**
