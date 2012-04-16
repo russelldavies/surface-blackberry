@@ -5,12 +5,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.IDENInfo;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.system.RuntimeStore;
@@ -20,7 +24,6 @@ import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
 import com.mmtechco.surface.prototypes.Controllable;
-import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.ErrorMessage;
@@ -61,19 +64,17 @@ public class Registration implements Controllable, SurfaceResource {
 		
 		// Contact server and get new values, if any
 		logger.log(TAG, "Requesting reg details from server");
-		/*
-		Reply response = Server.get(new RegistrationMessage(stage));
-		logger.log(TAG, "Server response: " + response.getREST());
-		if (response.isError()) {
+		String response = Server.post(new RegistrationRequestObject(id).toJSON());
+		logger.log(TAG, "Server response: " + response);
+		RegistrationReplyObject reply = RegistrationReplyObject.fromJSON(response);
+		if (response == null || reply == null) {
 			logger.log(TAG, "Bad server response. Scheduling short run");
 			scheduleRun(intervalShort);
 			return;
 		}
-		stage = Integer.parseInt(response.getInfo());
-		id = response.getRegID();
-		*/
+		stage = reply.stage;
+		id = reply.id;
 		storeDetails();
-		updateStatus();
 		
 		// Schedule a registration check based on stage
 		if (stage < 2) {
@@ -87,6 +88,7 @@ public class Registration implements Controllable, SurfaceResource {
 	}
 
 	private static void scheduleRun(int sleepTime) {
+		updateStatus();
 		new Timer().schedule(new TimerTask() {
 			public void run() {
 				checkStatus();
@@ -243,46 +245,76 @@ public class Registration implements Controllable, SurfaceResource {
 	}
 }
 
-class RegistrationMessage implements Message {
-	private final static int type = 9;
-	private final String appVersion = ApplicationDescriptor
-			.currentApplicationDescriptor().getVersion();
-	private String deviceTime;
-	private int stage;
-	private String phoneNum;
-	private String deviceID;
-	private String info;
-	private String manufacturer;
-	private ToolsBB tools = (ToolsBB) ToolsBB.getInstance();
+class RegistrationRequestObject {
+	private static final String
+	ID = "id",
+	TIME = "time",
+	TYPE = "type",
+	INFO = "info",
+	CLIENT_VER = "client",
+	DEVICE_NUM = "deviceNum",
+	PHONE_NUM = "phoneNum",
+	MODEL = "model",
+	OS = "os",
+	OS_VER = "osVer";
+	private final static String type = "REG";
+	
+	private String id;
 
-	public RegistrationMessage(int stage) {
+	public RegistrationRequestObject(String id) {
+		this.id = id;
+	}
+
+	public String toJSON() {
+		JSONObject outer = new JSONObject();
+		JSONObject inner = new JSONObject();
+		try {
+			outer.put(ID, id);
+			outer.put(TIME, System.currentTimeMillis() / 1000);
+			outer.put(TYPE, type);
+			outer.put(INFO, inner);
+			
+			inner.put(CLIENT_VER, ApplicationDescriptor.currentApplicationDescriptor().getVersion());
+			inner.put(DEVICE_NUM, Tools.stringToHex(IDENInfo.imeiToString(IDENInfo.getIMEI())));
+			inner.put(PHONE_NUM, Phone.getDevicePhoneNumber(false));
+			inner.put(MODEL, String.valueOf(Branding.getVendorId()));
+			inner.put(OS, "BlackBerry");
+			inner.put(OS_VER, DeviceInfo.getSoftwareVersion());
+		} catch (JSONException e) {
+			Logger.getInstance().log("REG JSON", e.getMessage());
+		}
+		return outer.toString();
+	}
+}
+
+class RegistrationReplyObject {
+	private static final String
+	ID = "id",
+	STAGE = "stage";
+	
+	public int stage;
+	public String id;
+	
+	public RegistrationReplyObject(String id, int stage) {
+		this.id = id;
 		this.stage = stage;
-		deviceTime = tools.getDate();
-		manufacturer = String.valueOf(Branding.getVendorId());
-		phoneNum = Phone.getDevicePhoneNumber(false);
-		deviceID = Integer.toHexString(DeviceInfo.getDeviceId());
-		info = "BlackBerry";
 	}
-
-	public String getREST() {
-		return Registration.getRegID() + Tools.ServerQueryStringSeparator + '0'
-				+ type + Tools.ServerQueryStringSeparator + deviceTime
-				+ Tools.ServerQueryStringSeparator + stage
-				+ Tools.ServerQueryStringSeparator + phoneNum
-				+ Tools.ServerQueryStringSeparator + deviceID
-				+ Tools.ServerQueryStringSeparator + manufacturer
-				+ Tools.ServerQueryStringSeparator + DeviceInfo.getDeviceName()
-				+ Tools.ServerQueryStringSeparator
-				+ DeviceInfo.getSoftwareVersion()
-				+ Tools.ServerQueryStringSeparator + appVersion
-				+ Tools.ServerQueryStringSeparator + info;
-	}
-
-	public String getTime() {
-		return deviceTime;
-	}
-
-	public int getType() {
-		return type;
+	
+	public static RegistrationReplyObject fromJSON(String jsonString) {
+		if (jsonString == null) {
+			return null;
+		}
+		String id = null;
+		int stage = 0;
+		try {
+			JSONObject object = new JSONObject(jsonString);
+			if (object != null) {
+				id = object.getString(ID);
+				stage = object.getInt(STAGE);
+				return new RegistrationReplyObject(id, stage);
+			}
+		} catch (JSONException e) {
+		}
+		return null;
 	}
 }

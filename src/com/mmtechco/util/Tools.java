@@ -67,7 +67,7 @@ public abstract class Tools implements MMTools {
 		return false;
 	}
 
-	public String stringToHex(String inputString) {
+	public static String stringToHex(String inputString) {
 		char[] b;
 		b = inputString.toCharArray();
 		StringBuffer sb = new StringBuffer(b.length * 2);

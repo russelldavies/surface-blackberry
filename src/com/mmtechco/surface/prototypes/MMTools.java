@@ -76,15 +76,6 @@ public interface MMTools {
 	public boolean isHex(String inputString);
 
 	/**
-	 * Formats a string into a hex string
-	 * 
-	 * @param inputString
-	 *            - string to be converted
-	 * @return hex converted string
-	 */
-	public String stringToHex(String inputString);
-
-	/**
 	 * Formats a hex string into a String
 	 * 
 	 * @param hex
