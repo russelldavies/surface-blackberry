@@ -9,20 +9,22 @@ import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.monitor.LockKeyListener;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.Controllable;
+//#ifdef DEBUG
+import com.mmtechco.surface.ui.DebugScreen;
+//#else
 import com.mmtechco.surface.ui.DefaultScreen;
+//#endif
 //#ifdef TOUCH
 import com.mmtechco.surface.ui.TouchLockScreen;
 //#else
 import com.mmtechco.surface.ui.KeypadLockScreen;
-//#endif
-//#ifdef DEBUG
-import com.mmtechco.surface.ui.DebugScreen;
 //#endif
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
@@ -36,7 +38,7 @@ import net.rim.device.api.util.StringUtilities;
 /**
  * Main entry point of the application.
  */
-public class Surface extends UiApplication implements SystemListener2 {
+public class Surface extends UiApplication implements SystemListener2, GlobalEventListener {
 	private static final String TAG = "App";
 	public static ResourceBundle r = ResourceBundle.getBundle(
 			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
@@ -53,9 +55,7 @@ public class Surface extends UiApplication implements SystemListener2 {
 	public static int SCREEN_PRIORITY_SURFACE = 1;
 	public static int SCREEN_PRIORITY_LOCKSCREEN = 2;
 
-	private DefaultScreen defaultScreen;
 	private Screen lockscreen;
-	private Registration reg;
 
 	/**
 	 * Entry point for application
@@ -66,9 +66,11 @@ public class Surface extends UiApplication implements SystemListener2 {
 	public static void main(String[] args) {
 		final Surface app = new Surface();
 		
-		// Add a system listener to detect when system is ready to startup and
-		// also to monitor backlight for lockscreen
+		// Detect when system is ready to startup and also to monitor backlight
+		// for lockscreen
 		app.addSystemListener(app);
+		// Listen for registration events
+		app.addGlobalEventListener(app);
 		
 		//#ifdef DEBUG
 		// Start logging if in debugging mode
@@ -117,13 +119,19 @@ public class Surface extends UiApplication implements SystemListener2 {
 		//#ifdef DEBUG
 		pushScreen(new DebugScreen(lockkeyListener));
 		//#else
-		defaultScreen = new DefaultScreen();
+		DefaultScreen defaultScreen = new DefaultScreen();
 		pushScreen(defaultScreen);
 		//#endif
 		
-		logger.log(TAG, "Starting registration");
-		reg = new Registration();
-		reg.start();
+		Registration.checkStatus();
+	}
+	
+	public void eventOccurred(long guid, int data0, int data1, Object object0,
+			Object object1) {
+		if (guid == Registration.ID) {
+			logger.log(TAG, "Received event to start components");
+			startComponents();
+		}
 	}
 	
 	/**
@@ -142,9 +150,8 @@ public class Surface extends UiApplication implements SystemListener2 {
 			logger.log(TAG, e.getMessage());
 		}
 
-		Controllable[] components = new Controllable[1];
-		components[0] = reg;
-		new Commander(components).start();
+		// Receive remote server commands
+		new Commander(new Controllable[] {new Registration()}).start();
 
 		// Monitor activity log
 		new Server().start();

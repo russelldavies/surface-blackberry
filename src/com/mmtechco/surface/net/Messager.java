@@ -1,5 +1,7 @@
 package com.mmtechco.surface.net;
 
+import java.util.Vector;
+
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.RadioException;
@@ -73,16 +75,14 @@ public class Messager {
 	public static void sendAlertSMS() {
 		new Thread() {
 			public void run() {
-				String[] emergNums = Registration.getEmergNums();
-				if (emergNums[0] != "" && emergNums.length > 0) {
-					for (int i = 0; i < emergNums.length; i++) {
-						try {
-							((ToolsBB) ToolsBB.getInstance()).sendSMS(
-									emergNums[i],
-									r.getString(SurfaceResource.i18n_AlertMsg));
-						} catch (Exception e) {
-							logger.log(TAG, e.getMessage());
-						}
+				Vector emergNums = Registration.getEmergNums();
+				for (int i = 0; i < emergNums.size(); i++) {
+					try {
+						((ToolsBB) ToolsBB.getInstance()).sendSMS(
+								(String) emergNums.elementAt(i),
+								r.getString(SurfaceResource.i18n_AlertMsg));
+					} catch (Exception e) {
+						logger.log(TAG, e.getMessage());
 					}
 				}
 			}
@@ -94,10 +94,11 @@ public class Messager {
 	 * the first.
 	 */
 	public static void makeCall() {
-		String[] emergNums = Registration.getEmergNums();
-		if (emergNums[0] != "" && emergNums.length > 0) {
+		Vector emergNums = Registration.getEmergNums();
+		for (int i = 0; i < emergNums.size(); i++) {
 			try {
-				Phone.initiateCall(Phone.getLineIds()[0], emergNums[0]);
+				Phone.initiateCall(Phone.getLineIds()[0],
+						(String) emergNums.elementAt(0));
 			} catch (RadioException e) {
 				logger.log(TAG, e.getMessage());
 			}
