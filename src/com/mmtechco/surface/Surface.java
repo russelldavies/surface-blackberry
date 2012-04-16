@@ -28,7 +28,6 @@ import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
-import net.rim.device.api.system.RuntimeStore;
 import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.ui.FontManager;
 import net.rim.device.api.ui.Screen;
@@ -65,14 +64,6 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 	 *            Alternate entry point arguments.
 	 */
 	public static void main(String[] args) {
-		Registration.checkStatus();
-		if (args != null & args.length > 0
-				&& Registration.scheduleArgs[0].equals(args[0])) {
-			Logger.getInstance().log(TAG, "alternate entry");
-			//Registration.checkStatus();
-			return;
-		}
-		
 		final Surface app = new Surface();
 		
 		// Detect when system is ready to startup and also to monitor backlight
@@ -132,15 +123,14 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 		pushScreen(defaultScreen);
 		//#endif
 		
-		// TODO: this here?
 		Registration.checkStatus();
 	}
 	
 	public void eventOccurred(long guid, int data0, int data1, Object object0,
 			Object object1) {
 		if (guid == Registration.ID) {
-			logger.log(TAG, "Event to start components");
-			//startComponents();
+			logger.log(TAG, "Received event to start components");
+			startComponents();
 		}
 	}
 	
@@ -160,12 +150,8 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 			logger.log(TAG, e.getMessage());
 		}
 
-		// TODO: fix this
-		/*
-		Controllable[] components = new Controllable[1];
-		components[0] = reg;
-		new Commander(components).start();
-		*/
+		// Receive remote server commands
+		new Commander(new Controllable[] {new Registration()}).start();
 
 		// Monitor activity log
 		new Server().start();

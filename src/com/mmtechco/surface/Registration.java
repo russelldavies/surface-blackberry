@@ -1,6 +1,8 @@
 package com.mmtechco.surface;
 
 import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import net.rim.blackberry.api.phone.Phone;
@@ -41,11 +43,8 @@ public class Registration implements Controllable, SurfaceResource {
 	public final static String KEY_ID = "registration_id";
 	public final static String KEY_NUMBERS = "emergency_numbers";
 	
-	public static String[] scheduleArgs = {"reg"};
-
-	// TODO: set these back
-	private final static int intervalShort = 30000; //1000 * 60 * 2; // 2 min
-	private final static int intervalLong = 60000; //1000 * 60 * 60 * 24; // 24h
+	private final static int intervalShort = 1000 * 60 * 2; // 2 min
+	private final static int intervalLong = 1000 * 60 * 60 * 24; // 24h
 	
 	private static int stage;
 	private static String id;
@@ -57,6 +56,8 @@ public class Registration implements Controllable, SurfaceResource {
 
 	
 	public static void checkStatus() {
+		logger.log(TAG, "Checking registration status");
+		
 		readDetails();
 		
 		// Contact server and get new values, if any
@@ -71,6 +72,9 @@ public class Registration implements Controllable, SurfaceResource {
 		stage = Integer.parseInt(response.getInfo());
 		id = response.getRegID();
 		storeDetails();
+		updateStatus();
+		
+		// Schedule a registration check based on stage
 		if (stage < 2) {
 			logger.log(TAG, "Scheduling short run");
 			scheduleRun(intervalShort);
@@ -79,16 +83,14 @@ public class Registration implements Controllable, SurfaceResource {
 			logger.log(TAG, "Scheduling long run");
 			scheduleRun(intervalLong);
 		}
-		updateStatus();
 	}
 
 	private static void scheduleRun(int sleepTime) {
-        ApplicationDescriptor current = ApplicationDescriptor.
-                currentApplicationDescriptor();
-		current = new ApplicationDescriptor(current, current.getName(), scheduleArgs);
-		current.setPowerOnBehavior(ApplicationDescriptor.DO_NOT_POWER_ON);
-        ApplicationManager.getApplicationManager().scheduleApplication(current,
-				System.currentTimeMillis() + sleepTime, true);
+		new Timer().schedule(new TimerTask() {
+			public void run() {
+				checkStatus();
+			}
+		}, sleepTime);
 	}
 	
 	private static void readDetails() {
@@ -132,6 +134,8 @@ public class Registration implements Controllable, SurfaceResource {
 
 	private static void startComponents() {
 		// Check to see if haven't already started components
+		// Using RuntimeStore because the BB class loader doesn't handle
+		// static class variables properly
 		Boolean started = (Boolean) RuntimeStore.getRuntimeStore().get(ID);
 		if (started == null || !started.booleanValue()) {
 			if (ApplicationManager.getApplicationManager().postGlobalEvent(ID)) {
@@ -165,12 +169,11 @@ public class Registration implements Controllable, SurfaceResource {
 	}
 	
 	private static void notifyObservers() {
-		String statusMsg;
+		String displayId = id;
 		if (id.length() == 0) {
-			statusMsg = "SN: [none] | Status: " + status;
-		} else {
-			statusMsg = "SN: " + id + " | Status: " + status;
+			displayId = "[none]";
 		}
+		String statusMsg = "ID: " + displayId + " | Status: " + status;
 		for (int i = 0; i < observers.size(); i++) {
 			((ObserverScreen) observers.elementAt(i)).setStatus(statusMsg);
 		}
@@ -200,7 +203,7 @@ public class Registration implements Controllable, SurfaceResource {
 	/**
 	 * Gets the emergency numbers associated with the account.
 	 * 
-	 * @return String array of emergency numbers.
+	 * @return Vector with each element a string containing a number
 	 */
 	public static Vector getEmergNums() {
 		return emergNums;
@@ -216,7 +219,10 @@ public class Registration implements Controllable, SurfaceResource {
 			logger.log(TAG, "args[1] :" + inputArgs[1]);
 			logger.log(TAG, "args[2] :" + inputArgs[2]);
 			try {
-				emergNums.addElement(inputArgs[2]);
+				String[] nums = ToolsBB.getInstance().split(inputArgs[2], "&");
+				for (int i = 0; i < nums.length; i++) {
+					emergNums.addElement(nums[i]);
+				}
 				storeDetails();
 				complete = true;
 			} catch (Exception e) {

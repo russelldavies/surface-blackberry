@@ -24,6 +24,7 @@ import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
+import net.rim.device.api.system.RuntimeStore;
 import net.rim.device.api.system.SystemListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -219,10 +220,12 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 					String stage = (String) regTable.get(Registration.KEY_STAGE);
 					String id = (String) regTable.get(Registration.KEY_ID);
 					Vector nums = (Vector) regTable.get(Registration.KEY_NUMBERS);
+					Boolean compStatus = (Boolean) RuntimeStore.getRuntimeStore().get(Registration.ID);
 					
 					add(new LabelField("Stage: " + stage));
 					add(new LabelField("ID: " + id.toString()));
 					add(new LabelField("Emergency numbers: " + nums.toString()));
+					add(new LabelField("Components started: " + compStatus));
 				}
 			}
 
@@ -230,7 +233,9 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 					ButtonField.FIELD_HCENTER | ButtonField.CONSUME_CLICK);
 			exitButton.setChangeListener(new FieldChangeListener() {
 				public void fieldChanged(Field field, int context) {
+					// Delete details
 					PersistentStore.destroyPersistentObject(Registration.ID);
+					RuntimeStore.getRuntimeStore().remove(Registration.ID);
 					System.exit(0);
 				}
 			});

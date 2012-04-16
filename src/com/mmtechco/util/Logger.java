@@ -28,12 +28,7 @@ public class Logger {
 	private static final String APP_NAME = ApplicationDescriptor
 			.currentApplicationDescriptor().getName();
 	private static final long GUID = StringUtilities
-			.stringHashToLong(ApplicationDescriptor
-					.currentApplicationDescriptor().getModuleName());
-	/*
-	private static final long GUID = StringUtilities
 			.stringHashToLong(Application.getApplication().getClass().getName());
-*/
 
 	// Used to format dates into a standard format
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat(
