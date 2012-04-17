@@ -5,6 +5,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import javax.microedition.io.HttpConnection;
+
 import org.json.me.JSONException;
 import org.json.me.JSONObject;
 
@@ -21,6 +23,7 @@ import net.rim.device.api.system.RuntimeStore;
 import net.rim.device.api.util.StringUtilities;
 
 import com.mmtechco.surface.data.ActivityLog;
+import com.mmtechco.surface.net.Response;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
 import com.mmtechco.surface.prototypes.Controllable;
@@ -28,7 +31,6 @@ import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.ErrorMessage;
 import com.mmtechco.util.Logger;
-import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
 
 /**
@@ -44,10 +46,10 @@ public class Registration implements Controllable, SurfaceResource {
 	public final static String KEY_STAGE = "registration_stage";
 	public final static String KEY_ID = "registration_id";
 	public final static String KEY_NUMBERS = "emergency_numbers";
-	
+
 	private final static int intervalShort = 1000 * 60 * 2; // 2 min
 	private final static int intervalLong = 1000 * 60 * 60 * 24; // 24h
-	
+
 	private static int stage;
 	private static String id;
 	private static String status = r.getString(i18n_RegRequesting);
@@ -56,26 +58,36 @@ public class Registration implements Controllable, SurfaceResource {
 	private static Logger logger = Logger.getInstance();
 	private static Vector observers = new Vector();
 
-	
 	public static void checkStatus() {
 		logger.log(TAG, "Checking registration status");
-		
+
+		// Read details from storage to have something to display in case there
+		// is no connectivity
 		readDetails();
-		
-		// Contact server and get new values, if any
+
+		// Contact server and get new values, if any, otherwise sleep
 		logger.log(TAG, "Requesting reg details from server");
-		String response = Server.post(new RegistrationRequestObject(id).toJSON());
-		logger.log(TAG, "Server response: " + response);
-		RegistrationReplyObject reply = RegistrationReplyObject.fromJSON(response);
-		if (response == null || reply == null) {
-			logger.log(TAG, "Bad server response. Scheduling short run");
+		Response response = Server.post(new RegistrationRequestObject(id)
+				.toJSON());
+		if (response == null) {
+			logger.log(TAG, "Server did not respond. Scheduling short run");
+			scheduleRun(intervalShort);
+			return;
+		} else if (response.getResponseCode() != HttpConnection.HTTP_OK) {
+			if (response.getWarning() != null) {
+				logger.log(TAG, "Server Warning: " + response.getWarning());
+			}
 			scheduleRun(intervalShort);
 			return;
 		}
+
+		// Read and process registration data
+		RegistrationReplyObject reply = RegistrationReplyObject
+				.fromJSON(response.getContent());
 		stage = reply.stage;
 		id = reply.id;
 		storeDetails();
-		
+
 		// Schedule a registration check based on stage
 		if (stage < 2) {
 			logger.log(TAG, "Scheduling short run");
@@ -95,7 +107,7 @@ public class Registration implements Controllable, SurfaceResource {
 			}
 		}, sleepTime);
 	}
-	
+
 	private static void readDetails() {
 		// Read registration data or set to default values
 		PersistentObject regData = PersistentStore.getPersistentObject(ID);
@@ -105,7 +117,8 @@ public class Registration implements Controllable, SurfaceResource {
 				logger.log(TAG, "Populating with default values");
 				// Populate with default values
 				regTable = new Hashtable();
-				regTable.put(KEY_STAGE, "0"); stage = 0;
+				regTable.put(KEY_STAGE, "0");
+				stage = 0;
 				regTable.put(KEY_ID, id = "");
 				regTable.put(KEY_NUMBERS, emergNums = new Vector());
 				// Store to device
@@ -120,7 +133,7 @@ public class Registration implements Controllable, SurfaceResource {
 			}
 		}
 	}
-	
+
 	private static void storeDetails() {
 		PersistentObject regData = PersistentStore.getPersistentObject(ID);
 		synchronized (regData) {
@@ -147,7 +160,7 @@ public class Registration implements Controllable, SurfaceResource {
 			}
 		}
 	}
-	
+
 	private static void updateStatus() {
 		switch (stage) {
 		case 0: // Initialization state
@@ -166,11 +179,11 @@ public class Registration implements Controllable, SurfaceResource {
 			break;
 		}
 		logger.log(TAG, "Update status: " + stage + ";" + id + ";" + status);
-		
+
 		// Tell screens to update themselves
 		notifyObservers();
 	}
-	
+
 	private static void notifyObservers() {
 		String displayId = id;
 		if (id.length() == 0) {
@@ -181,7 +194,7 @@ public class Registration implements Controllable, SurfaceResource {
 			((ObserverScreen) observers.elementAt(i)).setStatus(statusMsg);
 		}
 	}
-	
+
 	public static void addObserver(ObserverScreen screen) {
 		observers.addElement(screen);
 	}
@@ -191,7 +204,7 @@ public class Registration implements Controllable, SurfaceResource {
 	}
 
 	/**
-	 * Get the device registration ID. 
+	 * Get the device registration ID.
 	 * 
 	 * @return registration ID string. <strong>"0"</strong> if not available.
 	 */
@@ -246,19 +259,12 @@ public class Registration implements Controllable, SurfaceResource {
 }
 
 class RegistrationRequestObject {
-	private static final String
-	ID = "id",
-	TIME = "time",
-	TYPE = "type",
-	INFO = "info",
-	CLIENT_VER = "client",
-	DEVICE_NUM = "deviceNum",
-	PHONE_NUM = "phoneNum",
-	MODEL = "model",
-	OS = "os",
-	OS_VER = "osVer";
+	private static final String ID = "id", TIME = "time", TYPE = "type",
+			INFO = "info", CLIENT_VER = "client", DEVICE_NUM = "deviceNum",
+			PHONE_NUM = "phoneNum", MODEL = "model", OS = "os",
+			OS_VER = "osVer";
 	private final static String type = "REG";
-	
+
 	private String id;
 
 	public RegistrationRequestObject(String id) {
@@ -273,9 +279,12 @@ class RegistrationRequestObject {
 			outer.put(TIME, System.currentTimeMillis() / 1000);
 			outer.put(TYPE, type);
 			outer.put(INFO, inner);
-			
-			inner.put(CLIENT_VER, ApplicationDescriptor.currentApplicationDescriptor().getVersion());
-			inner.put(DEVICE_NUM, Tools.stringToHex(IDENInfo.imeiToString(IDENInfo.getIMEI())));
+
+			inner.put(CLIENT_VER, ApplicationDescriptor
+					.currentApplicationDescriptor().getVersion());
+			inner.put(DEVICE_NUM, Long.toString(
+					Long.parseLong(IDENInfo.imeiToString(IDENInfo.getIMEI())),
+					16));
 			inner.put(PHONE_NUM, Phone.getDevicePhoneNumber(false));
 			inner.put(MODEL, String.valueOf(Branding.getVendorId()));
 			inner.put(OS, "BlackBerry");
@@ -288,18 +297,16 @@ class RegistrationRequestObject {
 }
 
 class RegistrationReplyObject {
-	private static final String
-	ID = "id",
-	STAGE = "stage";
-	
+	private static final String ID = "id", STAGE = "stage";
+
 	public int stage;
 	public String id;
-	
+
 	public RegistrationReplyObject(String id, int stage) {
 		this.id = id;
 		this.stage = stage;
 	}
-	
+
 	public static RegistrationReplyObject fromJSON(String jsonString) {
 		if (jsonString == null) {
 			return null;
