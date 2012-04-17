@@ -115,7 +115,7 @@ public class Server extends Thread {
 		}
 	}
 
-	public static String post(String messageBody) {
+	public static Response post(String messageBody) {
 		if (!isConnected()) {
 			return null;
 		}
@@ -139,17 +139,8 @@ public class Server extends Thread {
 			output.write(postData);
 			output.flush();
 
-			// Read response
-			if (connection.getResponseCode() == HttpConnection.HTTP_OK) {
-				InputStream input = connection.openInputStream();
-				byte[] reply = IOUtilities.streamToBytes(input);
-				input.close();
-				connection.close();
-				return new String(reply);
-			} else {
-				// TODO: inspect headers and log error
-				return null;
-			}
+			// Construct reply
+			return new Response(connection);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logger.getInstance().log(TAG, e.toString());
