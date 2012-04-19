@@ -26,7 +26,6 @@ import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
@@ -50,7 +49,6 @@ public class LocationMonitor implements LocationListener {
 
 	public static double latitude;
 	public static double longitude;
-	private Message locMsg;
 	
 	private static Vector observers = new Vector();
 
@@ -126,7 +124,7 @@ public class LocationMonitor implements LocationListener {
 			float speed = location.getSpeed();
 			longitude = location.getQualifiedCoordinates().getLongitude();
 			latitude = location.getQualifiedCoordinates().getLatitude();
-			locMsg = new LocationMessage(latitude, longitude, speed);
+			//locMsg = new LocationMessage(latitude, longitude, speed);
 		}
 	}
 
@@ -157,53 +155,5 @@ public class LocationMonitor implements LocationListener {
 				}
 			}
 		}
-	}
-}
-
-/**
- * Holds GPS messages
- */
-class LocationMessage implements Message {
-	private final int type = 6;
-	private double latitude, longitude;
-	private String deviceTime;
-	private float speed;
-
-	public LocationMessage(double lat, double lon, float speed) {
-		latitude = lat;
-		longitude = lon;
-		this.speed = speed;
-		deviceTime = ToolsBB.getInstance().getDate();
-	}
-
-	/**
-	 * Retrieves the message formatted in to a single string value. Location
-	 * message consists of:
-	 * <ul>
-	 * <li>Registration Serial number.
-	 * <li>Location message type which is '06' (two digits number).
-	 * <li>Device time.
-	 * <li>Latitude.
-	 * <li>Longitude.
-	 * <li>Speed. *<i>Warning</i> not implemented
-	 * </ul>
-	 * 
-	 * @return a single string containing the entire message.
-	 */
-	public String getREST() {
-		return Registration.getRegID() + Tools.ServerQueryStringSeparator + '0'
-				+ type + Tools.ServerQueryStringSeparator + deviceTime
-				+ Tools.ServerQueryStringSeparator + latitude
-				+ Tools.ServerQueryStringSeparator + longitude
-		// + Tools.ServerQueryStringSeparator + speed;
-				;
-	}
-
-	public String getTime() {
-		return deviceTime;
-	}
-
-	public int getType() {
-		return type;
 	}
 }

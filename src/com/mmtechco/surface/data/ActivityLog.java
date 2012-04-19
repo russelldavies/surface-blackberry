@@ -7,7 +7,6 @@ import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.util.ContentProtectedVector;
 import net.rim.device.api.util.StringUtilities;
 
-import com.mmtechco.surface.prototypes.Message;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -31,8 +30,8 @@ public class ActivityLog {
 
 	private static Logger logger = Logger.getInstance();
 
-	public static synchronized void addMessage(Message message) {
-		log.addElement(message.getREST());
+	public static synchronized void addMessage(String message) {
+		log.addElement(message);
 		commit();
 	}
 
