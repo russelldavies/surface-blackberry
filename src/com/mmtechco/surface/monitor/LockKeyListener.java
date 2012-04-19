@@ -48,7 +48,7 @@ public final class LockKeyListener implements KeyListener {
 			// Continue if second press is within a second
 			if (time - lastTime < 1000) {
 				logger.log(TAG, "Sending Alert");
-				Messager.sendMessage(Messager.type_alert, "Sending Alert...");
+				Messager.sendMessage(Messager.STATE_ALH, "Sending Alert...");
 			}
 			lastTime = time;
 			// Consume event

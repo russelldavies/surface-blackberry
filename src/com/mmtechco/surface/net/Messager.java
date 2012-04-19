@@ -2,6 +2,8 @@ package com.mmtechco.surface.net;
 
 import java.util.Vector;
 
+import javax.microedition.io.HttpConnection;
+
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.RadioException;
@@ -12,27 +14,24 @@ import net.rim.device.api.ui.UiEngine;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.monitor.LocationMonitor;
-import com.mmtechco.surface.prototypes.MMTools;
 import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
-import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
 
 public class Messager {
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(Messager.class);
-	static ResourceBundle r = ResourceBundle.getBundle(
-			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
 	private static Logger logger = Logger.getInstance();
-	private static MMTools tools = ToolsBB.getInstance();
-
-	public static final String type_surface = "10";
-	public static final String type_alert = "13";
-	public static final String type_mandown = "15";
-
-	public static void sendMessage(final String type, String initialMessage) {
-		final ToastPopupScreen screen = new ToastPopupScreen(initialMessage);
+	
+	public static final String STATE_NON = "NON", STATE_ALH = "ALH",
+			STATE_SU1 = "SU1", STATE_SU2 = "SU2", STATE_MIS = "MIS",
+			STATE_MNS = "MNS";
+	
+	//public static void sendMessage(String json, String toastMessage) {
+	//public static void sendMessage(final String type, String toastMessage) {
+	public static Response sendMessage(final String type, String toastMessage) {
+		final ToastPopupScreen screen = new ToastPopupScreen(toastMessage);
 		Ui.getUiEngine().pushGlobalScreen(screen,
 				Surface.SCREEN_PRIORITY_LOCKSCREEN, UiEngine.GLOBAL_SHOW_LOWER);
 		
@@ -40,40 +39,37 @@ public class Messager {
 		new Thread() {
 			public void run() {
 				if (Server.isConnected()) {
-					String queryString = Registration.getRegID()
-							+ Tools.ServerQueryStringSeparator + type
-							+ Tools.ServerQueryStringSeparator
-							+ tools.getDate()
-							+ Tools.ServerQueryStringSeparator
-							+ LocationMonitor.latitude
-							+ Tools.ServerQueryStringSeparator
-							+ LocationMonitor.longitude;
-					logger.log(TAG, queryString);
-					String reply = Server.get(queryString);
-					/*
-					synchronized (UiApplication.getEventLock()) {
-						if (reply.isError()) {
-							screen.setText("Could not send message");
-						} else {
-							screen.setText("Message sent");
-						}
-						screen.dismiss(2000);
-					}
-					*/
-				} else {
 					synchronized (UiApplication.getEventLock()) {
 						screen.setText("Please check your connectivity settings");
 						screen.dismiss(2500);
 					}
+					return;
+				}
+				Response response = Server.post(new EventClientRequest(
+						LocationMonitor.latitude, LocationMonitor.longitude,
+						type).toJSON());
+				int rc = response.getResponseCode();
+				synchronized (UiApplication.getEventLock()) {
+					if (rc == HttpConnection.HTTP_OK) {
+						screen.setText("Message sent");
+					} else {
+						// TODO: add logging here
+						screen.setText("Could not send message");
+					}
+					screen.dismiss(2000);
 				}
 			}
 		}.start();
+		// TODO: fix me
+		return null;
 	}
 
 	/**
 	 * Send an SMS to emergency numbers
 	 */
 	public static void sendAlertSMS() {
+		final ResourceBundle r = ResourceBundle.getBundle(
+				SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
 		new Thread() {
 			public void run() {
 				Vector emergNums = Registration.getEmergNums();

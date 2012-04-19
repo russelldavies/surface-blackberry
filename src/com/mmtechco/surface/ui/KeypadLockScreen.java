@@ -48,9 +48,9 @@ public class KeypadLockScreen extends LockScreen {
 		} else {
 			String message = "Sending...";
 			if (field == mandownButton) {
-				Messager.sendMessage(Messager.type_mandown, message);
+				Messager.sendMessage(Messager.STATE_MIS, message);
 			} else if (field == alertButton) {
-				Messager.sendMessage(Messager.type_alert, message);
+				Messager.sendMessage(Messager.STATE_ALH, message);
 			}
 		}
 	}

@@ -97,7 +97,7 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 	}
 	
 	private void surface() {
-		surfaceButton.startCountdown(Messager.type_surface, interval);
+		surfaceButton.startCountdown(Messager.STATE_SU1, interval);
 		
 		// Play sound
 		try {

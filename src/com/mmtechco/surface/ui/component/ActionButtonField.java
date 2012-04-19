@@ -33,29 +33,31 @@ public class ActionButtonField extends BaseButtonField {
 	private int currentFrame;
 	private int timerID = -1;
 	private boolean spinning;
-	
+
 	private Bitmap button;
 	private int buttonWidth;
 	private int buttonHeight;
 	private String buttonText;
-	
+
 	// Specified in seconds
 	private int interval;
 
 	private ObserverScreen screen;
 	private static Application app = Application.getApplication();
 
-	//public ActionButtonField(ObserverScreen screen, int fieldSize, long style) {
-	public ActionButtonField(ObserverScreen screen, Bitmap spinner, int numFrames, int interval, long style) {
+	// public ActionButtonField(ObserverScreen screen, int fieldSize, long
+	// style) {
+	public ActionButtonField(ObserverScreen screen, Bitmap spinner,
+			int numFrames, int interval, long style) {
 		super(style);
 		this.screen = screen;
 		this.spinner = spinner;
 		this.numFrames = numFrames;
 		this.interval = interval;
-		
+
 		frameWidth = spinner.getWidth() / numFrames;
 		frameHeight = spinner.getHeight();
-		
+
 		// Button should be 60% the size of the spinner
 		double factor = 0.6;
 		buttonWidth = (int) (frameWidth * factor);
@@ -64,11 +66,11 @@ public class ActionButtonField extends BaseButtonField {
 				Bitmap.getBitmapResource("alertbutton_normal.png"),
 				buttonWidth, buttonHeight, Bitmap.FILTER_LANCZOS,
 				Bitmap.SCALE_TO_FIT);
-		
+
 		// Surface is default action
 		setSurface();
 	}
-	
+
 	public int getPreferredWidth() {
 		return frameWidth;
 	}
@@ -76,7 +78,7 @@ public class ActionButtonField extends BaseButtonField {
 	public int getPreferredHeight() {
 		return frameHeight;
 	}
-	
+
 	protected void layout(int width, int height) {
 		setExtent(frameWidth, frameHeight);
 	}
@@ -103,24 +105,23 @@ public class ActionButtonField extends BaseButtonField {
 		try {
 			g.setColor(Color.WHITE);
 			int aY = (frameWidth / 2) - (getFont().getHeight() / 2);
-			g.drawText(buttonText, 0, aY, DrawStyle.HCENTER,
-					frameWidth);
+			g.drawText(buttonText, 0, aY, DrawStyle.HCENTER, frameWidth);
 		} finally {
 			g.setColor(oldColor);
 			g.setFont(oldFont);
 		}
 	}
-	
+
 	protected void drawFocus(Graphics g, boolean on) {
 		int strokeWidth = 10;
-		
+
 		int oldColor = g.getColor();
 		try {
 			g.setColor(Color.WHITE);
 			g.setStrokeWidth(strokeWidth);
 			int cx = frameWidth / 2;
 			int cy = frameHeight / 2;
-			//int r = buttonWidth / 2 - strokeWidth;
+			// int r = buttonWidth / 2 - strokeWidth;
 			int r = buttonWidth / 2;
 			g.drawEllipse(cx, cy, cx + r, cy, cx, cy + r, 0, 360);
 		} finally {
@@ -128,7 +129,7 @@ public class ActionButtonField extends BaseButtonField {
 			g.setStrokeStyle(1);
 		}
 	}
-	
+
 	public void applyFont() {
 		try {
 			FontFamily typeface = FontFamily.forName("Kabel Dm BT");
@@ -138,23 +139,26 @@ public class ActionButtonField extends BaseButtonField {
 		}
 		resizeFont();
 	}
-	
+
 	private void resizeFont() {
 		Font font = getFont();
-		int textLength = font.derive(Font.PLAIN, font.getHeight()).getBounds(buttonText);
+		int textLength = font.derive(Font.PLAIN, font.getHeight()).getBounds(
+				buttonText);
 		int desiredLength = buttonWidth - 45;
-		
-		if(textLength > desiredLength) {
-			for(int height = font.getHeight(); height > 20; height--) {
-				textLength = font.derive(Font.PLAIN, height).getBounds(buttonText);
+
+		if (textLength > desiredLength) {
+			for (int height = font.getHeight(); height > 20; height--) {
+				textLength = font.derive(Font.PLAIN, height).getBounds(
+						buttonText);
 				if (textLength <= desiredLength) {
 					setFont(font.derive(Font.PLAIN, height));
 					break;
 				}
 			}
 		} else {
-			for(int height = font.getHeight(); height < 100; height++) {
-				textLength = font.derive(Font.PLAIN, height).getBounds(buttonText);
+			for (int height = font.getHeight(); height < 100; height++) {
+				textLength = font.derive(Font.PLAIN, height).getBounds(
+						buttonText);
 				if (textLength >= desiredLength) {
 					setFont(font.derive(Font.PLAIN, height));
 					break;
@@ -196,7 +200,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				sendMessage(Messager.type_surface);
+				sendMessage(Messager.STATE_SU1);
 			}
 		});
 	}
@@ -206,7 +210,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.type_alert, interval);
+				startCountdown(Messager.STATE_ALH, interval);
 			}
 		});
 	}
@@ -216,7 +220,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.type_mandown, interval);
+				startCountdown(Messager.STATE_MNS, interval);
 			}
 		});
 	}
@@ -229,6 +233,7 @@ public class ActionButtonField extends BaseButtonField {
 		final Timer countdown = new Timer();
 		countdown.scheduleAtFixedRate(new TimerTask() {
 			int counter = interval;
+
 			public void run() {
 				if (counter == 0) {
 					this.cancel();
@@ -239,9 +244,9 @@ public class ActionButtonField extends BaseButtonField {
 						screen.setStatus("Time remaining to cancel: "
 								+ String.valueOf(--counter));
 						if (counter == 0) {
-							if (type.equals(Messager.type_surface)) {
-								((SurfaceScreen)screen).stopAlerts();
-								((Screen)screen).close();
+							if (type.equals(Messager.STATE_SU1)) {
+								((SurfaceScreen) screen).stopAlerts();
+								((Screen) screen).close();
 							} else {
 								screen.setStatus(origStatus);
 								sendMessage(type);
@@ -253,7 +258,7 @@ public class ActionButtonField extends BaseButtonField {
 		}, 0, 1000);
 
 		// Set Action button to a cancel button
-		if (type.equals(Messager.type_surface)) {
+		if (type.equals(Messager.STATE_SU1)) {
 			setButtonText("Surface");
 		} else {
 			setButtonText("Cancel");
@@ -265,13 +270,13 @@ public class ActionButtonField extends BaseButtonField {
 				// and restore status text
 				stopSpin();
 				countdown.cancel();
-				if (type.equals(Messager.type_surface)) {
-					((SurfaceScreen)screen).stopAlerts();
+				if (type.equals(Messager.STATE_SU1)) {
+					((SurfaceScreen) screen).stopAlerts();
 					sendMessage(type);
-					((Screen)screen).close();
-				} else if (type.equals(Messager.type_alert)) {
+					((Screen) screen).close();
+				} else if (type.equals(Messager.STATE_ALH)) {
 					setAlert();
-				} else if (type.equals(Messager.type_mandown)) {
+				} else if (type.equals(Messager.STATE_MNS)) {
 					setManDown();
 				}
 				screen.setStatus(origStatus);
@@ -281,23 +286,23 @@ public class ActionButtonField extends BaseButtonField {
 
 	private void sendMessage(String type) {
 		String statusMsg = "Sending ";
-		if (type.equals(Messager.type_surface)) {
+		if (type.equals(Messager.STATE_SU1)) {
 			statusMsg = statusMsg + "Surface";
 			setSurface();
-		} else if (type.equals(Messager.type_alert)) {
+		} else if (type.equals(Messager.STATE_ALH)) {
 			statusMsg = statusMsg + "Alert";
 			setAlert();
 			Messager.sendAlertSMS();
-		} else if (type.equals(Messager.type_mandown)) {
+		} else if (type.equals(Messager.STATE_MNS)) {
 			statusMsg = statusMsg + "Man Down";
 			setManDown();
 			Messager.makeCall();
 		}
 		statusMsg = statusMsg + "...";
-		//screen.setStatus(statusMsg);
+		// screen.setStatus(statusMsg);
 		Messager.sendMessage(type, statusMsg);
-		//screen.setStatus("Message Sent...");
-		//screen.setStatus(prevStatus);
+		// screen.setStatus("Message Sent...");
+		// screen.setStatus(prevStatus);
 		stopSpin();
 	}
 }

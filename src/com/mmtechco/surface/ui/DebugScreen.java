@@ -118,17 +118,17 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		};
 		MenuItem surfaceMenu = new MenuItem("Send Surface", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.type_surface);
+				sendMessage(Messager.STATE_SU1);
 			}
 		};
 		MenuItem alertMenu = new MenuItem("Send Alert", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.type_alert);
+				sendMessage(Messager.STATE_ALH);
 			}
 		};
 		MenuItem mandownMenu = new MenuItem("Send Man Down", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.type_mandown);
+				sendMessage(Messager.STATE_MNS);
 			}
 		};
 		MenuItem alertscreenMenu = new MenuItem("Launch Default Screen", 0x100040,
