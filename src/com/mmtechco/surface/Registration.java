@@ -22,21 +22,17 @@ import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.system.RuntimeStore;
 import net.rim.device.api.util.StringUtilities;
 
-import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.net.Response;
 import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.COMMAND_TARGETS;
-import com.mmtechco.surface.prototypes.Controllable;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
-import com.mmtechco.util.ErrorMessage;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
 /**
  * Checks the registration stage that currently the device is in.
  */
-public class Registration implements Controllable, SurfaceResource {
+public class Registration implements SurfaceResource {
 	private static final String TAG = ToolsBB
 			.getSimpleClassName(Registration.class);
 	static ResourceBundle r = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
@@ -223,38 +219,6 @@ public class Registration implements Controllable, SurfaceResource {
 	 */
 	public static Vector getEmergNums() {
 		return emergNums;
-	}
-
-	public boolean processCommand(String[] inputArgs) {
-		logger.log(TAG, "Processing Owner Number Command...");
-		boolean complete = false;
-		if (inputArgs[0].equalsIgnoreCase("lost")
-				&& inputArgs[1].equalsIgnoreCase("number")) {
-
-			logger.log(TAG, "args[0] :" + inputArgs[0]);
-			logger.log(TAG, "args[1] :" + inputArgs[1]);
-			logger.log(TAG, "args[2] :" + inputArgs[2]);
-			try {
-				String[] nums = ToolsBB.getInstance().split(inputArgs[2], "&");
-				for (int i = 0; i < nums.length; i++) {
-					emergNums.addElement(nums[i]);
-				}
-				storeDetails();
-				complete = true;
-			} catch (Exception e) {
-				ActivityLog.addMessage(new ErrorMessage(e));
-				complete = false;
-			}
-		}
-		return complete;
-	}
-
-	public boolean isTarget(COMMAND_TARGETS targets) {
-		if (targets == COMMAND_TARGETS.OWNER) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 }
 

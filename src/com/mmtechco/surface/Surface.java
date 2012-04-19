@@ -8,7 +8,6 @@ import javax.microedition.location.LocationException;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.monitor.LockKeyListener;
 import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.Controllable;
 //#ifdef DEBUG
 import com.mmtechco.surface.ui.DebugScreen;
 //#else
@@ -150,9 +149,6 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 		} catch (LocationException e) {
 			logger.log(TAG, e.getMessage());
 		}
-
-		// Receive remote server commands
-		new Commander(new Controllable[] {new Registration()}).start();
 
 		// Monitor activity log
 		new Server().start();
