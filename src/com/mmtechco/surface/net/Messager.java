@@ -13,6 +13,7 @@ import net.rim.device.api.ui.UiEngine;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
+import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.surface.util.SurfaceResource;
@@ -58,10 +59,25 @@ public class Messager {
 					}
 					screen.dismiss(2000);
 				}
+				
+				processLog();
 			}
 		}.start();
 		// TODO: fix me
 		return null;
+	}
+	
+	private static void processLog() {
+		logger.log(TAG,
+				"Checking for new messages to send. Message queue length: "
+						+ ActivityLog.length());
+		if (ActivityLog.hasNext()) {
+			Object obj = ActivityLog.getMessage();
+			if (obj instanceof EventClientRequest) {
+				EventClientRequest a = (EventClientRequest) obj;
+				sendMessage(Messager.STATE_ALH, "blah");
+			}
+		}
 	}
 
 	/**

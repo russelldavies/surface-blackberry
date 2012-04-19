@@ -129,8 +129,7 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 			Object object1) {
 		if (guid == Registration.ID) {
 			logger.log(TAG, "Received event to start components");
-			// TODO: enable
-			//startComponents();
+			startComponents();
 		}
 	}
 	
@@ -149,9 +148,6 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 		} catch (LocationException e) {
 			logger.log(TAG, e.getMessage());
 		}
-
-		// Monitor activity log
-		new Server().start();
 	}
 	
 	private void readSettings() {

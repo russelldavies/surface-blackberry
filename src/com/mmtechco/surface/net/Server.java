@@ -13,7 +13,6 @@ import net.rim.device.api.io.transport.ConnectionFactory;
 import net.rim.device.api.io.transport.TransportInfo;
 import net.rim.device.api.system.DeviceInfo;
 
-import com.mmtechco.surface.data.ActivityLog;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -21,76 +20,11 @@ import com.mmtechco.util.ToolsBB;
  * Monitors for new actions stored in the local storage for recording actions
  * and sends them to the web server at specific intervals.
  */
-public class Server extends Thread {
+public class Server {
 	private static final String TAG = ToolsBB.getSimpleClassName(Server.class);
 
-	private Logger logger = Logger.getInstance();
 	private static final String URL = "http://192.168.2.13/surface_sys/REST.php";
 	private static final String PROTOCOL_VER = "1";
-	private int freq = 1000 * 30; // 30 seconds
-
-
-	/**
-	 * Monitors the local storage for new messages stored at specific intervals
-	 * and sends them to the server.
-	 */
-	public void run() {
-		while (true) {
-			if (isConnected()) {
-				logger.log(TAG,
-						"Checking for new messages to send. Message queue length: "
-								+ ActivityLog.length());
-				// Check is a message is in the local storage
-				while (ActivityLog.length() > 0 && isConnected()) {
-					/*
-					try {
-						// Send the first message from the queue to the server
-						// and parse reply
-						serverReply = tools.split( get(ActivityLog.getMessage()), Tools.ServerQueryStringSeparator);
-						// No error
-						if (serverReply.length > 2
-								&& (Integer.parseInt(serverReply[2]) == 0)) {
-							// Pop the message off the queue
-							ActivityLog.removeMessage();
-							counter = -1;
-						}
-					} catch (NullPointerException e) {
-						logger.log(TAG, "Could not contact server.");
-					}
-
-					if (null == serverReply) {
-						logger.log(TAG,
-								"Did not receive server reply, sleeping");
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					} else {
-						// Check network: server timeout, does not return type
-						if (0 < serverReply[1].length()) {
-							counter++;
-							if (counter == 2) {
-								ActivityLog.removeMessage();
-								counter = -1;
-							}
-						} else {
-							// No network
-							ActivityLog.removeMessage();
-							break;
-						}
-					}
-					*/
-				}
-			}
-			// Sleep so loop doesn't spin
-			try {
-				Thread.sleep(freq);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
 	public static String get(String queryString) {
 		//logger.log(TAG, "GET query string: " + queryString);

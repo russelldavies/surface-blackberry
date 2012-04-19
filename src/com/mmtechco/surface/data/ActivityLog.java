@@ -1,18 +1,11 @@
 package com.mmtechco.surface.data;
 
-import java.util.NoSuchElementException;
-
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.util.ContentProtectedVector;
 import net.rim.device.api.util.StringUtilities;
 
-import com.mmtechco.util.Logger;
-import com.mmtechco.util.ToolsBB;
-
 public class ActivityLog {
-	private static final String TAG = ToolsBB
-			.getSimpleClassName(ActivityLog.class);
 	public static final long ID = StringUtilities
 			.stringHashToLong(ActivityLog.class.getName());
 
@@ -28,39 +21,32 @@ public class ActivityLog {
 		log = (ContentProtectedVector) store.getContents();
 	}
 
-	private static Logger logger = Logger.getInstance();
-
-	public static synchronized void addMessage(String message) {
-		log.addElement(message);
+	public static synchronized void addMessage(Object jsonObj) {
+		log.addElement(jsonObj);
 		commit();
 	}
 
 	public static synchronized boolean removeMessage() {
-		try {
+		if (hasNext()) {
 			log.removeElementAt(0);
 			commit();
 			return true;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			return false;
 		}
+		return false;
 	}
 
-	public static synchronized String getMessage() {
-		String msg = "";
-		try {
-			msg = (String) log.firstElement();
-		} catch (NoSuchElementException e) {
-			logger.log(TAG, e.getMessage());
+	public static synchronized Object getMessage() {
+		if (hasNext()) {
+			return log.firstElement();
 		}
-		return msg;
+		return null;
 	}
 
-	public static synchronized boolean isEmpty() {
-		if (log.size() == 0) {
+	public static synchronized boolean hasNext() {
+		if (log.size() > 0) {
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	public static synchronized int length() {
