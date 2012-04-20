@@ -1,5 +1,6 @@
 package com.mmtechco.surface;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,13 +64,16 @@ public class Registration implements SurfaceResource {
 
 		// Contact server and get new values, if any, otherwise sleep
 		logger.log(TAG, "Requesting reg details from server");
-		Response response = Server.post(new RegistrationRequestObject(id)
-				.toJSON());
-		if (response == null) {
-			logger.log(TAG, "Server did not respond. Scheduling short run");
+		Response response;
+		try {
+			response = Server.post(new RegistrationRequestObject(id)
+					.toJSON());
+		} catch (IOException e) {
+			logger.log(TAG, e.getMessage());
 			scheduleRun(intervalShort);
 			return;
-		} else if (response.getResponseCode() != HttpConnection.HTTP_OK) {
+		}
+		if (response.getResponseCode() != HttpConnection.HTTP_OK) {
 			if (response.getWarning() != null) {
 				logger.log(TAG, "Server Warning: " + response.getWarning());
 			}

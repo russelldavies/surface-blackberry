@@ -1,5 +1,6 @@
 package com.mmtechco.surface.net;
 
+import java.io.IOException;
 import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
@@ -46,9 +47,15 @@ public class Messager {
 					}
 					return;
 				}
-				Response response = Server.post(new EventClientRequest(
-						LocationMonitor.latitude, LocationMonitor.longitude,
-						type).toJSON());
+				Response response;
+				try {
+					response = Server.post(new EventClientRequest(
+							LocationMonitor.latitude, LocationMonitor.longitude,
+							type).toJSON());
+				} catch (IOException e) {
+					logger.log(TAG, e.getMessage());
+					return;
+				}
 				int rc = response.getResponseCode();
 				synchronized (UiApplication.getEventLock()) {
 					if (rc == HttpConnection.HTTP_OK) {

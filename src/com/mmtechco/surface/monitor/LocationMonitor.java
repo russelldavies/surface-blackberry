@@ -1,6 +1,7 @@
 //#preprocess
 package com.mmtechco.surface.monitor;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -136,10 +137,12 @@ public class LocationMonitor implements LocationListener {
 	private class UploadTask extends TimerTask {
 		public void run() {
 			logger.log(TAG, "Sending location to server");
-			Response response = Server.post(new EventClientRequest(latitude,
-					longitude, Messager.STATE_NON).toJSON());
-			if (response == null) {
-				logger.log(TAG, "No connectivity or server down");
+			Response response;
+			try {
+				response = Server.post(new EventClientRequest(latitude,
+						longitude, Messager.STATE_NON).toJSON());
+			} catch (IOException e) {
+				logger.log(TAG, e.getMessage());
 				return;
 			}
 			

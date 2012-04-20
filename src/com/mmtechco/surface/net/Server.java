@@ -49,12 +49,13 @@ public class Server {
 		}
 	}
 
-	public static Response post(String messageBody) {
+	public static Response post(String messageBody) throws IOException {
+		/*
 		if (!isConnected()) {
 			return null;
 		}
+		*/
 		Logger.getInstance().log(TAG, "POST data" + messageBody);
-		try {
 			// Setup connection and HTTP headers
 			HttpConnection connection = setupConnection(URL);
 			connection.setRequestMethod(HttpConnection.POST);
@@ -75,11 +76,6 @@ public class Server {
 
 			// Construct reply
 			return new Response(connection);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logger.getInstance().log(TAG, e.toString());
-			return null;
-		}
 	}
 	
 	private static HttpConnection setupConnection(String url) throws IOException {
