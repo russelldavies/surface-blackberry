@@ -6,7 +6,7 @@ import org.json.me.JSONObject;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.util.Logger;
 
-public class EventClientRequest {
+public class EventRequest {
 	private static final String ID = "id", TIME = "time", TYPE = "type",
 			LOCATION = "location",
 			LAT = "lat",
@@ -19,7 +19,7 @@ public class EventClientRequest {
 	private double latitude, longitude;
 	private String state;
 
-	public EventClientRequest(double latitude, double longitude, String state) {
+	public EventRequest(double latitude, double longitude, String state) {
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.state = state;

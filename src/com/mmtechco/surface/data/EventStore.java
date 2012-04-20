@@ -1,60 +1,62 @@
 package com.mmtechco.surface.data;
 
+import com.mmtechco.surface.net.EventRequest;
+
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.util.ContentProtectedVector;
 import net.rim.device.api.util.StringUtilities;
 
-public class ActivityLog {
+public class EventStore {
 	public static final long ID = StringUtilities
-			.stringHashToLong(ActivityLog.class.getName());
+			.stringHashToLong(EventStore.class.getName());
 
 	private static PersistentObject store;
-	private static ContentProtectedVector log;
+	private static ContentProtectedVector events;
 
 	static {
 		store = PersistentStore.getPersistentObject(ID);
 		if (store.getContents() == null) {
-			log = new ContentProtectedVector();
-			store.setContents(log);
+			events = new ContentProtectedVector();
+			store.setContents(events);
 		}
-		log = (ContentProtectedVector) store.getContents();
+		events = (ContentProtectedVector) store.getContents();
 	}
 
-	public static synchronized void addMessage(Object jsonObj) {
-		log.addElement(jsonObj);
+	public static synchronized void addEvent(EventRequest event) {
+		events.addElement(event);
 		commit();
 	}
 
-	public static synchronized boolean removeMessage() {
+	public static synchronized boolean removeEvent() {
 		if (hasNext()) {
-			log.removeElementAt(0);
+			events.removeElementAt(0);
 			commit();
 			return true;
 		}
 		return false;
 	}
 
-	public static synchronized Object getMessage() {
+	public static synchronized EventRequest next() {
 		if (hasNext()) {
-			return log.firstElement();
+			return (EventRequest) events.firstElement();
 		}
 		return null;
 	}
 
-	public static synchronized boolean hasNext() {
-		if (log.size() > 0) {
+	private static synchronized boolean hasNext() {
+		if (events.size() > 0) {
 			return true;
 		}
 		return false;
 	}
 
 	public static synchronized int length() {
-		return log.size();
+		return events.size();
 	}
 
 	private static void commit() {
-		store.setContents(log);
+		store.setContents(events);
 		store.commit();
 	}
 }
