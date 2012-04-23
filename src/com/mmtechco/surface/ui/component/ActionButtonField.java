@@ -200,7 +200,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				sendMessage(Messager.STATE_SU1);
+				sendMessage(Messager.STATE_SUR);
 			}
 		});
 	}
@@ -244,7 +244,7 @@ public class ActionButtonField extends BaseButtonField {
 						screen.setStatus("Time remaining to cancel: "
 								+ String.valueOf(--counter));
 						if (counter == 0) {
-							if (type.equals(Messager.STATE_SU1)) {
+							if (type.equals(Messager.STATE_SUR)) {
 								((SurfaceScreen) screen).stopAlerts();
 								((Screen) screen).close();
 							} else {
@@ -258,7 +258,7 @@ public class ActionButtonField extends BaseButtonField {
 		}, 0, 1000);
 
 		// Set Action button to a cancel button
-		if (type.equals(Messager.STATE_SU1)) {
+		if (type.equals(Messager.STATE_SUR)) {
 			setButtonText("Surface");
 		} else {
 			setButtonText("Cancel");
@@ -270,7 +270,7 @@ public class ActionButtonField extends BaseButtonField {
 				// and restore status text
 				stopSpin();
 				countdown.cancel();
-				if (type.equals(Messager.STATE_SU1)) {
+				if (type.equals(Messager.STATE_SUR)) {
 					((SurfaceScreen) screen).stopAlerts();
 					sendMessage(type);
 					((Screen) screen).close();
@@ -286,7 +286,7 @@ public class ActionButtonField extends BaseButtonField {
 
 	private void sendMessage(String type) {
 		String statusMsg = "Sending ";
-		if (type.equals(Messager.STATE_SU1)) {
+		if (type.equals(Messager.STATE_SUR)) {
 			statusMsg = statusMsg + "Surface";
 			setSurface();
 		} else if (type.equals(Messager.STATE_ALH)) {

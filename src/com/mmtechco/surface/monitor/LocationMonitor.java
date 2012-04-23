@@ -1,12 +1,10 @@
 //#preprocess
 package com.mmtechco.surface.monitor;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import javax.microedition.io.HttpConnection;
 import javax.microedition.location.Criteria;
 import javax.microedition.location.Location;
 import javax.microedition.location.LocationException;
@@ -18,17 +16,9 @@ import net.rim.device.api.gps.BlackBerryLocationProvider;
 import net.rim.device.api.gps.GPSInfo;
 //#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 import net.rim.device.api.gps.LocationInfo;
-import net.rim.device.api.system.Application;
-import net.rim.device.api.ui.Ui;
-import net.rim.device.api.ui.UiEngine;
 //#endif
 
-import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.net.EventClientRequest;
 import com.mmtechco.surface.net.Messager;
-import com.mmtechco.surface.net.Response;
-import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -50,7 +40,6 @@ public class LocationMonitor implements LocationListener {
 
 	public static double latitude;
 	public static double longitude;
-	
 	
 	private static Vector observers = new Vector();
 
@@ -137,35 +126,7 @@ public class LocationMonitor implements LocationListener {
 	private class UploadTask extends TimerTask {
 		public void run() {
 			logger.log(TAG, "Sending location to server");
-			Response response;
-			try {
-				response = Server.post(new EventClientRequest(latitude,
-						longitude, Messager.STATE_NON).toJSON());
-			} catch (IOException e) {
-				logger.log(TAG, e.getMessage());
-				return;
-			}
-			
-			int rc = response.getResponseCode();
-			if (rc == HttpConnection.HTTP_SEE_OTHER) {
-				// HTTP 303 status code indicates to surface
-				logger.log(TAG, "Server has requested surface");
-				Application.getApplication().invokeLater(new Runnable() {
-					public void run() {
-						Ui.getUiEngine().pushGlobalScreen(
-								new SurfaceScreen(),
-								Surface.SCREEN_PRIORITY_SURFACE,
-								UiEngine.GLOBAL_SHOW_LOWER);
-					}
-				});
-			} else if (rc >= HttpConnection.HTTP_BAD_REQUEST
-					&& rc < HttpConnection.HTTP_INTERNAL_ERROR) {
-				// Malformed json
-				logger.log(TAG, "Malformed json");
-			} else if (rc >= HttpConnection.HTTP_INTERNAL_ERROR) {
-				// Server error
-				logger.log(TAG, "Server has internal error");
-			}
+			Messager.sendMessage(Messager.STATE_NON);
 		}
 	}
 }

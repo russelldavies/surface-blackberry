@@ -118,7 +118,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		};
 		MenuItem surfaceMenu = new MenuItem("Send Surface", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.STATE_SU1);
+				sendMessage(Messager.STATE_SUR);
 			}
 		};
 		MenuItem alertMenu = new MenuItem("Send Alert", 0x100040, 3) {
