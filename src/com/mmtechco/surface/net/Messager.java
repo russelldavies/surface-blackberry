@@ -15,7 +15,7 @@ import net.rim.device.api.ui.UiEngine;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.data.EventStore;
+import com.mmtechco.surface.data.MessageStore;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.surface.ui.ToastPopupScreen;
@@ -116,9 +116,9 @@ public class Messager {
 	private static void processLog() {
 		// TODO: this is highly incomplete
 		logger.log(TAG,
-				"Checking for new events to send: " + EventStore.length());
-		if (EventStore.next() != null) {
-			EventRequest obj = EventStore.next();
+				"Checking for new events to send: " + MessageStore.length());
+		if (MessageStore.next() != null) {
+			EventRequest obj = MessageStore.next();
 			if (obj instanceof EventRequest) {
 				EventRequest a = (EventRequest) obj;
 				sendMessage(Messager.STATE_ALH);

@@ -8,7 +8,7 @@ import java.util.Vector;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.data.EventStore;
+import com.mmtechco.surface.data.MessageStore;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Server;
@@ -112,7 +112,7 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		MenuItem delStoreMenu = new MenuItem("Delete Activity Log store",
 				0x100040, 3) {
 			public void run() {
-				PersistentStore.destroyPersistentObject(EventStore.ID);
+				PersistentStore.destroyPersistentObject(MessageStore.ID);
 				System.exit(0);
 			}
 		};
