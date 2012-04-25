@@ -8,9 +8,9 @@ import java.util.Vector;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.data.MessageStore;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.MessageStore;
 import com.mmtechco.surface.monitor.LocationMonitor;
-import com.mmtechco.surface.net.Messager;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
@@ -38,7 +38,6 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.SeparatorField;
-import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -118,17 +117,17 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 		};
 		MenuItem surfaceMenu = new MenuItem("Send Surface", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.STATE_SUR);
+				sendMessage(EventMessage.STATE_SUR);
 			}
 		};
 		MenuItem alertMenu = new MenuItem("Send Alert", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.STATE_ALH);
+				sendMessage(EventMessage.STATE_ALH);
 			}
 		};
 		MenuItem mandownMenu = new MenuItem("Send Man Down", 0x100040, 3) {
 			public void run() {
-				sendMessage(Messager.STATE_MNS);
+				sendMessage(EventMessage.STATE_MNS);
 			}
 		};
 		MenuItem alertscreenMenu = new MenuItem("Launch Default Screen", 0x100040,

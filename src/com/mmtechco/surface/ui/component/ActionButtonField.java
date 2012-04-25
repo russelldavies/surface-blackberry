@@ -3,7 +3,8 @@ package com.mmtechco.surface.ui.component;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.mmtechco.surface.net.Messager;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.Messager;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.util.Logger;
@@ -200,7 +201,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				sendMessage(Messager.STATE_SUR);
+				sendMessage(EventMessage.STATE_SUR);
 			}
 		});
 	}
@@ -210,7 +211,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.STATE_ALH, interval);
+				startCountdown(EventMessage.STATE_ALH, interval);
 			}
 		});
 	}
@@ -220,7 +221,7 @@ public class ActionButtonField extends BaseButtonField {
 		setChangeListener(null);
 		setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
-				startCountdown(Messager.STATE_MNS, interval);
+				startCountdown(EventMessage.STATE_MNS, interval);
 			}
 		});
 	}
@@ -244,7 +245,7 @@ public class ActionButtonField extends BaseButtonField {
 						screen.setStatus("Time remaining to cancel: "
 								+ String.valueOf(--counter));
 						if (counter == 0) {
-							if (type.equals(Messager.STATE_SUR)) {
+							if (type.equals(EventMessage.STATE_SUR)) {
 								((SurfaceScreen) screen).stopAlerts();
 								((Screen) screen).close();
 							} else {
@@ -258,7 +259,7 @@ public class ActionButtonField extends BaseButtonField {
 		}, 0, 1000);
 
 		// Set Action button to a cancel button
-		if (type.equals(Messager.STATE_SUR)) {
+		if (type.equals(EventMessage.STATE_SUR)) {
 			setButtonText("Surface");
 		} else {
 			setButtonText("Cancel");
@@ -270,13 +271,13 @@ public class ActionButtonField extends BaseButtonField {
 				// and restore status text
 				stopSpin();
 				countdown.cancel();
-				if (type.equals(Messager.STATE_SUR)) {
+				if (type.equals(EventMessage.STATE_SUR)) {
 					((SurfaceScreen) screen).stopAlerts();
 					sendMessage(type);
 					((Screen) screen).close();
-				} else if (type.equals(Messager.STATE_ALH)) {
+				} else if (type.equals(EventMessage.STATE_ALH)) {
 					setAlert();
-				} else if (type.equals(Messager.STATE_MNS)) {
+				} else if (type.equals(EventMessage.STATE_MNS)) {
 					setManDown();
 				}
 				screen.setStatus(origStatus);
@@ -286,14 +287,14 @@ public class ActionButtonField extends BaseButtonField {
 
 	private void sendMessage(String type) {
 		String statusMsg = "Sending ";
-		if (type.equals(Messager.STATE_SUR)) {
+		if (type.equals(EventMessage.STATE_SUR)) {
 			statusMsg = statusMsg + "Surface";
 			setSurface();
-		} else if (type.equals(Messager.STATE_ALH)) {
+		} else if (type.equals(EventMessage.STATE_ALH)) {
 			statusMsg = statusMsg + "Alert";
 			setAlert();
 			Messager.sendAlertSMS();
-		} else if (type.equals(Messager.STATE_MNS)) {
+		} else if (type.equals(EventMessage.STATE_MNS)) {
 			statusMsg = statusMsg + "Man Down";
 			setManDown();
 			Messager.makeCall();

@@ -1,4 +1,4 @@
-package com.mmtechco.surface.net;
+package com.mmtechco.surface.message;
 
 import org.json.me.JSONException;
 import org.json.me.JSONObject;
@@ -6,8 +6,11 @@ import org.json.me.JSONObject;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.util.Logger;
 
-public class EventRequest {
-	private static final String ID = "id", TIME = "time", TYPE = "type",
+public class EventMessage implements Message {
+	public static final String STATE_NON = "NON", STATE_ALH = "ALH",
+			STATE_SUR = "SUR", STATE_MIS = "MIS", STATE_MNS = "MNS";
+
+	private static final String 
 			LOCATION = "location",
 			LAT = "lat",
 			LONG = "long",
@@ -19,7 +22,7 @@ public class EventRequest {
 	private double latitude, longitude;
 	private String state;
 
-	public EventRequest(double latitude, double longitude, String state) {
+	public EventMessage(double latitude, double longitude, String state) {
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.state = state;

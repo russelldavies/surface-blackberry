@@ -1,4 +1,4 @@
-package com.mmtechco.surface.net;
+package com.mmtechco.surface.message;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -15,8 +15,10 @@ import net.rim.device.api.ui.UiEngine;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.data.MessageStore;
+import com.mmtechco.surface.message.MessageStore;
 import com.mmtechco.surface.monitor.LocationMonitor;
+import com.mmtechco.surface.net.Response;
+import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.surface.ui.ToastPopupScreen;
 import com.mmtechco.surface.util.SurfaceResource;
@@ -24,26 +26,49 @@ import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
 public class Messager {
-	private static final String TAG = ToolsBB
-			.getSimpleClassName(Messager.class);
+	private static final String TAG = ToolsBB .getSimpleClassName(Messager.class);
 	private static Logger logger = Logger.getInstance();
-
-	public static final String STATE_NON = "NON", STATE_ALH = "ALH",
-			STATE_SUR = "SUR", STATE_MIS = "MIS", STATE_MNS = "MNS";
+	
+	public static void sendError(final ErrorObject error) {
+		new Thread() {
+			public void run() {
+				MessageStore.addError(error);
+				Response response = sendMessage(MessageStore.getError());
+				if (response.getResponseCode() != HttpConnection.HTTP_OK) {
+					MessageStore.addEvent(error);
+				}
+			}
+		}.start();
+	}
+	
+	public static void sendLog(LogObject log) {
+		// TODO: thread me
+		MessageStore.addLog(log);
+	}
+	
+	private static Response sendMessage(Message message) {
+		try {
+			return Server.post(message.toJSON());
+		} catch (IOException e) {
+			logger.log(TAG, e.getMessage());
+			return null;
+		}
+	}
 
 	// Called by LocationMonitor and processLog()
-	public static void sendMessage(final String type) {
-		sendMessage(type, null);
+	public static void sendEvent(final String type) {
+		sendEvent(type, null);
 	}
 
 	// Called by others
-	public static void sendMessage(final String type, String toastMessage) {
-		final ToastPopupScreen toast = (toastMessage != null) ? new ToastPopupScreen(
-				toastMessage) : null;
+	public static void sendEvent(final String type, String toastMessage) {
+		final EventMessage event = new EventMessage(LocationMonitor.latitude, LocationMonitor.longitude, type);
+		MessageStore.addEvent(event);
+		
+		
+		final ToastPopupScreen toast = (toastMessage != null) ? new ToastPopupScreen( toastMessage) : null;
 		if (toast != null) {
-			Ui.getUiEngine().pushGlobalScreen(toast,
-					Surface.SCREEN_PRIORITY_LOCKSCREEN,
-					UiEngine.GLOBAL_SHOW_LOWER);
+			Ui.getUiEngine().pushGlobalScreen(toast, Surface.SCREEN_PRIORITY_LOCKSCREEN, UiEngine.GLOBAL_SHOW_LOWER);
 		}
 
 		// Spawn new thread so the event lock is not blocked
@@ -51,9 +76,7 @@ public class Messager {
 			public void run() {
 				Response response;
 				try {
-					response = Server.post(new EventRequest(
-							LocationMonitor.latitude,
-							LocationMonitor.longitude, type).toJSON());
+					response = Server.post(message.toJSON());
 				} catch (IOException e) {
 					if (toast != null) {
 						synchronized (UiApplication.getEventLock()) {
@@ -66,30 +89,33 @@ public class Messager {
 				}
 				processResponse(type, response, toast);
 
-				// Process the rest of the logs
-				processLog();
+				// Process the rest of the messages
+				processMessages();
 			}
 		}.start();
 	}
 
-	private static void processResponse(String type, Response response,
-			ToastPopupScreen toast) {
+	private static void processResponse(String type, Response response, ToastPopupScreen toast) {
 		int rc = response.getResponseCode();
 		logger.log(TAG, "Response code: " + rc);
 
-		if (rc >= HttpConnection.HTTP_BAD_REQUEST
-				&& rc < HttpConnection.HTTP_INTERNAL_ERROR) {
-			// Malformed json
-			logger.log(TAG, "Malformed json");
+		if (rc >= HttpConnection.HTTP_BAD_REQUEST && rc < HttpConnection.HTTP_INTERNAL_ERROR) {
+			// HTTP 400: malformed request so remove it from store
+			logger.log(TAG, "Malformed request, deleting from store");
+			MessageStore.pop();
 			return;
 		} else if (rc >= HttpConnection.HTTP_INTERNAL_ERROR) {
-			// Server error
+			// HTTP 500: Server error. Keep message and try again later
 			logger.log(TAG, "Server has internal error");
 			return;
 		}
+		
+		// Message sent fine so remove it from stack
+		MessageStore.pop();
 
+		// If event is location update and status code is 303 pop surface
+		// screen
 		if (type.equals(STATE_NON) && rc == HttpConnection.HTTP_SEE_OTHER) {
-			// HTTP 303 status code indicates to surface
 			logger.log(TAG, "Server has requested surface");
 			Application.getApplication().invokeLater(new Runnable() {
 				public void run() {
@@ -109,19 +135,6 @@ public class Messager {
 					}
 					toast.dismiss(2000);
 				}
-			}
-		}
-	}
-
-	private static void processLog() {
-		// TODO: this is highly incomplete
-		logger.log(TAG,
-				"Checking for new events to send: " + MessageStore.length());
-		if (MessageStore.next() != null) {
-			EventRequest obj = MessageStore.next();
-			if (obj instanceof EventRequest) {
-				EventRequest a = (EventRequest) obj;
-				sendMessage(Messager.STATE_ALH);
 			}
 		}
 	}

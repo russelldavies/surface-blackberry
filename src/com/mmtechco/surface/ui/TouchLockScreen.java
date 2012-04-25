@@ -1,6 +1,7 @@
 package com.mmtechco.surface.ui;
 
-import com.mmtechco.surface.net.Messager;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.Messager;
 import com.mmtechco.surface.ui.component.LockSliderField;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
@@ -42,10 +43,10 @@ public class TouchLockScreen extends LockScreen {
 			String message = "Sending...";
 			if (field == mandownSlider) {
 				mandownSlider.setState(mandownSlider.initialState);
-				Messager.sendMessage(Messager.STATE_MNS, message);
+				Messager.sendMessage(EventMessage.STATE_MNS, message);
 			} else if (field == alertSlider) {
 				alertSlider.setState(alertSlider.initialState);
-				Messager.sendMessage(Messager.STATE_ALH, message);
+				Messager.sendMessage(EventMessage.STATE_ALH, message);
 			}
 		}
 	}

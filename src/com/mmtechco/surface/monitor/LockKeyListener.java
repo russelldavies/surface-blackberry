@@ -1,7 +1,8 @@
 package com.mmtechco.surface.monitor;
 
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.net.Messager;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.Messager;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -48,7 +49,7 @@ public final class LockKeyListener implements KeyListener {
 			// Continue if second press is within a second
 			if (time - lastTime < 1000) {
 				logger.log(TAG, "Sending Alert");
-				Messager.sendMessage(Messager.STATE_ALH, "Sending Alert...");
+				Messager.sendMessage(EventMessage.STATE_ALH, "Sending Alert...");
 			}
 			lastTime = time;
 			// Consume event
