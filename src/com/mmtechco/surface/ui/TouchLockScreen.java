@@ -43,10 +43,10 @@ public class TouchLockScreen extends LockScreen {
 			String message = "Sending...";
 			if (field == mandownSlider) {
 				mandownSlider.setState(mandownSlider.initialState);
-				Messager.sendMessage(EventMessage.STATE_MNS, message);
+				Messager.sendMessage(new EventMessage(EventMessage.STATE_MNS), message);
 			} else if (field == alertSlider) {
 				alertSlider.setState(alertSlider.initialState);
-				Messager.sendMessage(EventMessage.STATE_ALH, message);
+				Messager.sendMessage(new EventMessage(EventMessage.STATE_ALH), message);
 			}
 		}
 	}

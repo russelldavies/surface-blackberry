@@ -4,6 +4,7 @@ import org.json.me.JSONException;
 import org.json.me.JSONObject;
 
 import com.mmtechco.surface.Registration;
+import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.util.Logger;
 
 public class EventMessage implements Message {
@@ -22,10 +23,14 @@ public class EventMessage implements Message {
 	private double latitude, longitude;
 	private String state;
 
-	public EventMessage(double latitude, double longitude, String state) {
-		this.latitude = latitude;
-		this.longitude = longitude;
+	public EventMessage(String state) {
+		this.latitude = LocationMonitor.latitude;
+		this.longitude = LocationMonitor.longitude;
 		this.state = state;
+	}
+	
+	public String getState() {
+		return state;
 	}
 
 	public String toJSON() {

@@ -16,7 +16,6 @@ import net.rim.device.api.ui.UiEngine;
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.message.MessageStore;
-import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Response;
 import com.mmtechco.surface.net.Server;
 import com.mmtechco.surface.ui.SurfaceScreen;
@@ -29,42 +28,14 @@ public class Messager {
 	private static final String TAG = ToolsBB .getSimpleClassName(Messager.class);
 	private static Logger logger = Logger.getInstance();
 	
-	public static void sendError(final ErrorObject error) {
-		new Thread() {
-			public void run() {
-				MessageStore.addError(error);
-				Response response = sendMessage(MessageStore.getError());
-				if (response.getResponseCode() != HttpConnection.HTTP_OK) {
-					MessageStore.addEvent(error);
-				}
-			}
-		}.start();
-	}
-	
-	public static void sendLog(LogObject log) {
-		// TODO: thread me
-		MessageStore.addLog(log);
-	}
-	
-	private static Response sendMessage(Message message) {
-		try {
-			return Server.post(message.toJSON());
-		} catch (IOException e) {
-			logger.log(TAG, e.getMessage());
-			return null;
-		}
-	}
-
 	// Called by LocationMonitor and processLog()
-	public static void sendEvent(final String type) {
-		sendEvent(type, null);
+	public static void sendMessage(Message message) {
+		sendMessage(message, null);
 	}
 
 	// Called by others
-	public static void sendEvent(final String type, String toastMessage) {
-		final EventMessage event = new EventMessage(LocationMonitor.latitude, LocationMonitor.longitude, type);
-		MessageStore.addEvent(event);
-		
+	public static void sendMessage(final Message message, String toastMessage) {
+		//MessageStore.pushMesage(message);
 		
 		final ToastPopupScreen toast = (toastMessage != null) ? new ToastPopupScreen( toastMessage) : null;
 		if (toast != null) {
@@ -85,37 +56,49 @@ public class Messager {
 						}
 					}
 					logger.log(TAG, e.getMessage());
+					MessageStore.pushMesage(message);
 					return;
 				}
-				processResponse(type, response, toast);
+				
+				processResponse(message, response, toast);
 
 				// Process the rest of the messages
-				processMessages();
+				// TODO: process again
+				while(MessageStore.length() > 0) {
+					Message message = MessageStore.popMessage();
+					try {
+						response = Server.post(message.toJSON());
+						processResponse(message, response, null);
+					} catch (IOException e) {
+						MessageStore.pushMesage(message);
+						return;
+					}
+				}
 			}
 		}.start();
 	}
 
-	private static void processResponse(String type, Response response, ToastPopupScreen toast) {
+	private static void processResponse(Message message, Response response, ToastPopupScreen toast) {
 		int rc = response.getResponseCode();
 		logger.log(TAG, "Response code: " + rc);
-
+		
 		if (rc >= HttpConnection.HTTP_BAD_REQUEST && rc < HttpConnection.HTTP_INTERNAL_ERROR) {
 			// HTTP 400: malformed request so remove it from store
-			logger.log(TAG, "Malformed request, deleting from store");
-			MessageStore.pop();
-			return;
+			logger.log(TAG, "Malformed request, discarding message");
 		} else if (rc >= HttpConnection.HTTP_INTERNAL_ERROR) {
 			// HTTP 500: Server error. Keep message and try again later
-			logger.log(TAG, "Server has internal error");
-			return;
+			logger.log(TAG, "Server error, adding message to store");
+			MessageStore.pushMesage(message);
 		}
 		
-		// Message sent fine so remove it from stack
-		MessageStore.pop();
-
+		// Special processing is required for Event Messages
+		if (!EventMessage.class.isInstance(message)) {
+			return;
+		}
 		// If event is location update and status code is 303 pop surface
 		// screen
-		if (type.equals(STATE_NON) && rc == HttpConnection.HTTP_SEE_OTHER) {
+		String state = ((EventMessage) message).getState();
+		if (state.equals(EventMessage.STATE_NON) && rc == HttpConnection.HTTP_SEE_OTHER) {
 			logger.log(TAG, "Server has requested surface");
 			Application.getApplication().invokeLater(new Runnable() {
 				public void run() {

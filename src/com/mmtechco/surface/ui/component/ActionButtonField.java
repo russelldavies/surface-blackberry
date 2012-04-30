@@ -301,7 +301,7 @@ public class ActionButtonField extends BaseButtonField {
 		}
 		statusMsg = statusMsg + "...";
 		// screen.setStatus(statusMsg);
-		Messager.sendMessage(type, statusMsg);
+		Messager.sendMessage(new EventMessage(type), statusMsg);
 		// screen.setStatus("Message Sent...");
 		// screen.setStatus(prevStatus);
 		stopSpin();

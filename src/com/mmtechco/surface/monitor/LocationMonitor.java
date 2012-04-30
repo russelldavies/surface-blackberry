@@ -17,9 +17,8 @@ import net.rim.device.api.gps.GPSInfo;
 //#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 import net.rim.device.api.gps.LocationInfo;
 //#endif
-
-import com.mmtechco.surface.messages.EventMessage;
-import com.mmtechco.surface.messages.Messager;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.Messager;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
@@ -127,7 +126,7 @@ public class LocationMonitor implements LocationListener {
 	private class UploadTask extends TimerTask {
 		public void run() {
 			logger.log(TAG, "Sending location to server");
-			Messager.sendMessage(EventMessage.STATE_NON);
+			Messager.sendMessage(new EventMessage(EventMessage.STATE_NON));
 		}
 	}
 }
