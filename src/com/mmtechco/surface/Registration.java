@@ -42,7 +42,6 @@ public class Registration implements SurfaceResource {
 
 	public final static String KEY_STAGE = "registration_stage";
 	public final static String KEY_ID = "registration_id";
-	public final static String KEY_NUMBERS = "emergency_numbers";
 
 	private final static int intervalShort = 1000 * 60 * 2; // 2 min
 	private final static int intervalLong = 1000 * 60 * 60 * 24; // 24h
@@ -120,7 +119,6 @@ public class Registration implements SurfaceResource {
 				regTable.put(KEY_STAGE, "0");
 				stage = 0;
 				regTable.put(KEY_ID, id = "");
-				regTable.put(KEY_NUMBERS, emergNums = new Vector());
 				// Store to device
 				regData.setContents(regTable);
 				regData.commit();
@@ -129,7 +127,6 @@ public class Registration implements SurfaceResource {
 				// Read values from storage
 				stage = Integer.parseInt((String) regTable.get(KEY_STAGE));
 				id = (String) regTable.get(KEY_ID);
-				emergNums = (Vector) regTable.get(KEY_NUMBERS);
 			}
 		}
 	}
@@ -140,7 +137,6 @@ public class Registration implements SurfaceResource {
 			Hashtable regTable = (Hashtable) regData.getContents();
 			regTable.put(KEY_STAGE, String.valueOf(stage));
 			regTable.put(KEY_ID, id);
-			regTable.put(KEY_NUMBERS, emergNums);
 			// Store to device
 			regData.setContents(regTable);
 			regData.commit();

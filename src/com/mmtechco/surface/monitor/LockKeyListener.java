@@ -27,7 +27,7 @@ public final class LockKeyListener implements KeyListener {
 	}
 	
 	public boolean keyDown(int keycode, int time) {
-		if (Settings.lockOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_UP) {
+		if (Settings.shieldOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_UP) {
 			logger.log(TAG, "Volume up caught.");
 			// Continue if second press is within a second
 			if (time - lastTime < 1000) {

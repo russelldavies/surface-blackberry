@@ -160,7 +160,7 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 	
 	public void backlightStateChange(boolean on) {
 		// Display lockscreen when display turns off
-		if (Settings.lockOn && !on) {
+		if (Settings.shieldOn && !on) {
 			if (!lockscreen.isDisplayed()) {
 				pushGlobalScreen(lockscreen, SCREEN_PRIORITY_LOCKSCREEN,
 						UiEngine.GLOBAL_SHOW_LOWER);
