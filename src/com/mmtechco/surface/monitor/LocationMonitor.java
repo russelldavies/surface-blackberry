@@ -16,23 +16,10 @@ import net.rim.device.api.gps.BlackBerryLocationProvider;
 import net.rim.device.api.gps.GPSInfo;
 //#ifndef VER_4.5.0 | VER_4.6.0 | VER_4.6.1 | VER_4.7.0 | VER_5.0.0
 import net.rim.device.api.gps.LocationInfo;
-import net.rim.device.api.system.Application;
-import net.rim.device.api.ui.Ui;
-import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.UiEngine;
 //#endif
-
-import com.mmtechco.surface.Registration;
-import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.data.ActivityLog;
-import com.mmtechco.surface.net.Messager;
-import com.mmtechco.surface.net.Reply;
-import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.Message;
-import com.mmtechco.surface.ui.SurfaceScreen;
-import com.mmtechco.util.ErrorMessage;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.Messager;
 import com.mmtechco.util.Logger;
-import com.mmtechco.util.Tools;
 import com.mmtechco.util.ToolsBB;
 
 /**
@@ -53,9 +40,6 @@ public class LocationMonitor implements LocationListener {
 
 	public static double latitude;
 	public static double longitude;
-	private Message locMsg;
-	
-	private Server server;
 	
 	private static Vector observers = new Vector();
 
@@ -76,12 +60,6 @@ public class LocationMonitor implements LocationListener {
 			logger.log(TAG, "Could not start location services");
 			return;
 		}
-
-		server = new Server();
-
-		// Initialize lat/long
-		latitude = 0;
-		longitude = 0;
 
 		// Upload location periodically
 		new Timer().scheduleAtFixedRate(new UploadTask(), 0, uploadInterval);
@@ -130,10 +108,11 @@ public class LocationMonitor implements LocationListener {
 		// Polls GPS service based on interval specified in constructor and
 		// upload to the server.
 		if (location.isValid()) {
-			float speed = location.getSpeed();
 			longitude = location.getQualifiedCoordinates().getLongitude();
 			latitude = location.getQualifiedCoordinates().getLatitude();
-			locMsg = new LocationMessage(latitude, longitude, speed);
+		} else {
+			longitude = 0;
+			latitude = 0;
 		}
 	}
 
@@ -146,70 +125,8 @@ public class LocationMonitor implements LocationListener {
 	
 	private class UploadTask extends TimerTask {
 		public void run() {
-			// Check there are valid values
-			if (longitude != 0 && latitude != 0) {
-				logger.log(TAG, "Sending location to server");
-				Reply reply = server.contactServer(locMsg.getREST());
-				if (reply.getCallingCode().equals(Messager.type_surface)) {
-					logger.log(TAG, "Server has requested surface");
-					Application.getApplication().invokeLater(new Runnable() {
-						public void run() {
-							Ui.getUiEngine().pushGlobalScreen(
-									new SurfaceScreen(),
-									Surface.SCREEN_PRIORITY_SURFACE,
-									UiEngine.GLOBAL_SHOW_LOWER);
-						}
-					});
-				}
-			}
+			logger.log(TAG, "Sending location to server");
+			Messager.sendMessage(new EventMessage(EventMessage.STATE_NON));
 		}
-	}
-}
-
-/**
- * Holds GPS messages
- */
-class LocationMessage implements Message {
-	private final int type = 6;
-	private double latitude, longitude;
-	private String deviceTime;
-	private float speed;
-
-	public LocationMessage(double lat, double lon, float speed) {
-		latitude = lat;
-		longitude = lon;
-		this.speed = speed;
-		deviceTime = ToolsBB.getInstance().getDate();
-	}
-
-	/**
-	 * Retrieves the message formatted in to a single string value. Location
-	 * message consists of:
-	 * <ul>
-	 * <li>Registration Serial number.
-	 * <li>Location message type which is '06' (two digits number).
-	 * <li>Device time.
-	 * <li>Latitude.
-	 * <li>Longitude.
-	 * <li>Speed. *<i>Warning</i> not implemented
-	 * </ul>
-	 * 
-	 * @return a single string containing the entire message.
-	 */
-	public String getREST() {
-		return Registration.getRegID() + Tools.ServerQueryStringSeparator + '0'
-				+ type + Tools.ServerQueryStringSeparator + deviceTime
-				+ Tools.ServerQueryStringSeparator + latitude
-				+ Tools.ServerQueryStringSeparator + longitude
-		// + Tools.ServerQueryStringSeparator + speed;
-				;
-	}
-
-	public String getTime() {
-		return deviceTime;
-	}
-
-	public int getType() {
-		return type;
 	}
 }

@@ -2,7 +2,6 @@ package com.mmtechco.surface.ui;
 
 import com.mmtechco.util.ToolsBB;
 
-import net.rim.device.api.media.MediaActionHandler;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;

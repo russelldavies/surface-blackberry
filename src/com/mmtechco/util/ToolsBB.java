@@ -265,52 +265,6 @@ public class ToolsBB extends Tools {
 		}
 	}
 
-	public HttpConnection setupConnection(String url) throws IOException {
-		if (DeviceInfo.isSimulator()) {
-			// If running the MDS simulator append ";deviceside=false"
-			return (HttpConnection) Connector.open(url + ";deviceside=true",
-					Connector.READ_WRITE);
-		}
-		ConnectionFactory cf = new ConnectionFactory();
-		// Ordered list of preferred transports
-		int[] transportPrefs = { TransportInfo.TRANSPORT_TCP_WIFI,
-				TransportInfo.TRANSPORT_TCP_CELLULAR,
-				TransportInfo.TRANSPORT_WAP2, TransportInfo.TRANSPORT_WAP,
-				TransportInfo.TRANSPORT_MDS, TransportInfo.TRANSPORT_BIS_B };
-		cf.setPreferredTransportTypes(transportPrefs);
-		ConnectionDescriptor cd = cf.getConnection(url);
-		return (HttpConnection) cd.getConnection();
-	}
-
-	/**
-	 * Checks if there is a valid internet connection.
-	 * 
-	 * @return true if connected.
-	 */
-	public boolean isConnected() {
-		String url = "http://www.msftncsi.com/ncsi.txt";
-		String expectedResponse = "Microsoft NCSI";
-
-		logger.log(TAG, "Checking connectivity");
-
-		try {
-			HttpConnection connection = setupConnection(url);
-			connection.setRequestMethod(HttpConnection.GET);
-
-			int status = connection.getResponseCode();
-			if (status == HttpConnection.HTTP_OK) {
-				InputStream input = connection.openInputStream();
-				byte[] reply = IOUtilities.streamToBytes(input);
-				input.close();
-				connection.close();
-				return expectedResponse.equals(new String(reply));
-			}
-		} catch (Exception e) {
-			logger.log(TAG, "Connectivity test failed");
-		}
-		return false;
-	}
-
 	public static String getSimpleClassName(Class _class) {
 		String classname = _class.getName();
 		char packageSeparator = '.';

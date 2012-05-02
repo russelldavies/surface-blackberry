@@ -5,7 +5,7 @@ import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VolumeControl;
 
-import com.mmtechco.surface.net.Messager;
+import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.component.ActionButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
@@ -97,7 +97,7 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 	}
 	
 	private void surface() {
-		surfaceButton.startCountdown(Messager.type_surface, interval);
+		surfaceButton.startCountdown(EventMessage.STATE_SUR, interval);
 		
 		// Play sound
 		try {

@@ -24,7 +24,9 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
+//#ifdef TOUCH
 import net.rim.device.api.ui.component.BitmapField;
+//#endif
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;

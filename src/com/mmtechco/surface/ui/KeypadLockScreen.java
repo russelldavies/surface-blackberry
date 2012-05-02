@@ -1,6 +1,7 @@
 package com.mmtechco.surface.ui;
 
-import com.mmtechco.surface.net.Messager;
+import com.mmtechco.surface.message.EventMessage;
+import com.mmtechco.surface.message.Messager;
 import com.mmtechco.surface.ui.component.LockButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedHorizontalFieldManager;
 import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
@@ -48,9 +49,9 @@ public class KeypadLockScreen extends LockScreen {
 		} else {
 			String message = "Sending...";
 			if (field == mandownButton) {
-				Messager.sendMessage(Messager.type_mandown, message);
+				Messager.sendMessage(new EventMessage(EventMessage.STATE_MIS), message);
 			} else if (field == alertButton) {
-				Messager.sendMessage(Messager.type_alert, message);
+				Messager.sendMessage(new EventMessage(EventMessage.STATE_ALH), message);
 			}
 		}
 	}
