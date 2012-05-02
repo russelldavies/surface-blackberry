@@ -14,7 +14,7 @@ public class EventMessage implements Message {
 	private static final String 
 			LOCATION = "location",
 			LAT = "lat",
-			LONG = "long",
+			LON = "lon",
 			STATE = "state",
 			CURRENT = "current";
 	
@@ -50,7 +50,7 @@ public class EventMessage implements Message {
 			*/
 				outer.put(LOCATION, locationObj);
 				locationObj.put(LAT, latitude);
-				locationObj.put(LONG, longitude);
+				locationObj.put(LON, longitude);
 			//}
 			
 			outer.put(STATE, stateObj);
