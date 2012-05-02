@@ -23,7 +23,7 @@ import com.mmtechco.util.ToolsBB;
 public class Server {
 	private static final String TAG = ToolsBB.getSimpleClassName(Server.class);
 
-	private static final String URL = "http://192.168.2.13/surface_sys/REST.php";
+	private static final String URL = "http://dev.surfacemobile.com/REST.php";
 	private static final String PROTOCOL_VER = "1";
 
 	public static String get(String queryString) {
