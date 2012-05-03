@@ -106,7 +106,12 @@ public class LabeledSwitch extends Field
     }
 
     protected void layout( int width, int height ) {
-    	// 
+    	// applyFont() should be called on every field in a screen init.
+    	// But not being called when nested in certain fields so directly
+    	// invoke to prevent null pointer exceptions
+    	if (_labelFont == null) {
+    		applyFont();
+    	}
         _textWidth = Math.max( _labelFont.getAdvance( _textOn + "a" ), _labelFont.getAdvance( _textOff + "a" ) );
         _textHeight = _labelFont.getHeight();
         
