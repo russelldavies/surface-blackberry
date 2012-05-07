@@ -50,7 +50,7 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 
 	LabeledSwitch genSurfaceSwitch, genSoundSwitch;
 	LabeledSwitch alertEmergCallSwitch;
-	LabeledSwitch shieldOnSwitch, shieldVolumeSwitch;
+	LabeledSwitch shieldOnSwitch, shieldAlertSwitch;
 
 	public SettingsScreen() {
 		setTitle("Surface Settings");
@@ -72,21 +72,14 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 				"Emergency Call Alert");
 
 		// Emergency number
-		String displayText;
-		String number = !Settings.emergencyNums.isEmpty() ? (String) Settings.emergencyNums
-				.firstElement() : null;
-		if (number == null) {
-			displayText = "No number set. Using default emergency service number";
-		} else {
-			displayText = "Current emergency number: " + number;
-		}
-		set.add(new LabelField(displayText));
+		final LabelField numberLabel = new LabelField("Current emergency number: " + Settings.emergencyNum);
+		set.add(numberLabel);
 		ButtonField numberButton = new ButtonField("Select Emergency Number");
 		numberButton.setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
 				if (Settings.alertCall) {
 					UiApplication.getUiApplication().pushScreen(
-							new NumberSelectionScreen());
+							new NumberSelectionScreen(numberLabel));
 				} else {
 					Dialog.alert("Please enable Emergency Call Alert");
 				}
@@ -131,7 +124,7 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 		FieldSet set = generateFieldSet("Shield");
 		shieldOnSwitch = generateSwitch(set, Settings.shieldOn,
 				"Surface Shield");
-		shieldVolumeSwitch = generateSwitch(set, Settings.alertOn,
+		shieldAlertSwitch = generateSwitch(set, Settings.alertOn,
 				"Volume Button Alert");
 	}
 
@@ -158,20 +151,15 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 
 	public void fieldChanged(Field field, int context) {
 		if (field == genSurfaceSwitch) {
-			Settings.updateSettings(Settings.KEY_GEN_SURFACE,
-					Settings.genSurface = genSurfaceSwitch.getOnState());
+			Settings.setGenSurface(genSurfaceSwitch.getOnState());
 		} else if (field == genSoundSwitch) {
-			Settings.updateSettings(Settings.KEY_GEN_SOUND,
-					Settings.genSound = genSoundSwitch.getOnState());
+			Settings.setGenSound(genSoundSwitch.getOnState());
 		} else if (field == alertEmergCallSwitch) {
-			Settings.updateSettings(Settings.KEY_ALERT_CALL,
-					Settings.alertCall = alertEmergCallSwitch.getOnState());
+			Settings.setAlertCall(alertEmergCallSwitch.getOnState());
 		} else if (field == shieldOnSwitch) {
-			Settings.updateSettings(Settings.KEY_SHIELD,
-					Settings.shieldOn = shieldOnSwitch.getOnState());
-		} else if (field == shieldVolumeSwitch) {
-			Settings.updateSettings(Settings.KEY_ALERT_BUTTON,
-					Settings.alertOn = shieldVolumeSwitch.getOnState());
+			Settings.setShieldOn(shieldOnSwitch.getOnState());
+		} else if (field == shieldAlertSwitch) {
+			Settings.setAlertOn(shieldAlertSwitch.getOnState());
 		}
 	}
 }
@@ -179,8 +167,13 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 class NumberSelectionScreen extends MainScreen {
 	KeywordFilterField keywordFilterField;
 	ContactList contactList;
+	LabelField numberLabel;
+	String emergencyNumber;
 
-	public NumberSelectionScreen() {
+	public NumberSelectionScreen(LabelField numberLabel) {
+		this.numberLabel = numberLabel;
+		emergencyNumber = Settings.emergencyNum;
+		
 		buildContactList();
 		keywordFilterField = new KeywordFilterField();
 		keywordFilterField
@@ -233,7 +226,7 @@ class NumberSelectionScreen extends MainScreen {
 		ContactHolder contact = (ContactHolder) keywordFilterField
 				.getSelectedElement();
 		if (contact != null) {
-			Settings.emergencyNums.addElement(contact.getNumber());
+			emergencyNumber = contact.getNumber();
 		}
 		close();
 		return true;
@@ -258,10 +251,17 @@ class NumberSelectionScreen extends MainScreen {
 			addDialog.add(inputField);
 
 			if (addDialog.doModal() == 0) {
-				Settings.emergencyNums.addElement(inputField.getText());
+				emergencyNumber = inputField.getText();
+				close();
 			}
 		}
 	};
+	
+	public boolean onClose() {
+		Settings.setEmergencyNum(emergencyNumber);
+		numberLabel.setText(emergencyNumber);
+		return true;
+	}
 }
 
 class ContactList extends SortedReadableList implements KeywordProvider {
