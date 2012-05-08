@@ -3,7 +3,6 @@ package com.mmtechco.surface.ui;
 
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
-import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.component.ActionButtonField;
 import com.mmtechco.surface.ui.component.PillButtonField;
 import com.mmtechco.surface.ui.container.PillButtonSet;

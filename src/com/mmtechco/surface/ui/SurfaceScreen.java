@@ -6,7 +6,6 @@ import javax.microedition.media.Player;
 import javax.microedition.media.control.VolumeControl;
 
 import com.mmtechco.surface.message.EventMessage;
-import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.ui.component.ActionButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
 import com.mmtechco.util.Logger;

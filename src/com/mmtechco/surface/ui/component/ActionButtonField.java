@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.message.Messager;
-import com.mmtechco.surface.prototypes.ObserverScreen;
+import com.mmtechco.surface.ui.ObserverScreen;
 import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;

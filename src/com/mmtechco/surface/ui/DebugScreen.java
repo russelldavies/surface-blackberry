@@ -10,7 +10,6 @@ import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.message.MessageStore;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
