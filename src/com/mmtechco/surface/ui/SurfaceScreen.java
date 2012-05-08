@@ -5,6 +5,7 @@ import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VolumeControl;
 
+import com.mmtechco.surface.Settings;
 import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.ui.component.ActionButtonField;
 import com.mmtechco.surface.ui.container.EvenlySpacedVerticalFieldManager;
@@ -99,22 +100,25 @@ public class SurfaceScreen extends FullScreen implements ObserverScreen {
 		surfaceButton.startCountdown(EventMessage.STATE_SUR, interval);
 		
 		// Play sound
-		try {
-			player = javax.microedition.media.Manager.createPlayer(
-					getClass().getResourceAsStream("/sounds/beep.mp3"),
-					"audio/mpeg");
-			player.realize();
-			VolumeControl volume = (VolumeControl) player
-					.getControl("VolumeControl");
-			volume.setLevel(100);
-			// Direct audio to speaker even if headset/headphones are plugged in
-			AudioPathControl apc = (AudioPathControl) player
-					.getControl("net.rim.device.api.media.control.AudioPathControl");
-			apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
-			player.prefetch();
-			player.start();
-		} catch (Exception e) {
-			logger.log(TAG, e.getMessage());
+		if (Settings.genSound) {
+			try {
+				player = javax.microedition.media.Manager.createPlayer(
+						getClass().getResourceAsStream("/sounds/beep.mp3"),
+						"audio/mpeg");
+				player.realize();
+				VolumeControl volume = (VolumeControl) player
+						.getControl("VolumeControl");
+				volume.setLevel(100);
+				// Direct audio to speaker even if headset/headphones are
+				// plugged in
+				AudioPathControl apc = (AudioPathControl) player
+						.getControl("net.rim.device.api.media.control.AudioPathControl");
+				apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSFREE);
+				player.prefetch();
+				player.start();
+			} catch (Exception e) {
+				logger.log(TAG, e.getMessage());
+			}
 		}
 		// Vibrate phone to sound
 		viber = new VibrateThread();
