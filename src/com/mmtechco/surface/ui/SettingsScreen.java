@@ -51,14 +51,16 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 	LabeledSwitch genSurfaceSwitch, genSoundSwitch;
 	LabeledSwitch alertEmergCallSwitch;
 	LabeledSwitch shieldOnSwitch, shieldAlertSwitch;
-
+	
+	private LabelField numberLabel, stationaryLabel;
+	
 	public SettingsScreen() {
 		setTitle("Surface Settings");
 		generalSettings();
 		alertSettings();
 		shieldSettings();
 	}
-
+	
 	private void generalSettings() {
 		FieldSet set = generateFieldSet("General");
 		genSurfaceSwitch = generateSwitch(set, Settings.genSurface,
@@ -72,14 +74,17 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 				"Emergency Call Alert");
 
 		// Emergency number
-		final LabelField numberLabel = new LabelField("Current emergency number: " + Settings.emergencyNum);
+		numberLabel = new LabelField("Current emergency number: " + Settings.emergencyNum);
 		set.add(numberLabel);
 		ButtonField numberButton = new ButtonField("Select Emergency Number");
 		numberButton.setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
 				if (Settings.alertCall) {
 					UiApplication.getUiApplication().pushScreen(
-							new NumberSelectionScreen(numberLabel));
+							new NumberSelectionScreen(
+									(SettingsScreen) UiApplication
+											.getUiApplication()
+											.getActiveScreen()));
 				} else {
 					Dialog.alert("Please enable Emergency Call Alert");
 				}
@@ -88,8 +93,9 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 		set.add(numberButton);
 
 		// Stionary alert time
-		set.add(new LabelField("Current stationary alert time: "
-				+ Settings.alertStationary + " mins"));
+		stationaryLabel = new LabelField("Current stationary alert time: "
+				+ Settings.alertStationary + " mins");
+		set.add(stationaryLabel);
 		ButtonField stationaryButton = new ButtonField("Stationary Alert Time");
 		stationaryButton.setChangeListener(new FieldChangeListener() {
 			public void fieldChanged(Field field, int context) {
@@ -112,8 +118,11 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 
 				if (addDialog.doModal() == 0) {
 					Settings.alertStationary = Integer.valueOf(
-							spinBoxSeconds.get(spinBoxSeconds.getIndex())
+							spinBoxSeconds.get(
+									spinBoxSeconds.getSelectedIndex())
 									.toString()).intValue();
+					((SettingsScreen) UiApplication.getUiApplication()
+							.getActiveScreen()).update();
 				}
 			}
 		});
@@ -162,17 +171,23 @@ public class SettingsScreen extends MainScreen implements FieldChangeListener {
 			Settings.setAlertOn(shieldAlertSwitch.getOnState());
 		}
 	}
+
+	public void update() {
+		numberLabel.setText("Current emergency number: " + Settings.emergencyNum);
+		stationaryLabel.setText("Current stationary alert time: " + Settings.alertStationary + " mins");
+		invalidate();
+	}
 }
 
 class NumberSelectionScreen extends MainScreen {
 	KeywordFilterField keywordFilterField;
 	ContactList contactList;
-	LabelField numberLabel;
-	String emergencyNumber;
+	String emergencyNum;
+	SettingsScreen parentScreen;
 
-	public NumberSelectionScreen(LabelField numberLabel) {
-		this.numberLabel = numberLabel;
-		emergencyNumber = Settings.emergencyNum;
+	public NumberSelectionScreen(SettingsScreen parentScreen) {
+		this.parentScreen = parentScreen;
+		emergencyNum = Settings.emergencyNum;
 		
 		buildContactList();
 		keywordFilterField = new KeywordFilterField();
@@ -226,7 +241,7 @@ class NumberSelectionScreen extends MainScreen {
 		ContactHolder contact = (ContactHolder) keywordFilterField
 				.getSelectedElement();
 		if (contact != null) {
-			emergencyNumber = contact.getNumber();
+			emergencyNum = contact.getNumber();
 		}
 		close();
 		return true;
@@ -251,16 +266,16 @@ class NumberSelectionScreen extends MainScreen {
 			addDialog.add(inputField);
 
 			if (addDialog.doModal() == 0) {
-				emergencyNumber = inputField.getText();
+				emergencyNum = inputField.getText();
 				close();
 			}
 		}
 	};
 	
-	public boolean onClose() {
-		Settings.setEmergencyNum(emergencyNumber);
-		numberLabel.setText(emergencyNumber);
-		return true;
+	public void close() {
+		Settings.setEmergencyNum(emergencyNum);
+		parentScreen.update();
+		super.close();
 	}
 }
 
