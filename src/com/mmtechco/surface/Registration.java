@@ -25,7 +25,7 @@ import net.rim.device.api.util.StringUtilities;
 
 import com.mmtechco.surface.net.Response;
 import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.ObserverScreen;
+import com.mmtechco.surface.ui.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
@@ -49,7 +49,6 @@ public class Registration implements SurfaceResource {
 	private static int stage;
 	private static String id;
 	private static String status = r.getString(i18n_RegRequesting);
-	private static Vector emergNums;
 
 	private static Logger logger = Logger.getInstance();
 	private static Vector observers = new Vector();
@@ -210,15 +209,6 @@ public class Registration implements SurfaceResource {
 		} else {
 			return id;
 		}
-	}
-
-	/**
-	 * Gets the emergency numbers associated with the account.
-	 * 
-	 * @return Vector with each element a string containing a number
-	 */
-	public static Vector getEmergNums() {
-		return emergNums;
 	}
 }
 

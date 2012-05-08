@@ -1,7 +1,6 @@
 package com.mmtechco.surface.message;
 
 import java.io.IOException;
-import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
 
@@ -14,6 +13,7 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 
 import com.mmtechco.surface.Registration;
+import com.mmtechco.surface.Settings;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.message.MessageStore;
 import com.mmtechco.surface.net.Response;
@@ -130,15 +130,12 @@ public class Messager {
 				SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
 		new Thread() {
 			public void run() {
-				Vector emergNums = Registration.getEmergNums();
-				for (int i = 0; i < emergNums.size(); i++) {
-					try {
-						((ToolsBB) ToolsBB.getInstance()).sendSMS(
-								(String) emergNums.elementAt(i),
-								r.getString(SurfaceResource.i18n_AlertMsg));
-					} catch (Exception e) {
-						logger.log(TAG, e.getMessage());
-					}
+				try {
+					((ToolsBB) ToolsBB.getInstance()).sendSMS(
+							Settings.emergencyNum,
+							r.getString(SurfaceResource.i18n_AlertMsg));
+				} catch (Exception e) {
+					logger.log(TAG, e.getMessage());
 				}
 			}
 		}.start();
@@ -149,14 +146,10 @@ public class Messager {
 	 * the first.
 	 */
 	public static void makeCall() {
-		Vector emergNums = Registration.getEmergNums();
-		for (int i = 0; i < emergNums.size(); i++) {
-			try {
-				Phone.initiateCall(Phone.getLineIds()[0],
-						(String) emergNums.elementAt(0));
-			} catch (RadioException e) {
-				logger.log(TAG, e.getMessage());
-			}
+		try {
+			Phone.initiateCall(Phone.getLineIds()[0], Settings.emergencyNum);
+		} catch (RadioException e) {
+			logger.log(TAG, e.getMessage());
 		}
 	}
 }
