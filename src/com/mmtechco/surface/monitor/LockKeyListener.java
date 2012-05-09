@@ -7,6 +7,7 @@ import com.mmtechco.surface.message.Messager;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
 
+import net.rim.device.api.system.Alert;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Screen;
@@ -19,7 +20,11 @@ public final class LockKeyListener implements KeyListener {
 			.getSimpleClassName(LockKeyListener.class);
 	private static Logger logger = Logger.getInstance();
 	
+	private static final int INTERVAL = 2500;
+	
 	private int lastTime;
+	private boolean sending, vibing, locked;
+	
 	private Screen lockscreen;
 	
 	public LockKeyListener(Screen lockscreen) {
@@ -27,12 +32,25 @@ public final class LockKeyListener implements KeyListener {
 	}
 	
 	public boolean keyDown(int keycode, int time) {
+		lastTime = time;
+		return false;
+	}
+	
+	public boolean keyUp(int keycode, int time) {
+		Alert.stopVibrate();
+		locked = false;
+		vibing = false;
+		sending = false;
+		
+		return false;
+	}
+	
+	public boolean keyRepeat(int keycode, int time) {
+		// Lock screen
 		if (Settings.shieldOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_UP) {
 			logger.log(TAG, "Volume up caught.");
-			// Continue if second press is within a second
-			if (time - lastTime < 1000) {
-				logger.log(TAG, "active screen: " + UiApplication.getUiApplication().getActiveScreen());
-				logger.log(TAG, "lock screen:" + lockscreen);
+			if(!locked && time - lastTime > INTERVAL) {
+				locked = true;
 				// Only push lockscreen if is is not already shown
 				if (!lockscreen.isDisplayed()) {
 					logger.log(TAG, "Pushing lockscreen");
@@ -41,37 +59,36 @@ public final class LockKeyListener implements KeyListener {
 							UiEngine.GLOBAL_SHOW_LOWER);
 				}
 			}
-			lastTime = time;
-			// Consume event
 			return true;
 		}
-		else if (Settings.alertOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_DOWN) {
+		
+		// Button alert
+		if (Settings.alertOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_DOWN) {
 			logger.log(TAG, "Volume down caught.");
-			// Continue if second press is within a second
-			if (time - lastTime < 1000) {
+			// Start vibing
+			if (!vibing && time - lastTime > INTERVAL) {
+				vibing = true;
+				Alert.startVibrate(2500);
+				lastTime = time;
+				return true;
+			}
+			// Send after continues holding through vibrate
+			if (!sending && time - lastTime > INTERVAL) {
+				sending = true;
 				logger.log(TAG, "Sending Alert");
 				Messager.sendMessage(new EventMessage(EventMessage.STATE_ALH), "Sending Alert...");
+				Alert.startVibrate(100);
+				return true;
 			}
-			lastTime = time;
-			// Consume event
-			return true;
 		}
-		return false;
-	}
-	
-	public boolean keyUp(int keycode, int time) {
-		return false;
-	}
-	
-	public boolean keyChar(char key, int status, int time) {
-		return false;
-	}
-
-	public boolean keyRepeat(int keycode, int time) {
 		return false;
 	}
 
 	public boolean keyStatus(int keycode, int time) {
+		return false;
+	}
+	
+	public boolean keyChar(char key, int status, int time) {
 		return false;
 	}
 }
