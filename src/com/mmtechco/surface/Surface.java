@@ -43,13 +43,6 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 			SurfaceResource.BUNDLE_ID, SurfaceResource.BUNDLE_NAME);
 	private Logger logger = Logger.getInstance();
 	
-	// Settings keys and values
-	public static long ID;
-	public static String KEY_LOCKSCREEN = "lockscreen";
-	public static String KEY_ALERTBUTTON = "alertbutton";
-	public static boolean lockOn;
-	public static boolean alertOn;
-	
 	// Global screen priorities; lower is higher priority
 	public static int SCREEN_PRIORITY_SURFACE = 1;
 	public static int SCREEN_PRIORITY_LOCKSCREEN = 2;
@@ -101,9 +94,7 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 	 * are started if registration is successful
 	 */
 	private void initialize() {
-		ID = StringUtilities.stringHashToLong(Application.getApplication()
-				.getClass().getName());
-		readSettings();
+		Settings.readSettings();
 		
 		//#ifdef TOUCH
 		lockscreen = new TouchLockScreen();
@@ -160,26 +151,6 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 			logger.log(TAG, e.getMessage());
 		}
 	}
-	
-	private void readSettings() {
-		PersistentObject settings = PersistentStore.getPersistentObject(ID);
-		synchronized (settings) {
-			Hashtable settingsTable = (Hashtable) settings.getContents();
-			if (settingsTable == null) {
-				// Populate with default values
-				settingsTable = new Hashtable();
-				settingsTable.put(KEY_LOCKSCREEN, new Boolean(false));
-				settingsTable.put(KEY_ALERTBUTTON, new Boolean(false));
-				// Store
-				settings.setContents(settingsTable);
-				settings.commit();
-			}
-			lockOn = ((Boolean) settingsTable.get(KEY_LOCKSCREEN))
-					.booleanValue();
-			alertOn = ((Boolean) settingsTable.get(KEY_ALERTBUTTON))
-					.booleanValue();
-		}
-	}
 
 	public void powerUp() {
 		Logger.getInstance().log(TAG, "Started from powerup");
@@ -189,7 +160,7 @@ public class Surface extends UiApplication implements SystemListener2, GlobalEve
 	
 	public void backlightStateChange(boolean on) {
 		// Display lockscreen when display turns off
-		if (lockOn && !on) {
+		if (Settings.shieldOn && !on) {
 			if (!lockscreen.isDisplayed()) {
 				pushGlobalScreen(lockscreen, SCREEN_PRIORITY_LOCKSCREEN,
 						UiEngine.GLOBAL_SHOW_LOWER);

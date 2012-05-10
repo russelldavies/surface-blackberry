@@ -4,15 +4,12 @@ package com.mmtechco.surface.ui;
 import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
-
 import com.mmtechco.surface.Registration;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.message.MessageStore;
 import com.mmtechco.surface.monitor.LocationMonitor;
 import com.mmtechco.surface.net.Server;
-import com.mmtechco.surface.prototypes.ObserverScreen;
 import com.mmtechco.surface.util.SurfaceResource;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.Tools;
@@ -218,12 +215,10 @@ public class DebugScreen extends MainScreen implements ObserverScreen,
 				} else {
 					String stage = (String) regTable.get(Registration.KEY_STAGE);
 					String id = (String) regTable.get(Registration.KEY_ID);
-					Vector nums = (Vector) regTable.get(Registration.KEY_NUMBERS);
 					Boolean compStatus = (Boolean) RuntimeStore.getRuntimeStore().get(Registration.ID);
 					
 					add(new LabelField("Stage: " + stage));
 					add(new LabelField("ID: " + id.toString()));
-					add(new LabelField("Emergency numbers: " + nums.toString()));
 					add(new LabelField("Components started: " + compStatus));
 				}
 			}

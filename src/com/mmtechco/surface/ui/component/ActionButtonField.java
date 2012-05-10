@@ -3,9 +3,10 @@ package com.mmtechco.surface.ui.component;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.mmtechco.surface.Settings;
 import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.message.Messager;
-import com.mmtechco.surface.prototypes.ObserverScreen;
+import com.mmtechco.surface.ui.ObserverScreen;
 import com.mmtechco.surface.ui.SurfaceScreen;
 import com.mmtechco.util.Logger;
 import com.mmtechco.util.ToolsBB;
@@ -293,11 +294,13 @@ public class ActionButtonField extends BaseButtonField {
 		} else if (type.equals(EventMessage.STATE_ALH)) {
 			statusMsg = statusMsg + "Alert";
 			setAlert();
-			Messager.sendAlertSMS();
+			//Messager.sendAlertSMS();
 		} else if (type.equals(EventMessage.STATE_MNS)) {
 			statusMsg = statusMsg + "Man Down";
 			setManDown();
-			Messager.makeCall();
+			if (Settings.alertCall) {
+				Messager.makeCall();
+			}
 		}
 		statusMsg = statusMsg + "...";
 		// screen.setStatus(statusMsg);

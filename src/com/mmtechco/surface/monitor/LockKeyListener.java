@@ -1,5 +1,6 @@
 package com.mmtechco.surface.monitor;
 
+import com.mmtechco.surface.Settings;
 import com.mmtechco.surface.Surface;
 import com.mmtechco.surface.message.EventMessage;
 import com.mmtechco.surface.message.Messager;
@@ -26,7 +27,7 @@ public final class LockKeyListener implements KeyListener {
 	}
 	
 	public boolean keyDown(int keycode, int time) {
-		if (Surface.lockOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_UP) {
+		if (Settings.shieldOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_UP) {
 			logger.log(TAG, "Volume up caught.");
 			// Continue if second press is within a second
 			if (time - lastTime < 1000) {
@@ -44,7 +45,7 @@ public final class LockKeyListener implements KeyListener {
 			// Consume event
 			return true;
 		}
-		else if (Surface.alertOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_DOWN) {
+		else if (Settings.alertOn && Keypad.key(keycode) == Keypad.KEY_VOLUME_DOWN) {
 			logger.log(TAG, "Volume down caught.");
 			// Continue if second press is within a second
 			if (time - lastTime < 1000) {
