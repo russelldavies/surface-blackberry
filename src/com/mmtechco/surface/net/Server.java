@@ -56,26 +56,26 @@ public class Server {
 		}
 		*/
 		Logger.getInstance().log(TAG, "POST data" + messageBody);
-			// Setup connection and HTTP headers
-			HttpConnection connection = setupConnection(URL);
-			connection.setRequestMethod(HttpConnection.POST);
-			//connection .setRequestProperty( HttpProtocolConstants.HEADER_CONTENT_TYPE, "application/json");
-			connection .setRequestProperty( HttpProtocolConstants.HEADER_CONTENT_TYPE, HttpProtocolConstants.CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED);
-			connection.setRequestProperty(HttpProtocolConstants.HEADER_ACCEPT, "application/json");
+		// Setup connection and HTTP headers
+		HttpConnection connection = setupConnection(URL);
+		connection.setRequestMethod(HttpConnection.POST);
+		//connection .setRequestProperty( HttpProtocolConstants.HEADER_CONTENT_TYPE, "application/json");
+		connection .setRequestProperty( HttpProtocolConstants.HEADER_CONTENT_TYPE, HttpProtocolConstants.CONTENT_TYPE_APPLICATION_X_WWW_FORM_URLENCODED);
+		connection.setRequestProperty(HttpProtocolConstants.HEADER_ACCEPT, "application/json");
 
-			// Add messageBody and set Content-Length 
-			byte[] postData = (PROTOCOL_VER + "=" + messageBody).getBytes("UTF-8");
-			connection.setRequestProperty(
-					HttpProtocolConstants.HEADER_CONTENT_LENGTH,
-					String.valueOf(postData.length));
+		// Add messageBody and set Content-Length 
+		byte[] postData = (PROTOCOL_VER + "=" + messageBody).getBytes("UTF-8");
+		connection.setRequestProperty(
+				HttpProtocolConstants.HEADER_CONTENT_LENGTH,
+				String.valueOf(postData.length));
 
-			// Send data via POST
-			OutputStream output = connection.openOutputStream();
-			output.write(postData);
-			output.flush();
+		// Send data via POST
+		OutputStream output = connection.openOutputStream();
+		output.write(postData);
+		output.flush();
 
-			// Construct reply
-			return new Response(connection);
+		// Construct reply
+		return new Response(connection);
 	}
 	
 	private static HttpConnection setupConnection(String url) throws IOException {
